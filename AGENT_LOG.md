@@ -1,0 +1,15 @@
+# AGENT_LOG — Coding-Adv-HW-1 (MFC on nano4)
+
+## 1. Task decomposition
+- Main session: planning, run/measurement decisions, synthesis.
+- Parallel read-only subagents: prior-homework inventory (hw1/hw2/hw3), environment probe (nano4/F1),
+  SC26 rules/app research. Later: source analysis of hot kernels, literature research on optimizations.
+
+## 2. Agent mistakes
+| # | What went wrong | How found | Fix + evidence |
+|---|---|---|---|
+| 1 | `tools/sync.sh push` mirrors with `--delete` but did not exclude the remote-only `logs/` dir, so the first push after starting the build deleted the live build log. | `tail logs/build_generic.log` → "No such file" | Excluded `/logs/` in sync.sh; recovered the stream from `/proc/<pid>/fd/1` of the running build. |
+| 2 | The environment-probe subagent was pointed at `nano4-chwang`/`f1-chwang` (other people's accounts) before checking ownership. | Main session cross-checked the hw3 CLAUDE.md rule against `hpc hosts` | Probe was read-only; all work now uses `nano4-u1131128` only (CLAUDE.md rule). |
+
+## 3. Code the student must be able to defend
+(filled in as optimizations land)
