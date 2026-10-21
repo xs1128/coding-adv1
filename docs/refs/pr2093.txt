@@ -1,0 +1,218 @@
+# [SC26 SCC] NTU Team Supernova's GPU optimizations to MFC
+
+For the full version of the PR description, please refer the full version below, as they are too long for Github to accept.
+[PR.md](https://github.com/user-attachments/files/33683923/PR.md)
+
+This PR adds GPU performance optimizations for the simulation solver and communication optimizations, mostly for NVIDIA OpenACC path. It also fixes some existing numerical bugs. Most of the optimizations are guarded via opt-in compiler argument, except for some that will cause too much duplicate code when guarded. For those, they are always-on and guarded by the relevant compiler/GPU where necessary.
+
+If I should be adding the options as case.py arguments, please let me know too, I know that is the current pattern, but I think case.py should focous on defining case-specific options and not general performance opt-ins. This is my own decision, and I am happy to change the approach if the maintainers prefer otherwise.
+
+This is a large PR and if the maintainers prefer to split them into smaller PRs, I can do that too, but the goal was to not flood the CI runners so I merged them into 1 single PR.
+
+If the maintainers are satisfied with some of the lower-risk optimizations and would like to make them always-on as default, I can also remove their respective opt-in toggles by replacing the existing implementation. This reduces code duplication. A significant part of the changed LOCs are from preserving existing code paths.
+
+This PR assumes existing bug-fix PRs by me will be merged, and I will handle any conflicts arising from other team's contributions where necessary.
+
+In general, the direction that I am working towards to is based on the following findings:
+1. With case optimization, MFC is largely NOT memory-capacity constrained
+2. On modern GPUs like H200, MFC is heavily bottlenecked by memory bandwidth, but that is due to it doing too many round-trips
+3. Communication pattern, which is a bottleneck in all HPC applications
+
+Thus, you will find many optimizations that trades some extra memory usage for data residency/reduced H2D/D2H trips, and maximizing on-device cache/register/shared memory reuse.
+
+Unfortunately I do not have access to any larger cluster like Frontier to test scalability of my changes, so I want to focus more on improving compute-bound parts, and I do not want to claim anything in scalability for communication changes beyond what I have tested on.
+
+## Benchmark environment
+
+All performance figures in this description were measured on **1-8 NVIDIA H200 NVL (141 GB) with 4-way NVLink bridge at 600W TDP · NVHPC 26.9 · CUDA 13.4 · NVSHMEM 3.8.0 · OpenACC · FP64** unless otherwise specified.
+
+For fair comparison, all runs enabled GPU-direct MPI exchange
+(`rdma_mpi`) to achieve optimal performance on NVLinked NVIDIA GPUs. This is by default off in the current code and this PR does not change that default.
+
+## Primary Results
+
+Measured on https://github.com/MFlowCode/MFC/blob/master/examples/3D_performance_test/case.py 200³ performance test, 300 steps, one rank per GPU. The results are measured with kernel tuning configuration for our specific hardware (H200 NVL PCIe). The exact tuning file may not transfer to every case even on same hardware, and thus is only worth once a large run is about to start.
+The tables give the median grind time of the runs at each point as reported by MFC. As reported in https://github.com/MFlowCode/MFC/issues/2088, current `master` code has a significiant regression in this test case (and many others). For our hardware we expected pre-regression timing to be around 0.34ns. The regression has been identified and fixed in this PR, but the numbers below is unaffected by it because one of the optimizations prevented the regression by construction.
+
+This PR includes an improved version of #1628. To ensure fairness and isolate geniue contributions, the number and scaling study below EXCLUDES this optimization. It also varies greatly with each case so it is unfair to base it all on the 3D performance test case. In Section 12, I separately report how the optimization further improves the performance. 
+
+| GPUs | unmodified original | this PR (NVSHMEM) | this PR (GPU-direct MPI) | speedup vs original, NVSHMEM | speedup vs original, GPU-direct MPI |
+| ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | 0.447 | 0.0558 | 0.0559 | 8.0× | 8.0× |
+| 2 | 0.236 | 0.0313 | 0.0310 | 7.6× | 7.6× |
+| 4 | 0.130 | 0.0183 | 0.0179 | 7.1× | 7.2× |
+| 8 | 0.0764 | 0.0127 | 0.0127 | 6.0× | 6.0× |
+
+8-GPU runs were 2 groups of 4xH200 NVL within a single node running dual AMD EPYC 9755 CPU.
+
+Step time in ms/step
+
+| GPUs | unmodified original | this PR (NVSHMEM) | this PR (GPU-direct MPI) |
+| ---: | ---: | ---: | ---: |
+| 1 | 86.5 | 8.62 | 8.62 |
+| 2 | 45.8 | 5.68 | 6.14 |
+| 4 | 25.1 | 3.31 | 3.54 |
+| 8 | 14.8 | 2.53 | 3.15 |
+
+The two transports agree on the grind within 2% at 2, 4 and 8 GPUs, however due to removal of MPI host-stall outside of the grind time region, NVSHMEM runs 8%, 7% and 25% faster at 2, 4 and 8 GPUs (§6), judging from step time. This is meaningful to total runtime which the current grind time fail to account for. More info on NVSHMEM below.
+
+### Strong scaling
+
+<img width="2100" height="840" alt="image" src="https://github.com/user-attachments/assets/3243a4f8-fe32-48a3-9942-b8f1c54755da" />
+
+
+The original code scales 1.89×, 3.44× and 5.85× at 2, 4 and 8 GPUs. This PR
+scales 1.79×, 3.06× and 4.40× on NVSHMEM, and 1.80×, 3.11× and 4.38× on
+GPU-direct MPI. The speedup over the original code falls from 8.0× at one GPU
+to 6.0× at 8 GPUs.
+
+<img width="2100" height="840" alt="image" src="https://github.com/user-attachments/assets/630dd37d-3cff-45b8-a96e-a964dc4874a8" />
+
+
+In host step time the original scales 1.89×, 3.45× and 5.84×. This PR scales 1.52×, 2.60× and 3.41× on NVSHMEM, and 1.40×, 2.44× and 2.74× on GPU-direct MPI. The step time contains the host side of the exchange, which the device-timed grind excludes, so it scales less than the grind.
+
+### Weak scaling
+
+The work per GPU stays at 100³ cells. The grids are 100³, 200×100×100, 200×200×100 and
+200³ on 1, 2, 4 and 8 GPUs.
+
+<img width="2100" height="840" alt="image" src="https://github.com/user-attachments/assets/4eeec252-c152-4406-9cbe-16ac2173b27e" />
+
+The original code holds perfect weak efficiency at our scale. This PR runs every point 6.0× to 6.9× faster in grind. Its weak efficiency is 1.12, 1.10 and 0.98 at 2, 4 and 8 GPUs on NVSHMEM. On GPU-direct MPI it is 1.13, 1.13 and 0.97.
+
+The 8-GPU runs place the ranks in a 1×2×4 grid which is most optimized for our specific topology. The 2-GPU and
+4-GPU runs and the original code use the built-in most-cubic Cartesian cuts.
+
+The performance-test case applies characteristic boundary conditions (CBC) on all six faces. At 1 GPU the single rank need to do the CBC staging on all 6 physical faces. On multi rank, the domain is split and the cut faces become rank interfaces, which  exchange halos but run no CBC staging. The slowest rank's physical-face count falls 6 → 5 (2 GPUs) → 4 (4 GPUs) → 3–4 (8, where x is unsplit). With less boundary work per rank, the weak-scaling efficiency become higher than 100% at 2 and 4.
+
+`master`stays flat at 1.00 because its per-rank time is ~6× larger, so the same boundary saving is ~1–2% and invisible.
+
+Weak scaling at 8 GPU drops sharply partly due to the additional cross-NUMA traffic instead of NVLink, since we are not using a full-mesh node, so communication become much more bottlenecked. On H200 SXM I do not expect such a sharp drop.
+
+Step time in ms/step
+
+| GPUs | unmodified original | this PR (NVSHMEM) | this PR (GPU-direct MPI) |
+| ---: | ---: | ---: | ---: |
+| 1 | 14.7 | 1.89 | 1.89 |
+| 2 | 14.7 | 2.00 | 2.16 |
+| 4 | 14.7 | 2.02 | 2.16 |
+| 8 | 14.8 | 2.53 | 3.15 |
+
+<img width="2100" height="840" alt="image" src="https://github.com/user-attachments/assets/d2d57d6b-dfc2-45f3-925d-80fd0776f223" />
+
+In host step time the original stays flat at 14.7 ms. This PR goes from 1.89ms at one GPU to 2.53 ms at eight on NVSHMEM, and to 3.15 ms on GPU-direct MPI. The grind-based weak efficiency at 8 GPUs is 0.98 on NVSHMEM, so the rise in step time is host-side work outside the device-timed region.
+
+## New Build options
+
+Most of the optimizations in this PR are default-off and can be enabled by these new build options. Each option is a `./mfc.sh build` flag and a CMake option of the same name. For example,
+`--fused-rhs` sets `MFC_FUSED_RHS=ON`, and `--no-fused-rhs` sets it to `OFF`. Every option is off
+by default. The toolchain (`toolchain/mfc/args.py`) and CMake check the requirements below and
+stop with a message when any incompatible options are used, since some depends on others. Some options automatically enable the other dependent ones, unless the user explicitly passed --no-*, in which case they conflict and it will error with a custom error message.
+
+```shell
+./mfc.sh build -t simulation --gpu acc --case-optimization -i case.py --fused-rhs
+```
+
+| flag | effect | requirements | section |
+| --- | --- | --- | --- |
+| `--fused-rhs` | Builds the fused WENO, Riemann and RHS kernel. | `--case-optimization`, OpenACC GPU build with NVHPC | §1 |
+| `--hllc-register-tuning` | Selects the restructured HLLC paths of the classic pipeline, which developers can tune. | `--case-optimization`, OpenACC GPU build with NVHPC | §1 |
+| `--cbc-no-host-sync` | Passes the CBC control values as kernel arguments. | OpenACC GPU build with NVHPC | §2 |
+| `--cbc-parallel-scatter` | Copies the 3D CBC output with a parallel kernel. | `--cbc-no-host-sync` | §2 |
+| `--async-queue` | Puts the step on one non-default OpenACC queue. | OpenACC GPU build with NVHPC, `--no-unified`, `--accurate-grind-time` | §3 |
+| `--accurate-grind-time` | Measures the grind with device events. | OpenACC GPU build with NVHPC or CCE | §4 |
+| `--cuda-graphs` | Captures the step into a CUDA graph and replays it. | OpenACC GPU build with NVHPC, `--no-unified`, `--async-queue` and therefore `--accurate-grind-time` | §5 |
+| `--halo-single-round` | Exchanges all 26 neighbor halos in one round. | `--mpi` | §6 |
+| `--halo-index-cache` | Builds the halo point coordinates once. | `--halo-single-round` | §6 |
+| `--nvshmem` | Sends the halo with NVSHMEM puts. | `--mpi`, OpenACC GPU build with NVHPC, `--no-unified`, the NVSHMEM library | §6 |
+| `--weno-direct-loads` | Reads the WENO and THINC input in place. | `--case-optimization`, OpenACC GPU build with NVHPC, `--fused-rhs` or `--hllc-register-tuning` | §7 |
+| `--muscl-direct-loads` | Reads the MUSCL input in place. | none | §8 |
+| `--direct-riemann-flux` | Uses the Riemann flux directly for the flux difference. | `--case-optimization`, OpenACC GPU build with NVHPC | §9 |
+| `--persistent-bc` | Keeps the ghost-cell fill tables on the device. The tables run in builds with `--halo-single-round`. | OpenACC GPU build with NVHPC | §10 |
+| `--fused-bubble-source` | Computes the Euler-Euler bubble source in one kernel. | OpenACC GPU build with NVHPC | §11 |
+| `--qbmm-device-inversion` | Runs the QBMM moment inversion as a device kernel. | OpenACC GPU build with NVHPC, `--case-optimization` | §11 |
+| `--igr-tuned-sweeps` | Selects the restructured IGR sweeps. | Three of its four parts need `--case-optimization`, otherwise it will be partially enabled. | §11 |
+| `--igr-shallow-halo` | Exchanges one IGR ghost layer per non-final Jacobi iteration. | none | §11 |
+| `--lagrangian-device-cell-list` | Builds the Lagrangian bubble cell list on the device. | none | §11 |
+| `--active-box` | Builds the active compute window. Env var `MFC_ACTIVE_BOX` turns it on at run time. | `--fused-rhs`, checked when `MFC_ACTIVE_BOX` is set | §12 |
+
+---
+
+## New Environment variables
+
+### Run time
+
+The binaries read these variables at start-up. An unset variable gives the behavior of the
+original code.
+
+| variable | values | effect | default | require |
+| --- | --- | --- | --- | --- |
+| `MFC_ACTIVE_BOX` | `<steps>[,<growth>[,<boxes>]]` | Turns on the active compute window with this cadence, growth and box count (§12). | off | `--active-box --fused-rhs` |
+| `MFC_ACTIVE_BOX_FLOOR` | real in (0, 1) | Sets the deviation floor fraction of the window. | source default | `--active-box` |
+| `MFC_ACTIVE_BOX_INNER` | integer `k` ≥ 1 | Builds the inner cover every `k` steps. It needs the single-box window. | off | `--active-box` |
+| `MFC_HALO_OVERLAP` | `1` | Overlaps the halo exchange with the interior computation of the fused path. | off | `--fused-rhs --halo-single-round --async-queue` |
+| `MFC_HALO_EPOCH_DEVICE` | `1` | Completes the 26-neighbor exchange on the device, so a CUDA graph can capture it. The mode is for ranks on one node with peer-to-peer access. | off | `--nvshmem --halo-single-round` |
+| `MFC_HALO_26_TRIM` | `1` | Shrinks the 26-neighbor exchange to the active-box window. | off | `--nvshmem --halo-single-round --active-box` |
+| `MFC_IGR_PINGPONG` | `1` | Alternates the two IGR Jacobi buffers. | off | none |
+| `MFC_SFC_WEIGHTS` | file path | Cuts the domain to balance the cost weights per block in the file. All three binaries read it. | off | --mpi |
+| `MFC_DECOMP_PROCESS_GRID` | `<px>,<py>,<pz>` | Sets the Cartesian process grid of the simulation. The product of the three counts equals the rank count. Needs `parallel_io = T`. | built-in search | --mpi |
+| `MFC_DECOMP_AXIS_ORDER` | permutation of `1,2,3` | Sets the order of the cut axes of the simulation. Needs `parallel_io = T`. | `1,2,3` | --mpi |
+| `MFC_DECOMP_X_OFFSETS`, `MFC_DECOMP_Y_OFFSETS`, `MFC_DECOMP_Z_OFFSETS` | `0,<cut>,...,<size>` | Set the cut positions per direction of the simulation. Each list runs from 0 to the direction's global cell count and holds one entry more than its rank count. | equal cuts | --mpi parallel_io = T |
+| `CUDA_VISIBLE_DEVICES`, `ROCR_VISIBLE_DEVICES`, `HIP_VISIBLE_DEVICES` | comma-separated device list | Group the ranks per GPU in the grind report. | set by the system | `--accurate-grind-time` |
+| `NVSHMEM_REMOTE_TRANSPORT`, `NVSHMEM_IB_ENABLE_IBGDA` | transport name, or `1` | Split each put and its signal into two operations when either variable selects ibgda. | NVSHMEM defaults | `--nvshmem` |
+
+### Build time
+
+The toolchain reads these variables when it generates and builds a case.
+
+| variable | values | effect | build |
+| --- | --- | --- | --- |
+| `MFC_TUNING_FILE` | `<path>` | Names a JSON profile that overrides the compile-time constants of the fused kernels. The profile maps constant names to their values under a `values` key. | `--fused-rhs` or `--fused-bubble-source` |
+| `MFC_FUSION_*` | positive integer, or a list of them | Overrides one compile-time constant of the fused kernel. The variable name is the constant name. | `--fused-rhs` |
+| `MFC_BUBBLE_VECTOR_LENGTH` | positive integer | Overrides the vector length of the bubble kernels. | `--fused-bubble-source` |
+| `MFC_STATE_ALIGNMENT_BYTES` | positive integer | Overrides the stride alignment of the state arrays. | `--fused-rhs` |
+| `MFC_REGISTER_CAPS` | `<module>=<cap>[,<module>=<cap>...]` | Sets the register cap of one or more solver modules. A module names one source file of `src/simulation`. The cap is an integer from 1 to 255. | `--gpu acc` with NVHPC |
+| `NVSHMEM_ROOT` | `<path>` | Names the NVSHMEM installation. | `--nvshmem` |
+
+The source gives the default of every constant. A value that is not set keeps the default.
+
+## Tests
+This PR adds 1 golden `AE748A63` to catch #2048. Assuming that the numerical bug PRs by me are merged.
+CPU GCC 16.2: all golden tests pass on AMD EPYC 9755 with all optimizations off (except for those default-on ones)
+NVHPC + OpenACC (NVHPC 26.9): all golden tests pass on H200 with all optimizations ON
+NVHPC 26.9 + OpenMP: the simulation target compiles  with all optimizations off. Golden cases not ran.
+AMD + OpenMP (AMDFlang 24.0.0git from therock-afar-24.3.0, MI210): all 727 golden tests pass with BOTH all optimizations off and all on. All 17 convergence cases pass with all off and on.
+I do not have access to any CCE systems so am unable to test any of those, but I have tried my best to ensure my changes are contained and do not expect any to break CCE
+
+## Design notes
+
+- **Compatible interfaces.** Existing inputs, output formats, build commands, restart
+  files, and post-processing pipelines stay compatible. The optimization flags
+  compose through compile-time configuration.
+- **Code structure.** The new device code follows the existing OpenACC macro
+  layer and module conventions of the source. The fused kernel uses fypp templates over
+  direction and physics, like the existing preprocessor usage.
+
+Fixes https://github.com/MFlowCode/MFC/issues/2088 #2048
+For HLLC kernel, to reach the claimed 1.38ms performance, register capping is needed: `MFC_REGISTER_CAPS=m_riemann_solver_hllc=168,m_riemann_solver_hll=168,m_riemann_state=168,m_hb_function=168,m_variables_conversion=168,m_eos=168`
+Without, the kernel runs 1.70ms.
+Addresses the hang observed in https://github.com/MFlowCode/MFC/issues/1927 
+Related:
+#2090 where I believe my implementation is better for the cases where it covers, and #2090 is better for other cases.
+#2092 came up with similar idea independently but I chose to go the more extreme route of optimizing away the loads using fused kernels. also optimize away "`mp_weno` and `int_comp > 0`" mentioned in the PR.
+#1628 where I improved upon by supporting multi-rank natively.
+
+## Contribution Policy
+
+All contributions are expected to demonstrate:
+- A clear understanding of the codebase
+- Alignment with product direction
+- Thoughtful reasoning behind changes
+- Evidence of real-world usage or hands-on experience with the problem
+
+If these expectations are not met, we would prefer to implement the changes ourselves rather than spend time reviewing low-effort submissions.
+
+## Acknowledgement
+
+This PR is prepared by Billy Cao from Nanyang Technological University SCC team: Supernova for SC26 Student Cluster Competition. It unintentionally overlapped with ideas that existing PRs from other teams have raised, and I have fully acknowledged them in these cases. It also took inspiration from existing PRs by the MFC team, which I have also fully credited where due. For each of such cases, I have explained the differences/improvements on top of existing PRs.
+

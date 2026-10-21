@@ -1,0 +1,92 @@
+## Summary
+The performance numbers in https://mflowcode.github.io/documentation/expectedPerformance.html are no longer reproducible as of https://github.com/MFlowCode/MFC/commit/47568a0f92559bd6965dee7bfcdb39e446d621e7. I am getting 0.468ns on H200 PCIe, which has identical memory bandwidth to GH200 and should come close to that (0.32ns). Another team independently reproduced 0.41ns on H200 SXM in https://github.com/MFlowCode/MFC/pull/2087.
+
+I have identified a few reasons. Some of them are concrete enough to fix, while others I am still finding out why.
+
+One of the reasons identified was the HLLC kernel. The HLLC Riemann solver kernel on `master` runs 1.85-2.0x slower than v4.9.3 on NVIDIA GPUs, with local-memory traffic up 5.5x/13x (loads/stores) higher. On `examples/3D_performance_test` tested on H200 PCIe, NVHPC 26.9, with case optimization, the kernel time per call goes from 1.42-1.48 ms to 2.72-2.83 ms.
+
+Bisecting this shows it is not one regression but a recurring one. The same local-memory-spilling kernel issue has been introduced, fully cured, and re-introduced three times over the last four months.
+
+## History
+
+All of below are measured on the same H200 PCIe GPU, same compiler (NVHPC 26.9, CUDA 13.4.2), same case-optimized build of `examples/3D_performance_test`.
+
+| date | commit | what the commit is | grind | kernel | regs | local ld/st sectors | gangs |
+| --- | --- | --- | ---: | ---: | ---: | --- | ---: |
+| 2024-07-18 | `42cfdf0b` | the v4.9.3 release tag | 0.346 | **1.42 ms** | 166 | 40.8M / 12.2M | 396 |
+| 2026-06-11 | `ac5774e1` | PR #1556  Riemann solvers split into per-solver modules | 0.440 | **2.45 ms** | 190 | 142.8M / 136.7M | 264 |
+| 2026-06-15 | `7715b727` | PR #1588  Re_size host-capture in the Riemann solvers | 0.434 | 2.44 ms | 190 | 142.8M / 136.7M | 264 |
+| 2026-06-22 | `be974fce` | PR #1584  ffmt reformatting only; kernel unchanged, as expected for a style-only PR | 0.434 | 2.42 ms | 190 | 142.8M / 136.7M | 264 |
+| 2026-07-10 | `2a751edc` | PR #1572 Riemann hot-path decomposition into shared GPU device helpers | 0.450 | **2.70 ms** | 242 | 189.7M / 159.1M | 264 |
+| 2026-07-26 | `83bf84c4` | PR #1675 remove the non-operational hyperelasticity | 0.438 | 2.05 ms | 159 | 146.9M / 144.9M | 396 |
+| 2026-08-09 | `b40e08f0` | PR #1713 remove the four-equation model | 0.431 | **1.43 ms** | 144 | **53.0M / 12.2M** | 396 |
+| 2026-08-10 | `ae4b4c40` | PR #1414 anchored dual-pass HLLD for hypoelasticity | 0.435 | **2.00 ms** | 159 | 146.9M / 144.9M | 396 |
+| 2026-09-08 | `0c849aa0` | root of PR #1811 | 0.437 | 2.08 ms | 152 | 181.6M / 130.6M | 396 |
+| 2026-09-08 | `808df619` | PR #1811 state-dependent equations of state (Mie-Gruneisen, JWL, Vinet) | 0.441 | 2.32 ms | 177 | 177.5M / 110.2M | 264 |
+| 2026-09-20 | `dd7877df` | PR #1870 extract m_eos, single EOS family registry | 0.453 | 2.06 ms | 152 | 181.6M / 130.6M | 396 |
+| 2026-09-22 | `fef3c276` | PR #1915 replace Pyrometheus with MFC-owned thermochemistry generation | 0.453 | 2.31 ms | 177 | 177.5M / 110.2M | 264 |
+| 2026-09-25 | `1ececa34` | PR #1917 generate m_thermochem as Fypp source | 0.453 | 2.38 ms | 177 | 177.5M / 110.2M | 264 |
+| 2026-09-30 | `cbb8850e` | PR #1919 generate caller-shaped thermochemistry routines | 0.460 | **2.82 ms** | 178 | **226.5M / 161.2M** | 264 |
+| 2026-10-01 | `c7feed29` | PR #1918 size species arrays from the generated mechanism on AMD | 0.458 | 2.84 ms | 178 | 226.5M / 161.2M | 264 |
+| 2026-10-04 | `bee66c2a` | PR #1939 retire the WENO7 amdflang workaround | 0.460 | 2.82 ms | 178 | 226.5M / 161.2M | 264 |
+| 2026-10-14 | `47568a0f9` | master | 0.468 | **2.83 ms** | 178 | 226.5M / 161.2M | 264 |
+
+
+The Riemann hot-path decomposition **introduced** the spilling shape (#1556, then #1572 at its worst: 242 registers, 1.9x kernel time), removing the dead capabilities **fully cured it** (#1675 partial, #1713 made it back to v4.9.3 numbers), **#1414 re-introduced it** when hypoelasticity came back (its kernel's local-memory traffic is identical to #1675), **#1811 reshaped it** (264 gangs, 177 regs) and is the one PR that the CI failed to catch (see below), **#1870 reverted the shape**, and the thermochemistry-generation rewrites **flipped it back and then worsened it** (#1915 back to the #1811 shape, #1919 added 28% local-memory traffic on top)
+
+## Root cause of HLLC kernel regression
+
+The kernel assembles its fluxes through seven per-cell work arrays indexed by the field loop (present since the decomposition, re-created by #1414's dual pass):
+
+```fortran
+real(wp), dimension(sys_size) :: U_L, U_R
+real(wp), dimension(sys_size) :: F_L, F_R, F_star_L, F_star_R, F_HLLC
+```
+
+Field-loop-indexed arrays cannot be register-promoted, so the flux assembly runs through thread-local memory rather than registers. ncu confirms these are not register spills (Local Memory Spilling Requests: 0). The arrays live in local memory by construction. The v4.9.3/#1713 implementation uses scalar star-state variables exclusively and shows 12.2M store sectors where the current kernel shows 161.2M.
+
+## On benchmarking CI case
+
+The CI bench case (`benchmarks/5eq_rk3_weno3_hllc`, `--gbpp 4`  sees the same story with #1811 as the visible step, since it never ran before #1713:
+
+| commit | grind |
+| --- | ---: |
+| pre-#1414 `a125c4c1` | 0.489 / 0.481 |
+| #1414 `87c78cee` | 0.487 |
+| #1762 `c9c8b0f6` | 0.485 |
+| #1823 `5829dafa` | 0.490 / 0.487 |
+| `0c849aa0` (before #1811) | 0.489 / 0.481 |
+| **#1811 `808df619`** | **0.509 / 0.516** |
+| #1870 `dd7877df` | 0.517 / 0.520 |
+| master `47568a0f9` | 0.518 |
+
+I ran these myself. None of this was caught by CI, because PR #1811 (like #1823) has no benchmark workflow runs (the `self` job only triggers on approved reviews or maintainer-authored PRs, so author pushes skip it and the run stays vacuously green); after merge, the PR-vs-master comparison is blind to merged regressions because both master and PR regressed.
+
+## Reproducing
+
+```bash
+git checkout 0c849aa0
+./mfc.sh build -i benchmarks/5eq_rk3_weno3_hllc/case.py -t pre_process simulation --gpu -j 32
+./mfc.sh run -i benchmarks/5eq_rk3_weno3_hllc/case.py -t pre_process simulation --gpu --no-build --gbpp 4 -n 2
+git checkout 808df619   # same commands; grind steps 0.48x -> 0.51x
+
+# pick a commit I listed above in the table
+git checkout <commit>
+./mfc.sh build -i examples/3D_performance_test/case.py -t pre_process simulation \
+    --gpu --case-optimization -j 32
+./mfc.sh run -i examples/3D_performance_test/case.py -t pre_process simulation \
+    --gpu --case-optimization --no-build -n 1
+ncu -k "regex:hllc_riemann_solver" --launch-count 1 --kill yes \
+    --metrics launch__registers_per_thread,gpu__time_duration.sum,l1tex__t_sectors_pipe_lsu_mem_local_op_ld.sum,l1tex__t_sectors_pipe_lsu_mem_local_op_st.sum \
+    build/install/<slug>/bin/simulation
+```
+
+## Environment
+- NVIDIA H200 NVL (GH100, 132 SMs, CC 9.0), driver r580 (CUDA 13.4)
+- NVHPC 26.9-0, CUDA 13.4.2, hpcx 2.50 Open MPI 5
+- Flags: `-fast -O3 -Mipa=fast,inline -march=native -gpu=cc90 -acc -Mfprelaxed -Minline` (as generated by `./mfc.sh --gpu --case-optimization`)
+
+## Fix
+I have implemented optimisations that fix issues as far as I can identify (HLLC kernel regression being one). I will include them in a PR soon as part of NTU Team Supernova's contribution for the SC26 Student Cluster Competition.
+
+As an additional suggestion for the maintainers, such regressions would not have been missed by the CI if the benchmark CIs were run on all PRs, including those opened by the author. Additionally, the benchmark CI should include this 3D performance test case, since that is what is written in the documentation as a reference.
