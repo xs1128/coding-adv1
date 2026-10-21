@@ -1,0 +1,17 @@
+build/
+*.o
+*.a
+*.so
+*.gcda
+*.gcno
+*.gcov
+*.nsys-rep
+*.ncu-rep
+*.sqlite
+__pycache__/
+.venv/
+.provenance
+JOURNEY.md
+JOURNEY.md
+*.qdrep
+/mfc/
