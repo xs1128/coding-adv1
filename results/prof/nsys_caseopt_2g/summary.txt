@@ -1,0 +1,129 @@
+
+=== rank 0: kernels 393.3 ms in 1652 launches, memcpy 173.2 ms, MPI 342438.5 ms
+ share  total ms    inst   mean us  kernel
+ 11.5%     45.03      30    1501.1  m_weno_s_weno_1096_gpu__1
+ 11.2%     44.12      30    1470.7  m_weno_s_weno_1096_gpu__2
+ 11.0%     43.08      30    1436.0  m_weno_s_weno
+  8.6%     33.90      30    1130.1  m_riemann_solver_hllc_s_hllc_riemann_solver_898_gpu_1
+  8.6%     33.79      30    1126.5  m_riemann_solver_hllc_s_hllc_riemann_solver_898_gpu_2
+  8.0%     31.62      90     351.3  m_weno_s_pack_weno_input_arr
+  7.3%     28.58      30     952.5  m_riemann_solver_hllc_s_hllc_riemann_solver
+  4.3%     17.03      30     567.7  m_time_steppers_s_tvd_rk
+  3.3%     12.83      30     427.7  m_rhs_s_compute_advection_source_term
+  3.1%     12.22      30     407.3  m_rhs_s_compute_advection_source_term
+  2.9%     11.45      30     381.6  m_rhs_s_compute_rhs
+  2.8%     10.99      30     366.5  m_rhs_s_compute_advection_source_term
+  2.5%      9.67      30     322.4  m_variables_conversion_s_convert_conservative_to_primitive_variables
+  2.4%      9.25      30     308.2  m_riemann_state_s_finalize_riemann_solver
+  2.3%      9.23      30     307.7  m_riemann_state_s_finalize_riemann_solver
+  2.3%      9.23      30     307.6  m_riemann_state_s_finalize_riemann_solver
+  1.3%      5.28     150      35.2  m_boundary_common_s_populate_bc_direction
+  1.0%      3.90      30     130.0  m_rhs_s_compute_advection_source_term_s_add_directional_advection_s...
+  1.0%      3.74      30     124.7  m_rhs_s_compute_advection_source_term_s_add_directional_advection_s...
+  0.9%      3.60      30     120.0  m_rhs_s_compute_advection_source_term_s_add_directional_advection_s...
+-- memcpy/memset
+      112.20 ms      38x  [CUDA memcpy Device-to-Host]
+       60.24 ms    2510x  [CUDA memcpy Host-to-Device]
+        0.73 ms     839x  [CUDA memset]
+-- NVTX ranges (wall, includes host waits)
+   338065.27 ms       1x  :SIMULATION-TIME-MARCH
+   337528.65 ms       1x  :SAVE-DATA
+     5189.41 ms       1x  :INIT
+     4592.30 ms       1x  :INIT-MPI
+      783.05 ms       1x  :FINALIZE-MODULES
+      563.97 ms       1x  :INIT-MODULES
+      534.54 ms      10x  :TIMESTEP
+      516.20 ms      30x  :COMPUTE-RHS
+      170.36 ms      90x  :RHS-RECONSTRUCTION
+      141.33 ms      90x  :RHS-RIEMANN-SOLVER
+      105.23 ms      30x  :RHS-COMMUNICATION
+       76.48 ms      90x  :RHS-ADVECTION-SRC
+       33.12 ms       1x  :INIT-GPU-VARS
+       32.04 ms      30x  :RHS-COMM-SENDRECV-NO-RMDA
+       30.87 ms      30x  :RHS-COMM-HOST2DEV
+       29.36 ms      30x  :RHS-COMM-DEV2HOST
+-- top CUDA API (host)
+      409.72 ms    4535x  cuStreamSynchronize
+      116.86 ms      38x  cuMemcpyDtoHAsync_v2
+       70.03 ms    2510x  cuMemcpyHtoDAsync_v2
+       64.67 ms       1x  cuModuleLoadDataEx
+       22.66 ms       1x  cuMemHostAlloc
+       20.04 ms     220x  cuMemFree_v2
+       16.34 ms     302x  cuMemAlloc_v2
+        7.91 ms       2x  cuMemFreeHost
+-- MPI
+   336787.28 ms       8x  MPI_File_write_all
+     4001.26 ms       1x  MPI_Init
+      766.44 ms       1x  MPI_Finalize
+      277.92 ms      16x  MPI_File_set_view
+      269.55 ms       8x  MPI_File_read_all
+      207.32 ms     996x  MPI_Bcast
+       53.76 ms       5x  MPI_File_open
+       39.62 ms       1x  MPI_File_delete
+
+=== rank 1: kernels 391.6 ms in 2012 launches, memcpy 172.6 ms, MPI 342217.0 ms
+ share  total ms    inst   mean us  kernel
+ 11.4%     44.45      30    1481.8  m_weno_s_weno_1096_gpu__1
+ 11.1%     43.51      30    1450.4  m_weno_s_weno_1096_gpu__2
+ 10.9%     42.60      30    1419.9  m_weno_s_weno
+  8.5%     33.24      30    1108.0  m_riemann_solver_hllc_s_hllc_riemann_solver_898_gpu_2
+  8.5%     33.10      30    1103.3  m_riemann_solver_hllc_s_hllc_riemann_solver_898_gpu_1
+  8.0%     31.31      90     347.8  m_weno_s_pack_weno_input_arr
+  7.2%     28.34      30     944.8  m_riemann_solver_hllc_s_hllc_riemann_solver
+  4.3%     16.78      30     559.4  m_time_steppers_s_tvd_rk
+  3.2%     12.70      30     423.2  m_rhs_s_compute_advection_source_term
+  3.1%     12.08      30     402.7  m_rhs_s_compute_advection_source_term
+  2.9%     11.34      30     377.9  m_rhs_s_compute_rhs
+  2.8%     10.93      30     364.3  m_rhs_s_compute_advection_source_term
+  2.4%      9.49      30     316.3  m_variables_conversion_s_convert_conservative_to_primitive_variables
+  2.3%      9.12      30     304.1  m_riemann_state_s_finalize_riemann_solver
+  2.3%      9.07      30     302.2  m_riemann_state_s_finalize_riemann_solver
+  2.3%      9.04      30     301.5  m_riemann_state_s_finalize_riemann_solver
+  1.0%      3.85      30     128.2  m_rhs_s_compute_advection_source_term_s_add_directional_advection_s...
+  0.9%      3.69      30     123.0  m_rhs_s_compute_advection_source_term_s_add_directional_advection_s...
+  0.9%      3.56      30     118.6  m_rhs_s_compute_advection_source_term_s_add_directional_advection_s...
+  0.9%      3.48     150      23.2  m_boundary_common_s_populate_bc_direction
+-- memcpy/memset
+      112.90 ms      38x  [CUDA memcpy Device-to-Host]
+       58.74 ms    2692x  [CUDA memcpy Host-to-Device]
+        1.00 ms    1156x  [CUDA memset]
+-- NVTX ranges (wall, includes host waits)
+   338065.21 ms       1x  :SIMULATION-TIME-MARCH
+   337528.53 ms       1x  :SAVE-DATA
+     5185.09 ms       1x  :INIT
+     4588.97 ms       1x  :INIT-MPI
+      784.17 ms       1x  :FINALIZE-MODULES
+      563.23 ms       1x  :INIT-MODULES
+      535.89 ms      10x  :TIMESTEP
+      516.72 ms      30x  :COMPUTE-RHS
+      168.24 ms      90x  :RHS-RECONSTRUCTION
+      141.55 ms      90x  :RHS-RIEMANN-SOLVER
+       94.38 ms      30x  :RHS-COMMUNICATION
+       90.00 ms      90x  :RHS-ADVECTION-SRC
+       36.15 ms      30x  :RHS-COMM-DEV2HOST
+       32.86 ms       1x  :INIT-GPU-VARS
+       29.08 ms      30x  :RHS-COMM-HOST2DEV
+       18.21 ms      30x  :RHS-COMM-SENDRECV-NO-RMDA
+-- top CUDA API (host)
+      411.96 ms    5378x  cuStreamSynchronize
+      124.91 ms       2x  cuModuleLoadDataEx
+      119.37 ms      38x  cuMemcpyDtoHAsync_v2
+       68.35 ms    2692x  cuMemcpyHtoDAsync_v2
+       23.67 ms       1x  cuMemHostAlloc
+       20.59 ms     224x  cuMemFree_v2
+       18.37 ms     306x  cuMemAlloc_v2
+        9.62 ms       3x  cuMemFreeHost
+-- MPI
+   329514.94 ms       8x  MPI_File_write_all
+     7553.75 ms      16x  MPI_File_set_view
+     4003.86 ms       1x  MPI_Init
+      768.19 ms       1x  MPI_Finalize
+      269.12 ms       8x  MPI_File_read_all
+       82.07 ms       5x  MPI_File_open
+       18.21 ms      62x  MPI_Sendrecv
+        2.46 ms     996x  MPI_Bcast
+
+=== per-rank overview
+rank  kernel ms  memcpy ms    MPI ms  launches
+   0      393.3      173.2  342438.5      1652
+   1      391.6      172.6  342217.0      2012

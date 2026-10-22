@@ -1,0 +1,95 @@
+==PROF== Connected to process 1713549 (/work/u1131128/coding-adv1/mfc/build/install/gpu-acc-3b50febf95/bin/simulation)
+ Simulating a case-optimized 200x200x200 case on 1 rank(s) with OpenACC offloading.
+ [  0%] step 1 of 5 (t_step 0) t/step  0.00E+00s (avg  0.00E+00s) ETA 0:00:00
+==WARNING== Unable to access the following 6 metrics: ctc__rx_bytes_data_user.sum, ctc__rx_bytes_data_user.sum.pct_of_peak_sustained_elapsed, ctc__rx_bytes_data_user.sum.per_second, ctc__tx_bytes_data_user.sum, ctc__tx_bytes_data_user.sum.pct_of_peak_sustained_elapsed, ctc__tx_bytes_data_user.sum.per_second.
+
+
+==PROF== Profiling "m_boundary_common_s_populate_bc_direction_151": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_weno_s_pack_weno_input_arr_898": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_weno_s_weno_1096": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_riemann_solver_hllc_s_hllc_riemann_solver_898": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_riemann_state_s_finalize_riemann_solver_1465": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_riemann_state_s_finalize_riemann_solver_1478": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_initialize_cbc_949": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_initialize_cbc_961": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_initialize_cbc_972": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_initialize_cbc_984": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_initialize_cbc_1007": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_variables_conversion_s_convert_primitive_to_flux_variables_1055": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_cbc_560": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_cbc_576": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_cbc_595": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_finalize_cbc_1186": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_finalize_cbc_1197": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_finalize_cbc_1220": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_rhs_s_compute_advection_source_term_1114": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_rhs_s_compute_advection_source_term_s_add_directional_advection_source_terms_1483": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_weno_s_pack_weno_input_arr_898": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_weno_s_weno_1096": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_riemann_solver_hllc_s_hllc_riemann_solver_898": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_riemann_state_s_finalize_riemann_solver_1355": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_riemann_state_s_finalize_riemann_solver_1382": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_initialize_cbc_1023": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_initialize_cbc_1035": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_initialize_cbc_1046": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_initialize_cbc_1058": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_initialize_cbc_1081": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_variables_conversion_s_convert_primitive_to_flux_variables_1055": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_cbc_560": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_cbc_576": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_cbc_595": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_finalize_cbc_1235": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_finalize_cbc_1247": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_finalize_cbc_1270": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_rhs_s_compute_advection_source_term_1190": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_rhs_s_compute_advection_source_term_s_add_directional_advection_source_terms_1562": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_weno_s_pack_weno_input_arr_898": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_weno_s_weno_1096": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_riemann_solver_hllc_s_hllc_riemann_solver_898": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_riemann_state_s_finalize_riemann_solver_1411": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_riemann_state_s_finalize_riemann_solver_1437": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_initialize_cbc_1097": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_initialize_cbc_1109": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_initialize_cbc_1120": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_initialize_cbc_1132": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_initialize_cbc_1155": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_variables_conversion_s_convert_primitive_to_flux_variables_1055": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_cbc_560": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_cbc_576": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_cbc_595": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_finalize_cbc_1286": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_finalize_cbc_1298": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_finalize_cbc_1321": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_rhs_s_compute_advection_source_term_1352": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_rhs_s_compute_advection_source_term_s_add_directional_advection_source_terms_1708": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_time_steppers_s_tvd_rk_489": 0%....50%....100% - 39 passes
+ [ 21%] step 2 of 5 (t_step 1) t/step  2.26E+02s (avg  0.00E+00s) ETA 0:00:00
+==PROF== Profiling "m_rhs_s_compute_rhs_596": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_variables_conversion_s_convert_conservative_to_primitive_variables_496": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_boundary_common_s_populate_bc_direction_151": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_boundary_common_s_populate_bc_direction_151": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_boundary_common_s_populate_bc_direction_151": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_boundary_common_s_populate_bc_direction_151": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_boundary_common_s_populate_bc_direction_151": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_boundary_common_s_populate_bc_direction_151": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_weno_s_pack_weno_input_arr_898": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_weno_s_weno_1096": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_riemann_solver_hllc_s_hllc_riemann_solver_898": 0%....50%....100% - 39 passes
+ [ 41%] step 3 of 5 (t_step 2) t/step  5.03E+01s (avg  0.00E+00s) ETA 0:00:00
+ [ 61%] step 4 of 5 (t_step 3) t/step  8.86E-02s (avg  8.86E-02s) ETA 0:00:00
+ Performance:   0.4590500000000000      ns/gp/eq/rhs
+==PROF== Disconnected from process 1713549
+==WARNING== Failed to import the following source files:
+==WARNING==  default
+==PROF== Report: /work/u1131128/coding-adv1/runs/prof/ncu_caseopt_1g/ncu_rank0.ncu-rep
+Traceback (most recent call last):
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap>", line 1176, in exec_module
+  File "<frozen site>", line 635, in <module>
+  File "<frozen site>", line 621, in main
+  File "<frozen site>", line 364, in addusersitepackages
+  File "<frozen site>", line 247, in addsitedir
+  File "<frozen site>", line 190, in addpackage
+LookupError: unknown encoding: utf-8-sig

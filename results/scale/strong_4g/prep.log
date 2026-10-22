@@ -1,0 +1,147 @@
+mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn069 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 1
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | --targets pre_process and simulation
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Acquiring /work/u1131128/coding-adv1/runs/scale/strong_4g/case.py...
+ Acquiring /work/u1131128/coding-adv1/runs/scale/strong_4g/case.py...
+ Build | syscheck, syscheck, pre_process, and simulation | Case Optimized: /work/u1131128/coding-adv1/runs/scale/strong_4g/case.py
+
+
+ Run
+   Using queue system Interactive.
+   Using baked-in template for default.
+   Generating input files for syscheck...
+     Generating syscheck.inp:
+       INFO: Forwarded 0/91 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
+   Generating input files for pre_process...
+     Generating pre_process.inp:
+       INFO: Forwarded 73/91 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
+   Generating input files for simulation...
+     Generating simulation.inp:
+       INFO: Forwarded 36/91 parameters.
+    
+     Generating case.fpp.
+       Case optimization is enabled.
+       Writing a (new) custom case.fpp file.
++-----------------------------------------------------------------------------------------------------------+ 
+| MFC case # MFC @ /work/u1131128/coding-adv1/runs/scale/strong_4g/case.py:                                 |
++-----------------------------------------------------------------------------------------------------------+ 
+| * Start-time     09:25:28                            * Start-date     09:25:28                            |
+| * Partition      N/A                                 * Walltime       01:00:00                            |
+| * Account        N/A                                 * Nodes          1                                   |
+| * Job Name       MFC                                 * Engine         interactive                         |
+| * QoS            N/A                                 * Binary         mpirun                              |
+| * Queue System   Interactive                         * Email          N/A                                 |
++-----------------------------------------------------------------------------------------------------------+ 
+
+mfc: WARNING > This is the default template.
+mfc: WARNING > It is not intended to support all systems and execution engines.
+mfc: WARNING > Consider using a different template via the --computer option if you encounter problems.
+mfc: OK > :) Selected MPI launcher mpirun. Use --binary to override.
+mfc: OK > :) Running syscheck:
+
++ mpirun -np 4 /work/u1131128/coding-adv1/mfc/build/install/gpu-acc-869e78ff84/bin/syscheck
+ [TEST] MPI: call mpi_init(ierr)
+ [TEST] MPI: call mpi_init(ierr)
+ [TEST] MPI: call mpi_init(ierr)
+ [TEST] MPI: call mpi_init(ierr)
+ [TEST] MPI: call mpi_comm_rank(MPI_COMM_WORLD, rank, ierr)
+ [TEST] MPI: call mpi_barrier(MPI_COMM_WORLD, ierr)
+ [TEST] MPI: call mpi_comm_rank(MPI_COMM_WORLD, rank, ierr)
+ [TEST] MPI: call mpi_comm_rank(MPI_COMM_WORLD, rank, ierr)
+ [TEST] MPI: call mpi_comm_rank(MPI_COMM_WORLD, rank, ierr)
+ [TEST] MPI: call assert(rank >= 0)
+ [TEST] MPI: call mpi_comm_size(MPI_COMM_WORLD, nRanks, ierr)
+ [TEST] MPI: call assert(nRanks > 0 .and. rank < nRanks)
+ [TEST] ACC: devtype = acc_get_device_type()
+ [TEST] ACC: num_devices = acc_get_num_devices(devtype)
+ [TEST] ACC: call assert(num_devices > 0)
+ [TEST] ACC: call acc_set_device_num(mod(rank, num_devices), devtype)
+ [TEST] ACC: allocate(arr(1:N))
+ [TEST] ACC: !$acc enter data create(arr(1:N))
+ [TEST] ACC: !$acc parallel loop
+ [TEST] ACC: !$acc update host(arr(1:N))
+ [TEST] ACC: call assert(nint(sum(arr)) == N*(N + 1)/2)
+ [TEST] ACC: !$acc exit data delete(arr)
+ [SKIP] OMP: num_devices = omp_get_num_devices()
+ [SKIP] OMP: call assert(num_devices > 0)
+ [SKIP] OMP: call omp_set_default_device(mod(rank, num_devices))
+ [SKIP] OMP: allocate(arr(1:N))
+ [SKIP] OMP: !$omp target enter data map(alloc: arr(1:N))
+ [SKIP] OMP: !$omp target teams distribute parallel do
+ [SKIP] OMP: !$omp target update from(arr(1:N))
+ [SKIP] OMP: call assert(nint(sum(arr)) == N*(N + 1)/2)
+ [SKIP] OMP: !$omp target exit data map(delete: arr(1:N))
+ [TEST] MPI: call mpi_barrier(MPI_COMM_WORLD, ierr)
+ [TEST] MPI: call mpi_finalize(ierr)
+ 
+ Syscheck: PASSED.
+
+mfc: OK > :) Running pre_process:
+
++ mpirun -np 4 /work/u1131128/coding-adv1/mfc/build/install/gpu-acc-7d1e32e277/bin/pre_process
+ Pre-processing a 200x200x200 case on 4 rank(s)
+[25a-hgpn069:1227311:0:1227311] Caught signal 11 (Segmentation fault: address not mapped to object at address 0x30)
+==== backtrace (tid:1227311) ====
+ 0 0x000000000003ebf0 __GI___sigaction()  :0
+ 1 0x0000000000049de1 opal_obj_run_destructors()  /proj/scratch/qa/library_builds/Linux_x86_64/rel_nv_lib_hpcx_cuda13_x86_64/work/rebuild_ompi/ompi/build/ompi/../../opal/class/opal_object.h:481
+ 2 0x0000000000049de1 ompi_file_close()  /proj/scratch/qa/library_builds/Linux_x86_64/rel_nv_lib_hpcx_cuda13_x86_64/work/rebuild_ompi/ompi/build/ompi/../../ompi/file/file.c:153
+ 3 0x000000000006ef36 PMPI_File_close()  /proj/scratch/qa/library_builds/Linux_x86_64/rel_nv_lib_hpcx_cuda13_x86_64/work/rebuild_ompi/ompi/build/ompi/mpi/c/profile/pfile_close.c:60
+ 4 0x0000000000046cf2 ompi_file_close_f()  /proj/scratch/qa/library_builds/Linux_x86_64/rel_nv_lib_hpcx_cuda13_x86_64/work/rebuild_ompi/ompi/build/ompi/mpi/fortran/mpif-h/profile/pfile_close_f.c:76
+ 5 0x0000000000420a70 m_grid_s_generate_parallel_grid_()  /work/u1131128/coding-adv1/mfc/src/pre_process/m_grid.f90:261
+ 6 0x00000000005016f7 m_start_up_s_read_grid_()  /work/u1131128/coding-adv1/mfc/src/pre_process/m_start_up.fpp:516
+ 7 0x0000000000420ed0 MAIN_()  /work/u1131128/coding-adv1/mfc/src/pre_process/p_main.f90:25
+ 8 0x0000000000404bb1 main()  ???:0
+ 9 0x00000000000295d0 __libc_start_call_main()  ???:0
+10 0x0000000000029680 __libc_start_main_alias_2()  :0
+11 0x0000000000404aa5 _start()  ???:0
+=================================
+[25a-hgpn069:1227311] *** Process received signal ***
+[25a-hgpn069:1227311] Signal: Segmentation fault (11)
+[25a-hgpn069:1227311] Signal code:  (-6)
+[25a-hgpn069:1227311] Failing at address: 0x979a0012ba2f
+[25a-hgpn069:1227311] [ 0] /lib64/libc.so.6(+0x3ebf0)[0x145dba23ebf0]
+[25a-hgpn069:1227311] [ 1] /work/envstack/apps/nvhpc/26.3/Linux_x86_64/26.3/comm_libs/13.1/hpcx/hpcx-2.25.1/ompi/lib/libmpi.so.40(ompi_file_close+0x11)[0x145dc0e3ede1]
+[25a-hgpn069:1227311] [ 2] /work/envstack/apps/nvhpc/26.3/Linux_x86_64/26.3/comm_libs/13.1/hpcx/hpcx-2.25.1/ompi/lib/libmpi.so.40(PMPI_File_close+0x16)[0x145dc0e63f36]
+[25a-hgpn069:1227311] [ 3] /work/envstack/apps/nvhpc/26.3/Linux_x86_64/26.3/comm_libs/13.1/hpcx/hpcx-2.25.1/ompi/lib/libmpi_mpifh.so.40(PMPI_FILE_CLOSE+0x22)[0x145dc1176cf2]
+[25a-hgpn069:1227311] [ 4] /work/u1131128/coding-adv1/mfc/build/install/gpu-acc-7d1e32e277/bin/pre_process[0x420a70]
+[25a-hgpn069:1227311] [ 5] /work/u1131128/coding-adv1/mfc/build/install/gpu-acc-7d1e32e277/bin/pre_process[0x5016f7]
+[25a-hgpn069:1227311] [ 6] /work/u1131128/coding-adv1/mfc/build/install/gpu-acc-7d1e32e277/bin/pre_process[0x420ed0]
+[25a-hgpn069:1227311] [ 7] /work/u1131128/coding-adv1/mfc/build/install/gpu-acc-7d1e32e277/bin/pre_process[0x404bb1]
+[25a-hgpn069:1227311] [ 8] /lib64/libc.so.6(+0x295d0)[0x145dba2295d0]
+[25a-hgpn069:1227311] [ 9] /lib64/libc.so.6(__libc_start_main+0x80)[0x145dba229680]
+[25a-hgpn069:1227311] [10] /work/u1131128/coding-adv1/mfc/build/install/gpu-acc-7d1e32e277/bin/pre_process[0x404aa5]
+[25a-hgpn069:1227311] *** End of error message ***
+--------------------------------------------------------------------------
+Primary job  terminated normally, but 1 process returned
+a non-zero exit code. Per user-direction, the job has been aborted.
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+mpirun noticed that process rank 0 with PID 1227311 on node 25a-hgpn069 exited on signal 11 (Segmentation fault).
+--------------------------------------------------------------------------
+
+mfc: ERROR > :( /work/u1131128/coding-adv1/mfc/build/install/gpu-acc-7d1e32e277/bin/pre_process failed with exit code 139.
+
+ 
+
+Error: Submitting batch file for Interactive failed. It can be found here: /work/u1131128/coding-adv1/runs/scale/strong_4g/MFC.sh. Please check the file for errors.
+
+Terminated
+
+mfc: ERROR > main.py finished with a 143 exit code.
+mfc: (venv) Exiting the Python virtual environment.
