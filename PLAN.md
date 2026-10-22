@@ -15,6 +15,11 @@
 ## The one-line task
 Make MFC as fast as possible on NCHC nano4 H200 under SC26 SCC rules, prove it is still correct, and explain why it runs at the speed it does.
 
+## Status (2026-10-22)
+- Steps 1 (setup), 3 (baseline + scaling) and profiling: **done** — `docs/profiling-baseline.md`.
+- Harness exists (run/profile/osu sbatch, nsys/ncu summarizers, bitwise state compare); `./mfc.sh test` run still to do.
+- Research done; ranked plan in **`docs/roadmap.md`** (supersedes Steps 4–5 below).
+
 ## Step 0 — pick the app (decision)
 | | MFC @ nano4 | WRF @ F1 |
 |---|---|---|
