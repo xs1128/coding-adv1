@@ -40,7 +40,7 @@ case "${1:?checkout|build|submit|report}" in
       $py harness/verify.py "$l" > /dev/null || true
     done
     $py harness/collect.py | grep -E "^label|^base/(official|v493)"
-    $py harness/nsys_summary.py results/prof/nsys_v570_1g_30 results/prof/nsys_v493_1g_30 2>/dev/null || true
+    for d in nsys_v570_1g_30 nsys_v493_1g_30; do $py harness/nsys_summary.py results/prof/$d --top 8; done
     ;;
   *) echo "unknown step $1" >&2; exit 2 ;;
 esac
