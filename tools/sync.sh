@@ -22,7 +22,7 @@ case "$cmd" in
       echo "describe=$desc"
       echo "pushed_at=$(date -Iseconds)" ) > "$tmp/.provenance"
     rsync -az --delete -e "$SSH" --exclude .git --exclude /.provenance --exclude /reference/ \
-      --exclude /mfc/ --exclude /build/ --exclude /results/ --exclude /runs/ --exclude /logs/ "$repo/" "$host:$remote_dir/"
+      --exclude "/mfc*/" --exclude /build/ --exclude /results/ --exclude /runs/ --exclude /logs/ "$repo/" "$host:$remote_dir/"
     rsync -az -e "$SSH" "$tmp/.provenance" "$host:$remote_dir/.provenance"
     ;;
   pull)
