@@ -27,3 +27,12 @@ for k in $(cuobjdump --dump-resource-usage "$cub" | grep -oE "Function [A-Za-z0-
   echo "$k $ru $mix"
 done
 echo "out: $out"
+# KLINES=<kernel> also prints local/generic memory ops per source line of that kernel
+if [[ -n ${KLINES:-} ]]; then
+  nvdisasm -g "$cub" 2>/dev/null | awk -v K="$KLINES" '
+    /\.section[ \t]+\.text\./ {infn = index($0, "." K ",") > 0}
+    !infn {next}
+    /## File/ {match($0,/line [0-9]+/); ln=substr($0,RSTART+5,RLENGTH-5); f=$0; sub(/.*\//,"",f); sub(/".*/,"",f); next}
+    /\/\*[0-9a-f]+\*\// { op=$0; sub(/.*\*\/[ \t]+/,"",op); sub(/^@!?U?P[0-9T] /,"",op); sub(/[ \t].*/,"",op); sub(/\..*/,"",op);
+       if (op ~ /^(LDL|STL|ST|LD)$/) print f":"ln, op }' | sort | uniq -c | sort -t: -k2n | awk '{printf "%s %s:%s  ", $2, $3, $1} END{print ""}'
+fi
