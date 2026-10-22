@@ -1,0 +1,183 @@
+mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn036 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 2
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | 
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Build | syscheck and pre_process
+
+
+ Build | syscheck and simulation
+
+
+ Build | syscheck and pre_process | Chemistry: h2o2.yaml
+
+
+ Build | syscheck and simulation | Chemistry: h2o2.yaml
+
+
+
+ Test pre_process and simulation | Only 6241177B, B89B8C70, 9E2CA336, 2F35A1FE, and C4EB58A8 (5 tests)
+  
+     Progress      Test Name                                        Time(s)   UUID
+  
+  
+     ✗ FAILED: 1D -> 1 Fluid(s) -> riemann_solver=2 -> model_e...
+       UUID: 2F35A1FE
+       Attempts: 1
+       Error: Test tests/2F35A1FE: 1D -> 1 Fluid(s) -> riemann_solver=2 -> model_eqns=3: Variable n°17 (1-indexed) in D/cons.1.00.000050.dat is not within tolerance:
+  - Candidate:   0.99984678686151
+  - Golden:      0.99984678685829
+  - Error:       abs: 3.22E-12, rel: 3.22E-12
+  - Tolerance:   abs: 1.00E-12, rel: 1.00E-12
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.5.00.000050.dat
+ - Variable n°9
+ - Candidate: 0.0
+ - Golden: 2.50000000096369
+ - Absolute Error: 2.50E+00
+ - Relative Error: 1.00E+00
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.5.00.000050.dat
+ - Variable n°1
+ - Candidate: 0.0
+ - Golden: 2.50000000000032
+ - Relative Error: 1.00E+00
+ - Absolute Error: 2.50E+00
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+  
+     ✗ FAILED: 2D -> Axisymmetric -> model_eqns=3
+       UUID: B89B8C70
+       Attempts: 1
+       Error: Test tests/B89B8C70: 2D -> Axisymmetric -> model_eqns=3: Variable n°5 (1-indexed) in D/cons.6.00.000050.dat is not within tolerance:
+  - Candidate:   0.67265838046649
+  - Golden:      0.5987540425824
+  - Error:       abs: 7.39E-02, rel: 1.23E-01
+  - Tolerance:   abs: 1.00E-11, rel: 1.00E-11
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.8.00.000050.dat
+ - Variable n°121
+ - Candidate: 0.42606169167365
+ - Golden: 2.23941221397569
+ - Absolute Error: 1.81E+00
+ - Relative Error: 8.10E-01
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.9.00.000050.dat
+ - Variable n°34
+ - Candidate: 0.05503756282479
+ - Golden: 0.30932008360285
+ - Relative Error: 8.22E-01
+ - Absolute Error: 2.54E-01
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+  
+     ✗ FAILED: 3D -> 1 Fluid(s) -> riemann_solver=2 -> model_e...
+       UUID: 6241177B
+       Attempts: 1
+       Error: Test tests/6241177B: 3D -> 1 Fluid(s) -> riemann_solver=2 -> model_eqns=3: Variable n°25 (1-indexed) in D/cons.6.00.000050.dat is not within tolerance:
+  - Candidate:   1.00000000000298
+  - Golden:      0.99999999999981
+  - Error:       abs: 3.17E-12, rel: 3.17E-12
+  - Tolerance:   abs: 1.00E-12, rel: 1.00E-12
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.7.00.000050.dat
+ - Variable n°54
+ - Candidate: 0.0
+ - Golden: 1.53296467663035
+ - Absolute Error: 1.53E+00
+ - Relative Error: 1.00E+00
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.7.00.000050.dat
+ - Variable n°21
+ - Candidate: 1.09826909954138
+ - Golden: 0.46011154507893
+ - Relative Error: 1.39E+00
+ - Absolute Error: 6.38E-01
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+  
+     ✗ FAILED: 3D -> Example -> recovering_sphere
+       UUID: 9E2CA336
+       Attempts: 1
+       Error: Test tests/9E2CA336: 3D -> Example -> recovering_sphere: Variable n°6 (1-indexed) in D/cons.10.00.000050.dat is not within tolerance:
+  - Candidate:   2.50000393596863
+  - Golden:      250000.54741773778
+  - Error:       abs: 2.50E+05, rel: 1.00E+00
+  - Tolerance:   abs: 1.00E-03, rel: 1.00E-03
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.10.00.000050.dat
+ - Variable n°2814
+ - Candidate: 2.50103019921865
+ - Golden: 250143.77657722656
+ - Absolute Error: 2.50E+05
+ - Relative Error: 1.00E+00
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.9.00.000050.dat
+ - Variable n°3435
+ - Candidate: 0.10876207850042
+ - Golden: 0.00200087935417
+ - Relative Error: 5.34E+01
+ - Absolute Error: 1.07E-01
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+     (  1/  5)    2D -> Chemistry -> Reacting Mixing Layer             14.47    C4EB58A8
+
+  
+
+╭──────────────────────────────── Test Summary ────────────────────────────────╮
+│                                                                              │
+│  ✗ 4 TESTS FAILED                                                            │
+│                                                                              │
+│       1 passed                                                               │
+│       4 failed                                                               │
+│     755 skipped                                                              │
+│    ────────────                                                              │
+│     760 total                                                                │
+│                                                                              │
+│    Time: 53.1s                                                               │
+│                                                                              │
+│    Failed Tests:                                                             │
+│      • 1D -> 1 Fluid(s) -> riemann_solver=2 ...                              │
+│        UUID: 2F35A1FE                                                        │
+│        (tolerance mismatch)                                                  │
+│      • 2D -> Axisymmetric -> model_eqns=3                                    │
+│        UUID: B89B8C70                                                        │
+│        (tolerance mismatch)                                                  │
+│      • 3D -> 1 Fluid(s) -> riemann_solver=2 ...                              │
+│        UUID: 6241177B                                                        │
+│        (tolerance mismatch)                                                  │
+│      • 3D -> Example -> recovering_sphere                                    │
+│        UUID: 9E2CA336                                                        │
+│        (tolerance mismatch)                                                  │
+│                                                                              │
+│    Next Steps:                                                               │
+│      • Run with --generate to update golden files (if changes are            │
+│  intentional)                                                                │
+│      • Check individual test output in tests/<UUID>/                         │
+│      • Run specific test: ./mfc.sh test --only <UUID>                        │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+
+mfc: ERROR > main.py finished with a 4 exit code.
+mfc: (venv) Exiting the Python virtual environment.

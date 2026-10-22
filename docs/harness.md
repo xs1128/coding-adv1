@@ -10,8 +10,9 @@ in `runs/<LABEL>/` stay on nano4.
 | `harness/submit.sh LABEL CASE NGPU MIN [VAR=..]` | submit `SCRIPT=run` (default) / `profile` / `mfctest` / `osu`; logs `results/jobs.tsv` |
 | `harness/run.sbatch` | timing: prep + REPS reps → `summary.tsv` (wall, grind); +1 NVTX-only nsys rep → `steps.tsv` |
 | `harness/profile.sbatch` | `MODE=nsys` (all ranks) or `MODE=ncu` (rank 0) → CSVs; summarize with `nsys_summary.py` / `ncu_summary.py` |
-| `harness/mfctest.sbatch` | `./mfc.sh test` (all or `TEST_ARGS` subset) → `test_summary.json` |
-| `harness/verify.py LABEL [--test-summary ..]` | **gate**: final state vs `runs/ref/perf3d_201_30` (bitwise / ≤1e-12) + suite with no new failures |
+| `harness/mfctest.sbatch` | `./mfc.sh test --no-build` (all or `TEST_ARGS` subset) → `test_summary.json` |
+| `harness/run_suite.sh TAG [NGPU=2] [SHARDS=4]` | full suite as chained `--from/--to` shards (≤25 min each, never concurrent) |
+| `harness/verify.py LABEL [--test-summary shard..]` | **gate**: final state vs `runs/ref/perf3d_201_30` (bitwise / ≤1e-12) + suite with no new failures |
 | `harness/run_all.sh TAG [GPUS=..] [VAR=..]` | standard set: `TAG/strong_<g>g` (201³) + `TAG/weak_<g>g` (8.12 M cells/GPU) |
 | `harness/collect.py` | one table of all results (grind, wall, median/first step, verify) |
 | `harness/osu.sbatch` | GPU↔GPU MPI latency/bandwidth |
@@ -32,3 +33,12 @@ in `runs/<LABEL>/` stay on nano4.
 2. Any `src/` change must also pass the full `./mfc.sh test` with no failures beyond
    `harness/known_test_failures.txt` (failures of the unmodified pinned build on this machine).
 3. Never edit tolerances, the reference run, or golden files.
+
+## Test-suite procedure
+1. After any change to the MFC checkout, build every test variant on the login node:
+   `cd $MFC_DIR && ./mfc.sh test --dry-run -j 8` (the suite needs `gpu-acc`, `gpu-acc-chem`, ... builds; the
+   sbatch runs with `--no-build`, so a missing variant shows up as a failure, e.g. C4EB58A8 in job 600296).
+2. `harness/run_suite.sh <tag>`: 4 shards × 2 GPUs, ~18 min each, chained with `AFTER=` because all runs share
+   `$MFC_DIR/tests/<UUID>/` (mfctest.sbatch also takes a `flock`).
+3. `harness/verify.py <label> --test-summary results/test/<tag>_s*/test_summary.json`.
+
