@@ -21,7 +21,7 @@ smi() { nvidia-smi --query-gpu=index,name,pci.bus_id,clocks.sm,clocks.mem,power.
   echo "label=$LABEL case=$CASE case_args=$CASE_ARGS ngpu=$NGPU reps=$REPS build=$BUILD"
   echo "mpirun_args=$MPIRUN_ARGS run_env=$RUN_ENV"
   cat "$ROOT/.provenance"
-  echo "cuda=${NVHPC_CUDA_HOME:-bundled} cuda_module=${CUDA_MODULE:-}"
+  echo "nvhpc_module=$NVHPC_MODULE cuda=${NVHPC_CUDA_HOME:-bundled} cuda_module=${CUDA_MODULE:-} opal=$OPAL_PREFIX"
   echo "mfc_dir=$MFC_DIR mfc=$(git -C "$MFC_DIR" describe --always --dirty) $(git -C "$MFC_DIR" rev-parse HEAD)"
   echo "mfc_diff_sha1=$(git -C "$MFC_DIR" diff HEAD -- src toolchain CMakeLists.txt cmake | sha1sum | cut -c1-12)"
   echo "CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-}"

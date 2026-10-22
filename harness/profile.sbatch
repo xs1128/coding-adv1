@@ -20,7 +20,7 @@ cp "$ROOT/$CASE" "$run/case.py"
   echo "label=$LABEL case=$CASE case_args=$CASE_ARGS ngpu=$NGPU build=$BUILD"
   echo "mpirun_args=$MPIRUN_ARGS run_env=$RUN_ENV ncu: skip=$NCU_SKIP count=$NCU_COUNT set=$NCU_SET kernel=$NCU_KERNEL"
   cat "$ROOT/.provenance"
-  echo "cuda=${NVHPC_CUDA_HOME:-bundled} cuda_module=${CUDA_MODULE:-}"
+  echo "nvhpc_module=$NVHPC_MODULE cuda=${NVHPC_CUDA_HOME:-bundled} cuda_module=${CUDA_MODULE:-} opal=$OPAL_PREFIX"
   echo "mfc=$(git -C "$MFC_DIR" describe --always --dirty) $(git -C "$MFC_DIR" rev-parse HEAD)"
   nsys --version; ncu --version | tail -1
   nvidia-smi --query-gpu=index,name,clocks.sm,clocks.mem,power.limit --format=csv
