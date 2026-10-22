@@ -6,7 +6,7 @@
 #   --m M         global m=n=p (upstream: 200 -> 201^3 cells)
 #   --steps S     t_step_stop (= t_step_save, so only the initial and final states are written)
 #   --rdma        rdma_mpi=T: pass device buffers straight to (CUDA-aware) MPI
-#   --no-io       disable the database writes (format/parallel_io kept; prim_vars_wrt off, t_step_save > stop)
+#   --no-io       no primitive-variable output (prim_vars_wrt=F); the final conservative state is still written
 import argparse
 import json
 import math
@@ -141,6 +141,5 @@ if args.rdma:
 
 if args.no_io:
     case["prim_vars_wrt"] = "F"
-    case["t_step_save"] = args.steps + 1
 
 print(json.dumps(case))

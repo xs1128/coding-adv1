@@ -1,0 +1,16 @@
+{
+ "label": "base/v493_samecfg_1g",
+ "ref": "ref/perf3d_201_30",
+ "checks": {
+  "state": {
+   "status": "FAIL",
+   "bitwise": false,
+   "max_rel": 0.0001539909119272374,
+   "l2_rel": 2.669775497600892e-16,
+   "nonfinite": 0,
+   "step": 30,
+   "reason": null
+  }
+ },
+ "status": "FAIL"
+}
