@@ -1,2 +1,2 @@
 index, name, pci.bus_id, clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W], power.limit [W], temperature.gpu, utilization.gpu [%], memory.used [MiB]
-0, NVIDIA H200, 00000000:4B:00.0, 1980 MHz, 3201 MHz, 125.63 W, 700.00 W, 40, 16 %, 0 MiB
+0, NVIDIA H200, 00000000:DA:00.0, 1980 MHz, 3201 MHz, 132.28 W, 700.00 W, 41, 0 %, 0 MiB

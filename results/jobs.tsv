@@ -43,3 +43,6 @@ jobid	submitted	label	ngpu	minutes	vars
 600482	2026-10-22T11:24:54+08:00	base/v493_samecfg_1g	1	10	BUILD=caseopt REPS=5 MFC_DIR=/work/u1131128/coding-adv1/mfc-v4.9.3 AFTER=600481
 600682	2026-10-22T13:02:48+08:00	prof/nsys_v570_1g_30	1	10	SCRIPT=profile MODE=nsys BUILD=caseopt
 600683	2026-10-22T13:02:48+08:00	prof/nsys_v493_1g_30	1	10	SCRIPT=profile MODE=nsys BUILD=caseopt MFC_DIR=/work/u1131128/coding-adv1/mfc-v4.9.3
+601028	2026-10-22T14:31:57+08:00	base/v493_official_1g	1	10	BUILD=caseopt REPS=5 MFC_DIR=/work/u1131128/coding-adv1/mfc-v4.9.3 CUDA_MODULE=cuda/12.6
+601029	2026-10-22T14:31:58+08:00	base/v493_samecfg_1g	1	10	BUILD=caseopt REPS=5 MFC_DIR=/work/u1131128/coding-adv1/mfc-v4.9.3 CUDA_MODULE=cuda/12.6 AFTER=601028
+601030	2026-10-22T14:31:59+08:00	prof/nsys_v493_1g_30	1	10	SCRIPT=profile MODE=nsys BUILD=caseopt MFC_DIR=/work/u1131128/coding-adv1/mfc-v4.9.3 CUDA_MODULE=cuda/12.6 AFTER=601029

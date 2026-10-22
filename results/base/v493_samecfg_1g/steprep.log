@@ -30,8 +30,8 @@ Collecting data...
  [ 88%]  Time step       28 of 31 @ t_step = 27
  [ 91%]  Time step       29 of 31 @ t_step = 28
  [ 94%]  Time step       30 of 31 @ t_step = 29
- Performance:    0.4516351159438870       ns/gp/eq/rhs
-Generating '/dev/shm/u1131128_600482/nsys-report-0811.qdstrm'
-[1/1] [0%                          ] steps_rank0.nsys-rep[1/1] [0%                          ] steps_rank0.nsys-rep[1/1] [====27%                     ] steps_rank0.nsys-rep[1/1] [==========48%               ] steps_rank0.nsys-rep[1/1] [================68%         ] steps_rank0.nsys-rep[1/1] [================69%         ] steps_rank0.nsys-rep[1/1] [================70%         ] steps_rank0.nsys-rep[1/1] [================71%         ] steps_rank0.nsys-rep[1/1] [=================72%        ] steps_rank0.nsys-rep[1/1] [========================100%] steps_rank0.nsys-rep[1/1] [========================100%] steps_rank0.nsys-rep
+ Performance:    0.4509658688160184       ns/gp/eq/rhs
+Generating '/dev/shm/u1131128_601029/nsys-report-08a1.qdstrm'
+[1/1] [0%                          ] steps_rank0.nsys-rep[1/1] [0%                          ] steps_rank0.nsys-rep[1/1] [=====29%                    ] steps_rank0.nsys-rep[1/1] [========41%                 ] steps_rank0.nsys-rep[1/1] [==============61%           ] steps_rank0.nsys-rep[1/1] [===================82%      ] steps_rank0.nsys-rep[1/1] [====================83%     ] steps_rank0.nsys-rep[1/1] [====================84%     ] steps_rank0.nsys-rep[1/1] [========================100%] steps_rank0.nsys-rep[1/1] [========================100%] steps_rank0.nsys-rep
 Generated:
-	/work/u1131128/coding-adv1/runs/base/v493_samecfg_1g/steps_rank0.nsys-rep
+    /work/u1131128/coding-adv1/runs/base/v493_samecfg_1g/steps_rank0.nsys-rep

@@ -1,6 +1,6 @@
 mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.8).
 
-      .=++*:          -+*+=.        | u1131128@25a-hgpn033 [Linux]
+      .=++*:          -+*+=.        | u1131128@25a-hgpn024 [Linux]
      :+   -*-        ==   =* .      | ----------------------------
    :*+      ==      ++    .+-       | 
   :*##-.....:*+   .#%+++=--+=:::.   | --jobs 1
@@ -38,7 +38,7 @@ mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.8).
 +-----------------------------------------------------------------------------------------------------------+ 
 | MFC case # MFC @ /work/u1131128/coding-adv1/runs/base/v493_samecfg_1g/case.py:                            |
 +-----------------------------------------------------------------------------------------------------------+ 
-| * Start-time     11:26:27                            * Start-date     11:26:27                            |
+| * Start-time     14:33:30                            * Start-date     14:33:30                            |
 | * Partition      N/A                                 * Walltime       01:00:00                            |
 | * Account        N/A                                 * Nodes          1                                   |
 | * Job Name       MFC                                 * Engine         interactive                         |
@@ -79,7 +79,7 @@ mfc: OK > :) Running pre_process:
  Pre-processing a 200x200x200 case on 1 rank(s)
  Processing patch            1
  Processing patch            2
- Elapsed Time    5.014539957046509     
+ Elapsed Time    5.144105911254883     
 
 mfc: OK > :) Running simulation:
 
@@ -115,12 +115,12 @@ mfc: OK > :) Running simulation:
  [ 88%]  Time step       28 of 31 @ t_step = 27
  [ 91%]  Time step       29 of 31 @ t_step = 28
  [ 94%]  Time step       30 of 31 @ t_step = 29
- Performance:    0.4519375409622165       ns/gp/eq/rhs
+ Performance:    0.4501628214019862       ns/gp/eq/rhs
 
 +-----------------------------------------------------------------------------------------------------------+ 
 | Finished MFC:                                                                                             |
-| * Total-time:    20s                                 * Exit Code:     0                                   |
-| * End-time:      11:26:47                            * End-date:      11:26:47                            |
+| * Total-time:    22s                                 * Exit Code:     0                                   |
+| * End-time:      14:33:52                            * End-date:      14:33:52                            |
 +-----------------------------------------------------------------------------------------------------------+ 
 
 mfc: (venv) Exiting the Python virtual environment.
