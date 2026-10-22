@@ -1,0 +1,10 @@
+Collecting data...
+ Simulating a case-optimized 200x200x200 case on 1 rank(s) with OpenACC offloading.
+ [  0%] step 1 of 4 (t_step 0) t/step  0.00E+00s (avg  0.00E+00s) ETA 0:00:00
+ [ 25%] step 2 of 4 (t_step 1) t/step  8.39E-02s (avg  0.00E+00s) ETA 0:00:00
+ [ 50%] step 3 of 4 (t_step 2) t/step  7.89E-02s (avg  0.00E+00s) ETA 0:00:00
+ Performance:   0.4073468750000000      ns/gp/eq/rhs
+Generating '/dev/shm/u1131128_601153/nsys-report-869f.qdstrm'
+[1/1] [0%                          ] nsys_rank0.nsys-rep[1/1] [0%                          ] nsys_rank0.nsys-rep[1/1] [=====29%                    ] nsys_rank0.nsys-rep[1/1] [========42%                 ] nsys_rank0.nsys-rep[1/1] [==========48%               ] nsys_rank0.nsys-rep[1/1] [============55%             ] nsys_rank0.nsys-rep[1/1] [============56%             ] nsys_rank0.nsys-rep[1/1] [============57%             ] nsys_rank0.nsys-rep[1/1] [========================100%] nsys_rank0.nsys-rep[1/1] [========================100%] nsys_rank0.nsys-rep
+Generated:
+	/work/u1131128/coding-adv1/runs/p1/trace_1g_s3/nsys_rank0.nsys-rep

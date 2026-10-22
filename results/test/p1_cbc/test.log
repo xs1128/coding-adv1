@@ -1,0 +1,68 @@
+mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn040 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 2
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | 
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Build | syscheck and pre_process
+
+
+ Build | syscheck and simulation
+
+
+
+ Test pre_process and simulation | Only 3AE495F4, 5EC236F2, 48CCE072, AED93D34, C5B79059, 727F72ED, A60691E7, 3FC6FC4A, A6846AD4, A6E65782, 4129A23A, E84967E7, 5F877BC9, 16C03D8E, B96AC58F, 8FDEE23A, BF46F657, E09A12D9, 5010B814, 730DFD6D, ABAC3AE3, C93BE9B5, D0045756, 557FF170, and 61FFF3D3 (25 tests)
+  
+     Progress      Test Name                                        Time(s)   UUID
+  
+     (  1/ 25)    1D -> bc=-6                                          24.90    5EC236F2
+     (  2/ 25)    1D -> bc=-5                                          25.21    3AE495F4
+     (  3/ 25)    1D -> bc=-8                                          19.85    AED93D34
+     (  4/ 25)    1D -> bc=-7                                          20.16    48CCE072
+     (  5/ 25)    1D -> bc=-10                                         16.20    727F72ED
+     (  6/ 25)    1D -> bc=-9                                          17.34    C5B79059
+     (  7/ 25)    1D -> bc=-12                                         17.56    3FC6FC4A
+     (  8/ 25)    1D -> bc=-11                                         19.13    A60691E7
+     (  9/ 25)    2D -> bc=-5                                          19.22    A6E65782
+     ( 10/ 25)    1D -> 2 Fluid(s) -> eos=mie_gruneisen -> bc=-5       19.73    A6846AD4
+     ( 11/ 25)    2D -> bc=-6                                          19.13    4129A23A
+     ( 12/ 25)    2D -> bc=-7                                          19.08    E84967E7
+     ( 13/ 25)    2D -> bc=-8                                          21.77    5F877BC9
+     ( 14/ 25)    2D -> bc=-9                                          21.72    16C03D8E
+     ( 15/ 25)    2D -> bc=-11                                         20.47    8FDEE23A
+     ( 16/ 25)    2D -> bc=-10                                         20.52    B96AC58F
+     ( 17/ 25)    2D -> bc=-12                                         22.82    BF46F657
+     ( 18/ 25)    3D -> bc=-5                                          23.21    E09A12D9
+     ( 19/ 25)    3D -> bc=-7                                          42.17    730DFD6D
+     ( 20/ 25)    3D -> bc=-6                                          42.61    5010B814
+     ( 21/ 25)    3D -> bc=-8                                          19.10    ABAC3AE3
+     ( 22/ 25)    3D -> bc=-9                                          19.93    C93BE9B5
+     ( 23/ 25)    3D -> bc=-10                                         18.58    D0045756
+     ( 24/ 25)    3D -> bc=-11                                         18.57    557FF170
+     ( 25/ 25)    3D -> bc=-12                                         19.10    61FFF3D3
+
+  
+
+╭──────────────────────────────── Test Summary ────────────────────────────────╮
+│                                                                              │
+│  ✓ ALL TESTS PASSED                                                          │
+│                                                                              │
+│      25 passed                                                               │
+│       0 failed                                                               │
+│     735 skipped                                                              │
+│    ────────────                                                              │
+│     760 total                                                                │
+│                                                                              │
+│    Time: 4m 44.6s                                                            │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+
+mfc: (venv) Exiting the Python virtual environment.

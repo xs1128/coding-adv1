@@ -1,0 +1,16 @@
+{
+ "label": "t0/nvhpc259_1g",
+ "ref": "ref/perf3d_201_30",
+ "checks": {
+  "state": {
+   "status": "FAIL",
+   "bitwise": false,
+   "max_rel": 6.275740967102082e-08,
+   "l2_rel": 3.665270527221781e-18,
+   "nonfinite": 0,
+   "step": 30,
+   "reason": null
+  }
+ },
+ "status": "FAIL"
+}

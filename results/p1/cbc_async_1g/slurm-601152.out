@@ -1,0 +1,12 @@
+/var/spool/slurmd/job601152/slurm_script: fork: retry: Resource temporarily unavailable
+/var/spool/slurmd/job601152/slurm_script: fork: retry: Resource temporarily unavailable
+/var/spool/slurmd/job601152/slurm_script: fork: retry: Resource temporarily unavailable
+rep	wall_s	grind_ns
+1	19.240	0.3932687500000000
+2	8.996	0.3948140625000000
+3	16.394	0.3935312500000000
+4	9.416	0.3934984375000000
+5	9.228	0.3932828125000000
+rank	steps	first_ms	step_med_ms	step_min_ms	step_max_ms	rhs_med_ms	comm_med_ms
+0	30	80.969	75.978	75.921	77.244	24.227	0.319
+all	30	80.969	75.978	75.921	77.244	24.227	0.319
