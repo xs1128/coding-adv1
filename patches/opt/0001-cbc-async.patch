@@ -1,0 +1,393 @@
+From d002e203a76e8a92ec48c47c6466eb98bcc1308b Mon Sep 17 00:00:00 2001
+From: u1131128 <hipac1@lsalab.cs.nthu.edu.tw>
+Date: Thu, 22 Oct 2026 14:57:11 +0800
+Subject: [PATCH] CBC: queue the per-face kernels and scalar updates async, one
+ wait per s_cbc call
+
+Each s_cbc call issued ~12 small kernels and 5 scalar updates, each followed by a blocking
+stream synchronize (~230 us of host round trips per call on H200). The work is GPU-to-GPU
+only, so it now goes on the OpenACC async queue with a wait before the synchronous
+primitive-to-flux conversion and one at the end of s_cbc. OpenMP path unchanged.
+---
+ src/simulation/m_cbc.fpp | 94 +++++++++++++++++++++-------------------
+ 1 file changed, 50 insertions(+), 44 deletions(-)
+
+diff --git a/src/simulation/m_cbc.fpp b/src/simulation/m_cbc.fpp
+index f730a49..c96e7a7 100644
+--- a/src/simulation/m_cbc.fpp
++++ b/src/simulation/m_cbc.fpp
+@@ -456,7 +456,7 @@ contains
+             end if
+         end if
+ 
+-        $:GPU_UPDATE(device='[ds]')
++        $:GPU_UPDATE(device='[ds]', extraAccArgs='async')
+ 
+     end subroutine s_associate_cbc_coefficients_pointers
+ 
+@@ -516,7 +516,7 @@ contains
+         cbc_dir = cbc_dir_norm
+         cbc_loc = cbc_loc_norm
+ 
+-        $:GPU_UPDATE(device='[cbc_dir, cbc_loc]')
++        $:GPU_UPDATE(device='[cbc_dir, cbc_loc]', extraAccArgs='async')
+ 
+         call s_initialize_cbc(q_prim_vf, flux_vf, flux_src_vf, ix, iy, iz)
+ 
+@@ -526,10 +526,12 @@ contains
+             if (cbc_dir == ${CBC_DIR}$ .and. recon_type == recon_type_weno) then
+                 ! PI2 of flux_rs_vf and flux_src_rs_vf at j = 1/2
+                 if (weno_order == 3) then
++                    ! s_convert_primitive_to_flux_variables runs on the synchronous queue
++                    $:GPU_WAIT()
+                     call s_convert_primitive_to_flux_variables(q_prim_rs${XYZ}$_vf, F_rs${XYZ}$_vf, F_src_rs${XYZ}$_vf, is1, is2, &
+                         & is3, idwbuff(2)%beg, idwbuff(3)%beg, dir_idx, dir_flg, hll_u_interface)
+ 
+-                    $:GPU_PARALLEL_LOOP(private='[i, r, k]', collapse=3)
++                    $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[i, r, k]', collapse=3)
+                     do i = 1, flux_cbc_index
+                         do r = is3%beg, is3%end
+                             do k = is2%beg, is2%end
+@@ -540,7 +542,7 @@ contains
+                     end do
+                     $:END_GPU_PARALLEL_LOOP()
+ 
+-                    $:GPU_PARALLEL_LOOP(private='[i, r, k]', collapse=3)
++                    $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[i, r, k]', collapse=3)
+                     do i = eqn_idx%adv%beg, eqn_idx%adv%end
+                         do r = is3%beg, is3%end
+                             do k = is2%beg, is2%end
+@@ -554,10 +556,12 @@ contains
+ 
+                 ! PI4 of flux_rs_vf and flux_src_rs_vf at j = 1/2, 3/2
+                 if (weno_order == 5) then
++                    ! s_convert_primitive_to_flux_variables runs on the synchronous queue
++                    $:GPU_WAIT()
+                     call s_convert_primitive_to_flux_variables(q_prim_rs${XYZ}$_vf, F_rs${XYZ}$_vf, F_src_rs${XYZ}$_vf, is1, is2, &
+                         & is3, idwbuff(2)%beg, idwbuff(3)%beg, dir_idx, dir_flg, hll_u_interface)
+ 
+-                    $:GPU_PARALLEL_LOOP(private='[i, j, r, k]', collapse=4)
++                    $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[i, j, r, k]', collapse=4)
+                     do i = 1, flux_cbc_index
+                         do j = 0, 1
+                             do r = is3%beg, is3%end
+@@ -573,7 +577,7 @@ contains
+                     end do
+                     $:END_GPU_PARALLEL_LOOP()
+ 
+-                    $:GPU_PARALLEL_LOOP(private='[i, j, r, k]', collapse=4)
++                    $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[i, j, r, k]', collapse=4)
+                     do i = eqn_idx%adv%beg, eqn_idx%adv%end
+                         do j = 0, 1
+                             do r = is3%beg, is3%end
+@@ -592,11 +596,11 @@ contains
+                 end if
+ 
+                 ! FD2 or FD4 of RHS at j = 0
+-                $:GPU_PARALLEL_LOOP(collapse=2, private='[r, k, alpha_rho, vel, adv_local, mf, dvel_ds, dadv_ds, Re_cbc, &
+-                                    & dalpha_rho_ds, dpres_ds, dvel_dt, dadv_dt, dalpha_rho_dt, L, lambda, Ys, dYs_dt, dYs_ds, &
+-                                    & h_k, Cp_i, Gamma_i, Xs, drho_dt, dpres_dt, dpi_inf_dt, dqv_dt, dgamma_dt, rho, pres, E, &
+-                                    & gamma, pi_inf, qv, c, Ma, T, sum_Enthalpies, Cv, Cp, e_mix, Mw, R_gas, vel_K_sum, &
+-                                    & vel_dv_dt_sum, i, j]', copyin='[dir_idx]')
++                $:GPU_PARALLEL_LOOP(extraAccArgs='async', collapse=2, private='[r, k, alpha_rho, vel, adv_local, mf, dvel_ds, &
++                                    & dadv_ds, Re_cbc, dalpha_rho_ds, dpres_ds, dvel_dt, dadv_dt, dalpha_rho_dt, L, lambda, Ys, &
++                                    & dYs_dt, dYs_ds, h_k, Cp_i, Gamma_i, Xs, drho_dt, dpres_dt, dpi_inf_dt, dqv_dt, dgamma_dt, &
++                                    & rho, pres, E, gamma, pi_inf, qv, c, Ma, T, sum_Enthalpies, Cv, Cp, e_mix, Mw, R_gas, &
++                                    & vel_K_sum, vel_dv_dt_sum, i, j]', copyin='[dir_idx]')
+                 do r = is3%beg, is3%end
+                     do k = is2%beg, is2%end
+                         ! Transferring the Primitive Variables
+@@ -913,6 +917,8 @@ contains
+         ! The reshaping of outputted data and disssociation of the FD and PI coefficients, or CBC coefficients, respectively, based
+         ! on selected CBC coordinate direction.
+         call s_finalize_cbc(flux_vf, flux_src_vf)
++        ! CBC kernels and updates above are queued async; flux_vf is read next by m_rhs
++        $:GPU_WAIT()
+ 
+     end subroutine s_cbc
+ 
+@@ -941,12 +947,12 @@ contains
+         end if
+ 
+         dj = max(0, cbc_loc)
+-        $:GPU_UPDATE(device='[is1, is2, is3, dj]')
+-        $:GPU_UPDATE(device='[dir_idx, dir_flg]')
++        $:GPU_UPDATE(device='[is1, is2, is3, dj]', extraAccArgs='async')
++        $:GPU_UPDATE(device='[dir_idx, dir_flg]', extraAccArgs='async')
+ 
+         ! Reshaping Inputted Data in x-direction
+         if (cbc_dir == 1) then
+-            $:GPU_PARALLEL_LOOP(private='[i, j, k, r]', collapse=4)
++            $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[i, j, k, r]', collapse=4)
+             do i = 1, sys_size
+                 do r = is3%beg, is3%end
+                     do k = is2%beg, is2%end
+@@ -958,7 +964,7 @@ contains
+             end do
+             $:END_GPU_PARALLEL_LOOP()
+ 
+-            $:GPU_PARALLEL_LOOP(private='[j, k, r]', collapse=3)
++            $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[j, k, r]', collapse=3)
+             do r = is3%beg, is3%end
+                 do k = is2%beg, is2%end
+                     do j = 0, buff_size
+@@ -969,7 +975,7 @@ contains
+             end do
+             $:END_GPU_PARALLEL_LOOP()
+ 
+-            $:GPU_PARALLEL_LOOP(private='[i, j, k, r]', collapse=4)
++            $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[i, j, k, r]', collapse=4)
+             do i = 1, flux_cbc_index
+                 do r = is3%beg, is3%end
+                     do k = is2%beg, is2%end
+@@ -981,7 +987,7 @@ contains
+             end do
+             $:END_GPU_PARALLEL_LOOP()
+ 
+-            $:GPU_PARALLEL_LOOP(private='[j, k, r]', collapse=3)
++            $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[j, k, r]', collapse=3)
+             do r = is3%beg, is3%end
+                 do k = is2%beg, is2%end
+                     do j = -1, buff_size
+@@ -992,7 +998,7 @@ contains
+             $:END_GPU_PARALLEL_LOOP()
+ 
+             if (riemann_solver == riemann_solver_hll .and. .not. hll_u_interface) then
+-                $:GPU_PARALLEL_LOOP(private='[i, j, k, r]', collapse=4)
++                $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[i, j, k, r]', collapse=4)
+                 do i = eqn_idx%adv%beg, eqn_idx%adv%end
+                     do r = is3%beg, is3%end
+                         do k = is2%beg, is2%end
+@@ -1004,7 +1010,7 @@ contains
+                 end do
+                 $:END_GPU_PARALLEL_LOOP()
+             else
+-                $:GPU_PARALLEL_LOOP(private='[j, k, r]', collapse=3)
++                $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[j, k, r]', collapse=3)
+                 do r = is3%beg, is3%end
+                     do k = is2%beg, is2%end
+                         do j = -1, buff_size
+@@ -1020,7 +1026,7 @@ contains
+ 
+             ! Reshaping Inputted Data in y-direction
+         else if (cbc_dir == 2) then
+-            $:GPU_PARALLEL_LOOP(private='[i, j, k, r]', collapse=4)
++            $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[i, j, k, r]', collapse=4)
+             do i = 1, sys_size
+                 do r = is3%beg, is3%end
+                     do k = is2%beg, is2%end
+@@ -1032,7 +1038,7 @@ contains
+             end do
+             $:END_GPU_PARALLEL_LOOP()
+ 
+-            $:GPU_PARALLEL_LOOP(private='[j, k, r]', collapse=3)
++            $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[j, k, r]', collapse=3)
+             do r = is3%beg, is3%end
+                 do k = is2%beg, is2%end
+                     do j = 0, buff_size
+@@ -1043,7 +1049,7 @@ contains
+             end do
+             $:END_GPU_PARALLEL_LOOP()
+ 
+-            $:GPU_PARALLEL_LOOP(private='[i, j, k, r]', collapse=4)
++            $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[i, j, k, r]', collapse=4)
+             do i = 1, flux_cbc_index
+                 do r = is3%beg, is3%end
+                     do k = is2%beg, is2%end
+@@ -1055,7 +1061,7 @@ contains
+             end do
+             $:END_GPU_PARALLEL_LOOP()
+ 
+-            $:GPU_PARALLEL_LOOP(private='[j, k, r]', collapse=3)
++            $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[j, k, r]', collapse=3)
+             do r = is3%beg, is3%end
+                 do k = is2%beg, is2%end
+                     do j = -1, buff_size
+@@ -1066,7 +1072,7 @@ contains
+             $:END_GPU_PARALLEL_LOOP()
+ 
+             if (riemann_solver == riemann_solver_hll .and. .not. hll_u_interface) then
+-                $:GPU_PARALLEL_LOOP(private='[i, j, k, r]', collapse=4)
++                $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[i, j, k, r]', collapse=4)
+                 do i = eqn_idx%adv%beg, eqn_idx%adv%end
+                     do r = is3%beg, is3%end
+                         do k = is2%beg, is2%end
+@@ -1078,7 +1084,7 @@ contains
+                 end do
+                 $:END_GPU_PARALLEL_LOOP()
+             else
+-                $:GPU_PARALLEL_LOOP(private='[j, k, r]', collapse=3)
++                $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[j, k, r]', collapse=3)
+                 do r = is3%beg, is3%end
+                     do k = is2%beg, is2%end
+                         do j = -1, buff_size
+@@ -1094,7 +1100,7 @@ contains
+ 
+             ! Reshaping Inputted Data in z-direction
+         else
+-            $:GPU_PARALLEL_LOOP(private='[i, j, k, r]', collapse=4)
++            $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[i, j, k, r]', collapse=4)
+             do i = 1, sys_size
+                 do r = is3%beg, is3%end
+                     do k = is2%beg, is2%end
+@@ -1106,7 +1112,7 @@ contains
+             end do
+             $:END_GPU_PARALLEL_LOOP()
+ 
+-            $:GPU_PARALLEL_LOOP(private='[j, k, r]', collapse=3)
++            $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[j, k, r]', collapse=3)
+             do r = is3%beg, is3%end
+                 do k = is2%beg, is2%end
+                     do j = 0, buff_size
+@@ -1117,7 +1123,7 @@ contains
+             end do
+             $:END_GPU_PARALLEL_LOOP()
+ 
+-            $:GPU_PARALLEL_LOOP(private='[i, j, k, r]', collapse=4)
++            $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[i, j, k, r]', collapse=4)
+             do i = 1, flux_cbc_index
+                 do r = is3%beg, is3%end
+                     do k = is2%beg, is2%end
+@@ -1129,7 +1135,7 @@ contains
+             end do
+             $:END_GPU_PARALLEL_LOOP()
+ 
+-            $:GPU_PARALLEL_LOOP(private='[j, k, r]', collapse=3)
++            $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[j, k, r]', collapse=3)
+             do r = is3%beg, is3%end
+                 do k = is2%beg, is2%end
+                     do j = -1, buff_size
+@@ -1140,7 +1146,7 @@ contains
+             $:END_GPU_PARALLEL_LOOP()
+ 
+             if (riemann_solver == riemann_solver_hll .and. .not. hll_u_interface) then
+-                $:GPU_PARALLEL_LOOP(private='[i, j, k, r]', collapse=4)
++                $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[i, j, k, r]', collapse=4)
+                 do i = eqn_idx%adv%beg, eqn_idx%adv%end
+                     do r = is3%beg, is3%end
+                         do k = is2%beg, is2%end
+@@ -1152,7 +1158,7 @@ contains
+                 end do
+                 $:END_GPU_PARALLEL_LOOP()
+             else
+-                $:GPU_PARALLEL_LOOP(private='[j, k, r]', collapse=3)
++                $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[j, k, r]', collapse=3)
+                 do r = is3%beg, is3%end
+                     do k = is2%beg, is2%end
+                         do j = -1, buff_size
+@@ -1179,11 +1185,11 @@ contains
+         ! Determining the indicial shift based on CBC location
+ 
+         dj = max(0, cbc_loc)
+-        $:GPU_UPDATE(device='[dj]')
++        $:GPU_UPDATE(device='[dj]', extraAccArgs='async')
+ 
+         ! Reshaping Outputted Data in x-direction
+         if (cbc_dir == 1) then
+-            $:GPU_PARALLEL_LOOP(private='[i, j, k, r]', collapse=4)
++            $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[i, j, k, r]', collapse=4)
+             do i = 1, flux_cbc_index
+                 do r = is3%beg, is3%end
+                     do k = is2%beg, is2%end
+@@ -1194,7 +1200,7 @@ contains
+                 end do
+             end do
+             $:END_GPU_PARALLEL_LOOP()
+-            $:GPU_PARALLEL_LOOP(private='[j, k, r]', collapse=3)
++            $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[j, k, r]', collapse=3)
+             do r = is3%beg, is3%end
+                 do k = is2%beg, is2%end
+                     do j = -1, buff_size
+@@ -1205,7 +1211,7 @@ contains
+             $:END_GPU_PARALLEL_LOOP()
+ 
+             if (riemann_solver == riemann_solver_hll .and. .not. hll_u_interface) then
+-                $:GPU_PARALLEL_LOOP(private='[i, j, k, r]', collapse=4)
++                $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[i, j, k, r]', collapse=4)
+                 do i = eqn_idx%adv%beg, eqn_idx%adv%end
+                     do r = is3%beg, is3%end
+                         do k = is2%beg, is2%end
+@@ -1217,7 +1223,7 @@ contains
+                 end do
+                 $:END_GPU_PARALLEL_LOOP()
+             else
+-                $:GPU_PARALLEL_LOOP(private='[j, k, r]', collapse=3)
++                $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[j, k, r]', collapse=3)
+                 do r = is3%beg, is3%end
+                     do k = is2%beg, is2%end
+                         do j = -1, buff_size
+@@ -1232,7 +1238,7 @@ contains
+ 
+             ! Reshaping Outputted Data in y-direction
+         else if (cbc_dir == 2) then
+-            $:GPU_PARALLEL_LOOP(private='[i, j, k, r]', collapse=4)
++            $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[i, j, k, r]', collapse=4)
+             do i = 1, flux_cbc_index
+                 do r = is3%beg, is3%end
+                     do k = is2%beg, is2%end
+@@ -1244,7 +1250,7 @@ contains
+             end do
+             $:END_GPU_PARALLEL_LOOP()
+ 
+-            $:GPU_PARALLEL_LOOP(private='[j, k, r]', collapse=3)
++            $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[j, k, r]', collapse=3)
+             do r = is3%beg, is3%end
+                 do k = is2%beg, is2%end
+                     do j = -1, buff_size
+@@ -1255,7 +1261,7 @@ contains
+             $:END_GPU_PARALLEL_LOOP()
+ 
+             if (riemann_solver == riemann_solver_hll .and. .not. hll_u_interface) then
+-                $:GPU_PARALLEL_LOOP(private='[i, j, k, r]', collapse=4)
++                $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[i, j, k, r]', collapse=4)
+                 do i = eqn_idx%adv%beg, eqn_idx%adv%end
+                     do r = is3%beg, is3%end
+                         do k = is2%beg, is2%end
+@@ -1267,7 +1273,7 @@ contains
+                 end do
+                 $:END_GPU_PARALLEL_LOOP()
+             else
+-                $:GPU_PARALLEL_LOOP(private='[j, k, r]', collapse=3)
++                $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[j, k, r]', collapse=3)
+                 do r = is3%beg, is3%end
+                     do k = is2%beg, is2%end
+                         do j = -1, buff_size
+@@ -1283,7 +1289,7 @@ contains
+ 
+             ! Reshaping Outputted Data in z-direction
+         else
+-            $:GPU_PARALLEL_LOOP(private='[i, j, k, r]', collapse=4)
++            $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[i, j, k, r]', collapse=4)
+             do i = 1, flux_cbc_index
+                 do r = is3%beg, is3%end
+                     do k = is2%beg, is2%end
+@@ -1295,7 +1301,7 @@ contains
+             end do
+             $:END_GPU_PARALLEL_LOOP()
+ 
+-            $:GPU_PARALLEL_LOOP(private='[j, k, r]', collapse=3)
++            $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[j, k, r]', collapse=3)
+             do r = is3%beg, is3%end
+                 do k = is2%beg, is2%end
+                     do j = -1, buff_size
+@@ -1306,7 +1312,7 @@ contains
+             $:END_GPU_PARALLEL_LOOP()
+ 
+             if (riemann_solver == riemann_solver_hll .and. .not. hll_u_interface) then
+-                $:GPU_PARALLEL_LOOP(private='[i, j, k, r]', collapse=4)
++                $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[i, j, k, r]', collapse=4)
+                 do i = eqn_idx%adv%beg, eqn_idx%adv%end
+                     do r = is3%beg, is3%end
+                         do k = is2%beg, is2%end
+@@ -1318,7 +1324,7 @@ contains
+                 end do
+                 $:END_GPU_PARALLEL_LOOP()
+             else
+-                $:GPU_PARALLEL_LOOP(private='[j, k, r]', collapse=3)
++                $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[j, k, r]', collapse=3)
+                 do r = is3%beg, is3%end
+                     do k = is2%beg, is2%end
+                         do j = -1, buff_size
+-- 
+2.47.3
+

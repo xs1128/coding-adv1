@@ -1,7 +1,7 @@
 mfc: Starting...
 mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
 
-      .=++*:          -+*+=.        | u1131128@25a-hgpn024 [Linux]
+      .=++*:          -+*+=.        | u1131128@25a-hgpn033 [Linux]
      :+   -*-        ==   =* .      | ----------------------------
    :*+      ==      ++    .+-       | 
   :*##-.....:*+   .#%+++=--+=:::.   | --jobs 1
@@ -32,16 +32,81 @@ mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
      Generating case.fpp.
        Writing a (new) custom case.fpp file.
    Generating input files for simulation...
+     Generating simulation.inp:
+       INFO: Forwarded 36/91 parameters.
+    
+     Generating case.fpp.
+       Case optimization is enabled.
+       Writing a (new) custom case.fpp file.
++-----------------------------------------------------------------------------------------------------------+ 
+| MFC case # MFC @ /work/u1131128/coding-adv1/runs/prof/trace_caseopt_1g_s3/case.py:                        |
++-----------------------------------------------------------------------------------------------------------+ 
+| * Start-time     14:50:58                            * Start-date     14:50:58                            |
+| * Partition      N/A                                 * Walltime       01:00:00                            |
+| * Account        N/A                                 * Nodes          1                                   |
+| * Job Name       MFC                                 * Engine         interactive                         |
+| * QoS            N/A                                 * Binary         mpirun                              |
+| * Queue System   Interactive                         * Email          N/A                                 |
++-----------------------------------------------------------------------------------------------------------+ 
+
+mfc: WARNING > This is the default template.
+mfc: WARNING > It is not intended to support all systems and execution engines.
+mfc: WARNING > Consider using a different template via the --computer option if you encounter problems.
+mfc: OK > :) Selected MPI launcher mpirun. Use --binary to override.
+mfc: OK > :) Running syscheck:
+
++ mpirun -np 1 /work/u1131128/coding-adv1/mfc/build/install/gpu-acc-869e78ff84/bin/syscheck
+ [TEST] MPI: call mpi_init(ierr)
+ [TEST] MPI: call mpi_comm_rank(MPI_COMM_WORLD, rank, ierr)
+ [TEST] MPI: call mpi_barrier(MPI_COMM_WORLD, ierr)
+ [TEST] MPI: call assert(rank >= 0)
+ [TEST] MPI: call mpi_comm_size(MPI_COMM_WORLD, nRanks, ierr)
+ [TEST] MPI: call assert(nRanks > 0 .and. rank < nRanks)
+ [TEST] ACC: devtype = acc_get_device_type()
+ [TEST] ACC: num_devices = acc_get_num_devices(devtype)
+ [TEST] ACC: call assert(num_devices > 0)
+ [TEST] ACC: call acc_set_device_num(mod(rank, num_devices), devtype)
+ [TEST] ACC: allocate(arr(1:N))
+ [TEST] ACC: !$acc enter data create(arr(1:N))
+ [TEST] ACC: !$acc parallel loop
+ [TEST] ACC: !$acc update host(arr(1:N))
+ [TEST] ACC: call assert(nint(sum(arr)) == N*(N + 1)/2)
+ [TEST] ACC: !$acc exit data delete(arr)
+ [SKIP] OMP: num_devices = omp_get_num_devices()
+ [SKIP] OMP: call assert(num_devices > 0)
+ [SKIP] OMP: call omp_set_default_device(mod(rank, num_devices))
+ [SKIP] OMP: allocate(arr(1:N))
+ [SKIP] OMP: !$omp target enter data map(alloc: arr(1:N))
+ [SKIP] OMP: !$omp target teams distribute parallel do
+ [SKIP] OMP: !$omp target update from(arr(1:N))
+ [SKIP] OMP: call assert(nint(sum(arr)) == N*(N + 1)/2)
+ [SKIP] OMP: !$omp target exit data map(delete: arr(1:N))
+ [TEST] MPI: call mpi_barrier(MPI_COMM_WORLD, ierr)
+ [TEST] MPI: call mpi_finalize(ierr)
  
+ Syscheck: PASSED.
 
-Error: Case validation failed for simulation:
-Case parameter constraint violations:
+mfc: OK > :) Running pre_process:
 
-  1. t_step_save must be <= (t_step_stop - t_step_start)
++ mpirun -np 1 /work/u1131128/coding-adv1/mfc/build/install/gpu-acc-7d1e32e277/bin/pre_process
+ Pre-processing a 200x200x200 case on 1 rank(s)
+ Processing patch            1
+ Processing patch            2
+ Elapsed Time    7.371989011764526     
 
-Tip: Run './mfc.sh validate case.py' for detailed validation
+mfc: OK > :) Running simulation:
 
-Terminated
++ mpirun -np 1 /work/u1131128/coding-adv1/mfc/build/install/gpu-acc-3b50febf95/bin/simulation
+ Simulating a case-optimized 200x200x200 case on 1 rank(s) with OpenACC offloading.
+ [  0%] step 1 of 4 (t_step 0) t/step  0.00E+00s (avg  0.00E+00s) ETA 0:00:00
+ [ 25%] step 2 of 4 (t_step 1) t/step  8.20E-02s (avg  0.00E+00s) ETA 0:00:00
+ [ 50%] step 3 of 4 (t_step 2) t/step  7.67E-02s (avg  0.00E+00s) ETA 0:00:00
+ Performance:   0.3978718750000000      ns/gp/eq/rhs
 
-mfc: ERROR > main.py finished with a 143 exit code.
++-----------------------------------------------------------------------------------------------------------+ 
+| Finished MFC:                                                                                             |
+| * Total-time:    26s                                 * Exit Code:     0                                   |
+| * End-time:      14:51:24                            * End-date:      14:51:24                            |
++-----------------------------------------------------------------------------------------------------------+ 
+
 mfc: (venv) Exiting the Python virtual environment.
