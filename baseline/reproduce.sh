@@ -14,25 +14,25 @@ case "${1:?checkout|build|submit|report}" in
     git -C mfc checkout --detach $V5
     git -C mfc fetch --depth 1 origin tag v4.9.3
     [[ -d mfc-v4.9.3 ]] || git -C mfc worktree add --detach ../mfc-v4.9.3 v4.9.3
-    git -C mfc-v4.9.3 apply ../patches/v4.9.3-cuda13-nvtx.patch        # CUDA >= 12.9 has no libnvToolsExt
     git -C mfc-v4.9.3 apply ../patches/v4.9.3-double-file-close.patch  # 2nd MPI_FILE_CLOSE segfaults on OMPI 4.1.9
     ;;
   build)
     bash scripts/build.sh caseopt harness/cases/perf3d.py
-    (cd mfc-v4.9.3 && source ../scripts/env.sh && export CMAKE_POLICY_VERSION_MINIMUM=3.5 &&
+    (cd mfc-v4.9.3 && export CUDA_MODULE=cuda/12.6 && source ../scripts/env.sh &&   # v4.9.3 links libnvToolsExt (CUDA <= 12.8)
+       export CMAKE_POLICY_VERSION_MINIMUM=3.5 &&
        ./mfc.sh build --gpu --mpi -t pre_process simulation -j 8 \
          -i examples/3D_performance_test/case.py --case-optimization)
     ;;
   submit)
     a=$(bash harness/submit.sh base/official_1g harness/cases/perf3d.py 1 10 BUILD=caseopt REPS=5)
     b=$(bash harness/submit.sh base/v493_official_1g mfc-v4.9.3/examples/3D_performance_test/case.py 1 10 \
-          BUILD=caseopt REPS=5 MFC_DIR=$ROOT/mfc-v4.9.3 AFTER=$a)
+          BUILD=caseopt REPS=5 MFC_DIR=$ROOT/mfc-v4.9.3 CUDA_MODULE=cuda/12.6 AFTER=$a)
     bash harness/submit.sh base/v493_samecfg_1g harness/cases/official_v493.py 1 10 \
-          BUILD=caseopt REPS=5 MFC_DIR=$ROOT/mfc-v4.9.3 AFTER=$b
+          BUILD=caseopt REPS=5 MFC_DIR=$ROOT/mfc-v4.9.3 CUDA_MODULE=cuda/12.6 AFTER=$b
     # GPU kernel time per step, same 30-step configuration for both versions
     bash harness/submit.sh prof/nsys_v570_1g_30 harness/cases/perf3d.py 1 10 SCRIPT=profile MODE=nsys BUILD=caseopt
     bash harness/submit.sh prof/nsys_v493_1g_30 harness/cases/official_v493.py 1 10 SCRIPT=profile MODE=nsys \
-          BUILD=caseopt MFC_DIR=$ROOT/mfc-v4.9.3
+          BUILD=caseopt MFC_DIR=$ROOT/mfc-v4.9.3 CUDA_MODULE=cuda/12.6
     ;;
   report)
     py=mfc/build/venv/bin/python3

@@ -12,6 +12,7 @@ out=$ROOT/results/$LABEL; mkdir -p "$out"
 {
   echo "job=$SLURM_JOB_ID host=$(hostname) date=$(date -Iseconds) ngpu=$NGPU jobs=$JOBS test_args=$TEST_ARGS"
   cat "$ROOT/.provenance"
+  echo "cuda=${NVHPC_CUDA_HOME:-bundled} cuda_module=${CUDA_MODULE:-}"
   echo "mfc_dir=$MFC_DIR mfc=$(git -C "$MFC_DIR" describe --always --dirty) $(git -C "$MFC_DIR" rev-parse HEAD)"
   echo "mfc_diff_sha1=$(git -C "$MFC_DIR" diff HEAD -- src toolchain CMakeLists.txt cmake | sha1sum | cut -c1-12)"
   nvidia-smi --query-gpu=index,name --format=csv

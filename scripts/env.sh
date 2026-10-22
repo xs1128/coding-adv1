@@ -5,6 +5,10 @@ fi
 module purge >/dev/null 2>&1
 module load x86-nvhpc/26.3 cmake/4.0.0
 export CC=nvc CXX=nvc++ FC=nvfortran
+if [[ -n ${CUDA_MODULE:-} ]]; then          # e.g. cuda/12.6 instead of the bundled CUDA 13.1
+  module load "$CUDA_MODULE"
+  export NVHPC_CUDA_HOME=$CUDA_HOME
+fi
 export MFC_CUDA_CC=90                       # H200 = sm_90
 export ROOT=/work/u1131128/coding-adv1      # repo mirror on nano4
 export MFC_DIR=${MFC_DIR:-$ROOT/mfc}        # MFC checkout: mfc = pinned v5.7.0, mfc-opt = our branch
