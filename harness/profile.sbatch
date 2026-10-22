@@ -1,27 +1,18 @@
 #!/usr/bin/env bash
-# Profile one MFC run on nano4 (submit via harness/submit.sh with SCRIPT=profile).
-# Env in:  LABEL, CASE, CASE_ARGS, NGPU, BUILD (generic|caseopt), MODE (nsys|ncu),
-#          NCU_SKIP / NCU_COUNT (ncu kernel window, default skip 200 count 120), NCU_SET (default full),
-#          NCU_KERNEL (regex filter, default all), MPIRUN_ARGS, RUN_ENV
-# Out:     results/<LABEL>/ small CSV summaries; the big .nsys-rep/.ncu-rep stay in runs/<LABEL>/.
+# Profiling job (submit via harness/submit.sh ... SCRIPT=profile). Env: MODE=nsys|ncu, NCU_SKIP NCU_COUNT
+#   NCU_SET NCU_KERNEL, plus the run.sbatch vars. CSV summaries -> results/, reports stay in runs/.
 #SBATCH -A acd110018
 #SBATCH -p dev
 #SBATCH -N 1
 set -euo pipefail
 ROOT=/work/u1131128/coding-adv1
 source "$ROOT/scripts/env.sh"
-# Slurm cgroups only expose the allocated cores; OMPI's default core binding (core 0) then fails.
-# Default: no binding; explicit binding is a tuning experiment (MPIRUN_ARGS / RUN_ENV).
-export OMPI_MCA_hwloc_base_binding_policy=${OMPI_MCA_hwloc_base_binding_policy:-none}
-# OMPIO (default MPI-IO) on wekafs: write_all takes minutes at 2 ranks and File_close segfaults at 4
-# (jobs 600144/600148). ROMIO works (job 600167). I/O backend only — no effect on the numerics.
-export OMPI_MCA_io=${OMPI_MCA_io:-romio321}
 : "${LABEL:?}" "${CASE:?}" "${NGPU:=1}" "${BUILD:=generic}" "${MODE:=nsys}" "${CASE_ARGS:=}"
 : "${MPIRUN_ARGS:=}" "${RUN_ENV:=}" "${NCU_SKIP:=200}" "${NCU_COUNT:=120}" "${NCU_SET:=full}" "${NCU_KERNEL:=.*}"
 out=$ROOT/results/$LABEL
 run=$ROOT/runs/$LABEL
 mkdir -p "$out" "$run"
-# nsys needs a writable TMPDIR; /tmp/nvidia on some nodes belongs to other users (job 600177).
+# /tmp/nvidia is not writable on some nodes
 export TMPDIR=/dev/shm/${USER}_${SLURM_JOB_ID}; mkdir -p "$TMPDIR"; trap 'rm -rf "$TMPDIR"' EXIT
 cp "$ROOT/$CASE" "$run/case.py"
 {
@@ -42,7 +33,6 @@ sim=$(grep -oE '[^ ]*/bin/simulation' "$out/prep.log" | tail -1)
 echo "sim=$sim" >> "$out/env.txt"
 cd "$run"
 
-# Per-rank wrapper so each rank writes its own report.
 wrap=$run/wrap.sh
 case "$MODE" in
   nsys)
@@ -54,8 +44,7 @@ exec nsys profile --trace=cuda,nvtx,mpi,openacc,ucx --mpi-impl=openmpi --sample=
 EOF
     ;;
   ncu)
-    # Only rank 0 is profiled; the other ranks run normally (ncu serializes kernels, so the
-    # communication timing of an ncu run is meaningless — use nsys for that).
+    # rank 0 only
     cat > "$wrap" <<EOF
 #!/usr/bin/env bash
 r=\${OMPI_COMM_WORLD_RANK:-0}

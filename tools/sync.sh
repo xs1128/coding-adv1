@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
-# Mirror the local working tree to nano4 and pull results back (adapted from coding-hw3).
-#   tools/sync.sh push [host]   local tree -> host:$REMOTE_DIR (no .git, reference/, mfc/, results/)
-#   tools/sync.sh pull [host]   host:results/ -> local results/ (never deletes local files)
-# The remote MFC checkout lives at $REMOTE_DIR/mfc and is managed with git there.
-# push refuses a dirty tree so every result maps to a commit; ALLOW_DIRTY=1 overrides (recorded).
+# tools/sync.sh push|pull [host] — mirror tree to nano4 (refuses a dirty tree) / fetch results/
 set -euo pipefail
 cmd=${1:?push|pull}
 host=${2:-nano4-u1131128}

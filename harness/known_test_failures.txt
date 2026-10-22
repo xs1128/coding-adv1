@@ -1,0 +1,1 @@
+# UUIDs of ./mfc.sh test cases that already fail on pinned v5.7.0 on nano4 H200 (from the baseline suite run)

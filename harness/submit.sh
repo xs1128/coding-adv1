@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
-# Submit harness/run.sbatch on nano4 with minimal resources and log it in results/jobs.tsv.
-#   harness/submit.sh LABEL CASE NGPU MINUTES [VAR=value ...]
-# e.g. harness/submit.sh base/perf3d_1g harness/cases/perf3d.py 1 15 BUILD=generic REPS=3
-# Runs on nano4 (call via hpc). Resources: NGPU GPUs, 8 cores per GPU, one node, partition dev.
-# SCRIPT=profile (in the VAR list) selects harness/profile.sbatch instead of run.sbatch.
+# harness/submit.sh LABEL CASE NGPU MINUTES [VAR=value ...]   (SCRIPT=run|profile|mfctest|osu)
 set -euo pipefail
 ROOT=/work/u1131128/coding-adv1
 label=${1:?LABEL}; case=${2:?CASE}; ngpu=${3:?NGPU}; mins=${4:?MINUTES}; shift 4
