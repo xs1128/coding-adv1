@@ -7,7 +7,7 @@ cd "$(dirname "$0")/.."
 label=${1:?label}; name="mfc-${label//\//-}"; log="logs/submit_${label//\//-}.log"
 mkdir -p logs
 (setsid nohup bash -c '
-  for i in $(seq 1 40); do
+  for i in $(seq 1 ${RETRIES:-120}); do
     if q=$(timeout 60 squeue -u "$USER" -h -o "%j" 2>/dev/null); then
       if grep -qx "$1" <<<"$q" || grep -qP "\t$2\t" results/jobs.tsv; then echo "already queued/logged"; exit 0; fi
       timeout 120 bash harness/submit.sh "${@:3}" && exit 0
