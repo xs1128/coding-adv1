@@ -3,8 +3,9 @@
 set -euo pipefail
 here=$(cd "$(dirname "$0")" && pwd)
 source "$here/env.sh"
-cd "$MFC_DIR"
 mode=${1:?generic|caseopt}; shift
+[[ $mode == caseopt ]] && set -- "$(realpath "${1:?case.py}")" "${@:2}"
+cd "$MFC_DIR"
 jobs=${BUILD_JOBS:-8}
 case "$mode" in
   generic) ./mfc.sh build --gpu acc --mpi -t pre_process simulation -j "$jobs" "$@" ;;
