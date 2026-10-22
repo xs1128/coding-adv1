@@ -1,0 +1,7 @@
+rep	wall_s	grind_ns
+1	8.437	0.3969078125000000
+2	8.610	0.3968437500000000
+3	8.730	0.3967031250000000
+rank	steps	first_ms	step_med_ms	step_min_ms	step_max_ms	rhs_med_ms	comm_med_ms
+0	30	81.789	77.097	76.684	79.108	24.596	0.323
+all	30	81.789	77.097	76.684	79.108	24.596	0.323

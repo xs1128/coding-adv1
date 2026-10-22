@@ -18,6 +18,8 @@ out=$ROOT/results/$LABEL; mkdir -p "$out"
 } > "$out/env.txt" 2>&1
 gpus=$(seq -s ' ' 0 $((NGPU - 1)))
 cd "$MFC_DIR"
+exec 9> tests/.harness.lock   # tests/<UUID>/ dirs are shared: one suite run per checkout
+flock -n 9 || { echo "another ./mfc.sh test holds $MFC_DIR/tests" > "$out/test.log"; exit 3; }
 rm -f tests/failed_uuids.txt
 t0=$(date +%s)
 ./mfc.sh test --no-build -j "$JOBS" -g $gpus $TEST_ARGS -- -b mpirun > "$out/test.log" 2>&1

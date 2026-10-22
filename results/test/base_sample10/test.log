@@ -1,0 +1,337 @@
+mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn019 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 4
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | 
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Build | syscheck and pre_process
+
+
+ Build | syscheck and simulation
+
+
+ Build | syscheck and pre_process | Chemistry: h2o2.yaml
+
+
+ Build | syscheck and simulation | Chemistry: h2o2.yaml
+
+
+
+ Test pre_process and simulation | from EA8FA07E to D0AC8751 (71 tests)
+  
+     Progress      Test Name                                        Time(s)   UUID
+  
+     (  1/ 71)    1D -> Example -> laxshocktube                        16.40    02D1E522
+     (  2/ 71)    3D -> bc=-5                                          20.10    E09A12D9
+     (  3/ 71)    3D -> 1 Fluid(s) -> Viscous -> IBM -> Cuboid ->...   20.33    32DD0363
+     (  4/ 71)    3D -> Bubbles -> QBMM -> bubble_model=3 -> Non-...   26.21    41C830CC
+     (  5/ 71)    2D -> Acoustic Source -> Transducer Array -> su...   14.95    3E23CB5D
+     (  6/ 71)    1D -> weno_order=3 -> wenoz=T                        14.94    F9850EA5
+     (  7/ 71)    3D -> Hypoelasticity -> HLL -> Interface RHS ->...   18.41    9AEC024A
+     (  8/ 71)    2D -> Hypoelasticity -> HLLC -> alt_soundspeed=F     14.30    34F3999B
+     (  9/ 71)    2D -> 1 Fluid(s) -> Viscous -> riemann_solver=5      14.32    4561DCE7
+     ( 10/ 71)    2D -> Axisymmetric -> HLL -> u-interface -> alt...   14.84    0533872C
+     ( 11/ 71)    2D -> 1 Fluid(s) -> IBM -> Rectangle -> slip         15.17    C7BE8FEA
+     ( 12/ 71)    3D -> Example -> acoustic_support11                  17.10    D827EA4B
+     ( 13/ 71)    1D -> Example -> mhd_smooth_alfven_wave              16.03    4A759316
+     ( 14/ 71)    3D -> bc=-6                                          16.17    5010B814
+     ( 15/ 71)    2D -> Example -> IGR_2fluid                          17.60    F926448C
+     ( 16/ 71)    3D -> Lagrange Bubbles -> One-way Coupling -> a...   18.58    12ECE133
+     ( 17/ 71)    2D -> Hypoelasticity -> HLLC -> ADC -> alt_soun...   15.10    E04B6502
+  
+     ✗ FAILED: 3D -> 1 Fluid(s) -> riemann_solver=2 -> model_e...
+       UUID: 6241177B
+       Attempts: 1
+       Error: Test tests/6241177B: 3D -> 1 Fluid(s) -> riemann_solver=2 -> model_eqns=3: Variable n°1 (1-indexed) in D/cons.7.00.000050.dat is not within tolerance:
+  - Candidate:   2.4962122571363
+  - Golden:      2.49470627603186
+  - Error:       abs: 1.51E-03, rel: 6.04E-04
+  - Tolerance:   abs: 1.00E-12, rel: 1.00E-12
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.7.00.000050.dat
+ - Variable n°23
+ - Candidate: 2.45055304635867
+ - Golden: 0.25558023386085
+ - Absolute Error: 2.19E+00
+ - Relative Error: 8.59E+00
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.7.00.000050.dat
+ - Variable n°23
+ - Candidate: 2.45055304635867
+ - Golden: 0.25558023386085
+ - Relative Error: 8.59E+00
+ - Absolute Error: 2.19E+00
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+     ( 18/ 71)    2D -> 1 Fluid(s) -> Viscous -> IBM -> Rectangle...   15.98    34626101
+     ( 19/ 71)    1D -> 2 Fluid(s) -> riemann_solver=2 -> wave_sp...   15.53    461DCB09
+  
+     ✗ FAILED: 2D -> Axisymmetric -> model_eqns=3
+       UUID: B89B8C70
+       Attempts: 1
+       Error: Test tests/B89B8C70: 2D -> Axisymmetric -> model_eqns=3: Variable n°5 (1-indexed) in D/cons.6.00.000050.dat is not within tolerance:
+  - Candidate:   0.67265838046649
+  - Golden:      0.5987540425824
+  - Error:       abs: 7.39E-02, rel: 1.23E-01
+  - Tolerance:   abs: 1.00E-11, rel: 1.00E-11
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.8.00.000050.dat
+ - Variable n°121
+ - Candidate: 0.42606169167365
+ - Golden: 2.23941221397569
+ - Absolute Error: 1.81E+00
+ - Relative Error: 8.10E-01
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.9.00.000050.dat
+ - Variable n°34
+ - Candidate: 0.05503756282479
+ - Golden: 0.30932008360285
+ - Relative Error: 8.22E-01
+ - Absolute Error: 2.54E-01
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+     ( 20/ 71)    1D -> 1 Fluid(s) -> Non-Newtonian -> tau0=0.001      14.79    B077CE88
+     ( 21/ 71)    2D -> Viscosity -> Bubbles -> Polytropic -> bub...   14.88    2E021372
+     ( 22/ 71)    2D -> Lagrange Bubbles -> One-way Coupling -> a...   15.04    0D1FA5C5
+     ( 23/ 71)    3D -> 2 Fluid(s) -> Viscous -> IBM -> Sphere ->...   59.43    8339878C
+     ( 24/ 71)    3D -> Example -> ibm_stl_test                        17.03    6D1C9C2D
+     ( 25/ 71)    1D -> 1 Fluid(s) -> riemann_solver=1 -> wave_sp...   23.04    32D0F235
+     ( 26/ 71)    1D -> 2 Fluid(s) -> riemann_solver=2 -> mixture...   17.45    3A8359F6
+     ( 27/ 71)    2D -> 2 Fluid(s) -> Viscous -> IBM -> Rectangle...   15.79    BA4372C5
+     ( 28/ 71)    1D -> bc=-12                                         14.87    3FC6FC4A
+     ( 29/ 71)    3D -> Viscosity -> Bubbles -> Polytropic -> bub...   16.47    38533D07
+     ( 30/ 71)    3D -> weno_order=5 -> wenoz=T                        16.78    5F099890
+     Still running (>2min) D8136392  1D -> Phase Change model 6 -> 3 Fluid(s) -> model equation -> 2
+     ( 31/ 71)    2D -> Hypoelasticity -> 1 Fluid(s)                   14.91    122713AA
+     ( 32/ 71)    3D -> bc=-10                                         70.97    D0045756
+     ( 33/ 71)    3D -> Hypoelasticity -> HLLD -> alt_soundspeed=F     17.66    481CA4B4
+     ( 34/ 71)    1D -> weno_order=7 -> mapped_weno=T                  15.37    5D68B0F5
+     ( 35/ 71)    3D -> 1 Fluid(s) -> riemann_solver=1 -> low_Mach=1   34.59    4D88A48D
+     ( 36/ 71)    1D -> Phase Change model 6 -> 3 Fluid(s) -> mod...  165.88    D8136392
+     ( 37/ 71)    1D -> 2 MPI Ranks                                    34.34    0FCCE9F1
+     ( 38/ 71)    3D -> 2 Fluid(s) -> IBM -> Cuboid -> slip            18.05    1E62093F
+     ( 39/ 71)    2D -> 1 Fluid(s) -> Viscous -> IGR -> igr_order...   17.58    EB58AF7F
+     ( 40/ 71)    1D -> Phase Change model 5 -> 3 Fluid(s) -> mod...   16.66    F4D00494
+     ( 41/ 71)    3D -> Example -> IGR_jet_1fluid                      17.14    43B5FEBD
+     ( 42/ 71)    2D -> muscl_order=2 -> muscl_eps=0 -> muscl_lim=2    14.36    5EC347F2
+     ( 43/ 71)    2D -> 2 Fluid(s) -> Viscous -> weno_Re_flux -> ...   15.67    5E454E32
+     ( 44/ 71)    2D -> Hypoelasticity -> HLL -> Interface RHS ->...   14.92    34336A1F
+     ( 45/ 71)    1D -> Viscosity -> Bubbles -> nb=1                   14.69    729A4333
+     ( 46/ 71)    3D -> Lagrange Bubbles -> Two-way Coupling -> a...   18.29    2F7C33A2
+  
+     ✗ FAILED: 3D -> Example -> recovering_sphere
+       UUID: 9E2CA336
+       Attempts: 1
+       Error: Test tests/9E2CA336: 3D -> Example -> recovering_sphere: Variable n°6 (1-indexed) in D/cons.10.00.000050.dat is not within tolerance:
+  - Candidate:   2.50000393596863
+  - Golden:      250000.54741773778
+  - Error:       abs: 2.50E+05, rel: 1.00E+00
+  - Tolerance:   abs: 1.00E-03, rel: 1.00E-03
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.10.00.000050.dat
+ - Variable n°2814
+ - Candidate: 2.50103019921865
+ - Golden: 250143.77657722656
+ - Absolute Error: 2.50E+05
+ - Relative Error: 1.00E+00
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.9.00.000050.dat
+ - Variable n°3435
+ - Candidate: 0.10876207850042
+ - Golden: 0.00200087935417
+ - Relative Error: 5.34E+01
+ - Absolute Error: 1.07E-01
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+     ( 47/ 71)    1D -> Example -> acoustic_gauss_sigmadist            15.77    BE3CF022
+     ( 48/ 71)    2D -> Axisymmetric -> Hypoelasticity -> HLLD ->...   16.04    421A6AD9
+     ( 49/ 71)    1D -> Viscosity -> Bubbles -> Polytropic -> bub...   14.73    9465D0F5
+     ( 50/ 71)    2D -> Bubbles -> adv_n=T                             15.32    F4883338
+     ( 51/ 71)    2D -> Hypoelasticity -> HLLD -> alt_soundspeed=F     16.84    879C490D
+     ( 52/ 71)    3D -> Hypoelasticity -> 1 Fluid(s)                   16.93    7EFBCDAE
+   mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn019 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 1
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | --targets pre_process and simulation
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Acquiring /work/u1131128/coding-adv1/mfc/tests/C4EB58A8/case.py...
+ Acquiring /work/u1131128/coding-adv1/mfc/tests/C4EB58A8/case.py...
+ Build | syscheck, syscheck, pre_process, and simulation | Chemistry: h2o2.yaml
+
+
+ Run
+   Using queue system Interactive.
+   Using baked-in template for default.
+   Generating input files for syscheck...
+     Generating syscheck.inp:
+       INFO: Forwarded 0/105 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
+   Generating input files for pre_process...
+     Generating pre_process.inp:
+       INFO: Forwarded 65/105 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
+   Generating input files for simulation...
+     Generating simulation.inp:
+       INFO: Forwarded 68/105 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
++-----------------------------------------------------------------------------------------------------------+ 
+| MFC case # MFC @ /work/u1131128/coding-adv1/mfc/tests/C4EB58A8/case.py:                                   |
++-----------------------------------------------------------------------------------------------------------+ 
+| * Start-time     10:26:32                            * Start-date     10:26:32                            |
+| * Partition      N/A                                 * Walltime       01:00:00                            |
+| * Account        N/A                                 * Nodes          1                                   |
+| * Job Name       MFC                                 * Engine         interactive                         |
+| * QoS            N/A                                 * Binary         mpirun                              |
+| * Queue System   Interactive                         * Email          N/A                                 |
++-----------------------------------------------------------------------------------------------------------+ 
+
+mfc: WARNING > This is the default template.
+mfc: WARNING > It is not intended to support all systems and execution engines.
+mfc: WARNING > Consider using a different template via the --computer option if you encounter problems.
+mfc: OK > :) Selected MPI launcher mpirun. Use --binary to override.
+mfc: OK > :) Running syscheck:
+
++ mpirun -np 1 /work/u1131128/coding-adv1/mfc/build/install/gpu-acc-chem-1ceb207c70/bin/syscheck
+--------------------------------------------------------------------------
+mpirun was unable to launch the specified application as it could not access
+or execute an executable:
+
+Executable: /work/u1131128/coding-adv1/mfc/build/install/gpu-acc-chem-1ceb207c70/bin/syscheck
+Node: 25a-hgpn019
+
+while attempting to start process rank 0.
+--------------------------------------------------------------------------
+
+mfc: ERROR > :( /work/u1131128/coding-adv1/mfc/build/install/gpu-acc-chem-1ceb207c70/bin/syscheck failed with exit code 132.
+
+ 
+
+Error: Submitting batch file for Interactive failed. It can be found here: /work/u1131128/coding-adv1/mfc/tests/C4EB58A8/MFC.sh. Please check the file for errors.
+
+Terminated
+
+mfc: ERROR > main.py finished with a 143 exit code.
+mfc: (venv) Exiting the Python virtual environment.
+
+  
+     ✗ FAILED: 2D -> Chemistry -> Reacting Mixing Layer
+       UUID: C4EB58A8
+       Attempts: 1
+       Error: Test tests/C4EB58A8: 2D -> Chemistry -> Reacting Mixing Layer: Failed to execute MFC.
+       Hint: Check build logs and case parameters
+  
+     ( 53/ 71)    1D -> weno_order=5 -> mapped_weno=T                  16.10    677DAA82
+     ( 54/ 71)    2D -> 1 Fluid(s) -> IBM -> Periodic Circle           16.43    3008BA80
+     ( 55/ 71)    2D -> 1 Fluid(s) -> riemann_solver=1 -> low_Mach=1   16.39    1A78D4CC
+     ( 56/ 71)    2D -> Acoustic Source -> Transducer -> support=...   15.34    7E15602E
+     ( 57/ 71)    1D -> Acoustic Source -> Square -> Frequency         14.57    2F58A83F
+     ( 58/ 71)    3D -> bc=-2                                          17.67    09DAFEBA
+     ( 59/ 71)    3D -> weno_order=7                                   20.82    4A15969C
+     ( 60/ 71)    3D -> 1 Fluid(s) -> eos=ideal_gas                    17.98    385F6582
+     ( 61/ 71)    2D -> Example -> herschel_bulkley_poiseuille_nn      55.57    A582B270
+     ( 62/ 71)    3D -> 2 Fluid(s) -> riemann_solver=1 -> mixture...   17.66    C4A2FAA3
+     ( 63/ 71)    3D -> 2 MPI Ranks -> IBM Sphere                      35.79    AFBACA70
+  
+     ✗ FAILED: 1D -> 1 Fluid(s) -> riemann_solver=2 -> model_e...
+       UUID: 2F35A1FE
+       Attempts: 1
+       Error: Test tests/2F35A1FE: 1D -> 1 Fluid(s) -> riemann_solver=2 -> model_eqns=3: Variable n°17 (1-indexed) in D/cons.1.00.000050.dat is not within tolerance:
+  - Candidate:   0.99984678686151
+  - Golden:      0.99984678685829
+  - Error:       abs: 3.22E-12, rel: 3.22E-12
+  - Tolerance:   abs: 1.00E-12, rel: 1.00E-12
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.5.00.000050.dat
+ - Variable n°9
+ - Candidate: 0.0
+ - Golden: 2.50000000096369
+ - Absolute Error: 2.50E+00
+ - Relative Error: 1.00E+00
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.5.00.000050.dat
+ - Variable n°1
+ - Candidate: 0.0
+ - Golden: 2.50000000000032
+ - Relative Error: 1.00E+00
+ - Absolute Error: 2.50E+00
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+     ( 64/ 71)    2D -> 1 Fluid(s) -> Viscous                          19.73    CD6DC908
+     ( 65/ 71)    3D -> Phase Change model 5 -> 3 Fluid(s) -> mod...   21.31    723DDBCF
+     ( 66/ 71)    2D -> Bubbles -> QBMM -> bubble_model=3 -> Non-...   21.38    7B67FDE5
+
+  
+
+╭──────────────────────────────── Test Summary ────────────────────────────────╮
+│                                                                              │
+│  ✗ 5 TESTS FAILED                                                            │
+│                                                                              │
+│      66 passed                                                               │
+│       5 failed                                                               │
+│     681 skipped                                                              │
+│    ────────────                                                              │
+│     752 total                                                                │
+│                                                                              │
+│    Time: 6m 52.3s                                                            │
+│                                                                              │
+│    Failed Tests:                                                             │
+│      • 3D -> 1 Fluid(s) -> riemann_solver=2 ...                              │
+│        UUID: 6241177B                                                        │
+│        (tolerance mismatch)                                                  │
+│      • 2D -> Axisymmetric -> model_eqns=3                                    │
+│        UUID: B89B8C70                                                        │
+│        (tolerance mismatch)                                                  │
+│      • 3D -> Example -> recovering_sphere                                    │
+│        UUID: 9E2CA336                                                        │
+│        (tolerance mismatch)                                                  │
+│      • 2D -> Chemistry -> Reacting Mixing Layer                              │
+│        UUID: C4EB58A8                                                        │
+│        (execution failed)                                                    │
+│      • 1D -> 1 Fluid(s) -> riemann_solver=2 ...                              │
+│        UUID: 2F35A1FE                                                        │
+│        (tolerance mismatch)                                                  │
+│                                                                              │
+│    Next Steps:                                                               │
+│      • Run with --generate to update golden files (if changes are            │
+│  intentional)                                                                │
+│      • Check individual test output in tests/<UUID>/                         │
+│      • Run specific test: ./mfc.sh test --only <UUID>                        │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+
+mfc: ERROR > main.py finished with a 5 exit code.
+mfc: (venv) Exiting the Python virtual environment.
