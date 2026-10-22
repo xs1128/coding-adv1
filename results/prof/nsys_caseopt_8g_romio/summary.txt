@@ -1,0 +1,67 @@
+
+=== rank 0: kernels 106.3 ms in 992 launches, memcpy 81.7 ms, MPI 32875.2 ms
+ share  total ms    inst   mean us  kernel
+ 11.6%     12.29      30     409.5  m_weno_s_weno_1096_gpu__1
+ 11.4%     12.10      30     403.3  m_weno_s_weno_1096_gpu__2
+ 11.3%     11.99      30     399.8  m_weno_s_weno
+  8.5%      9.00      30     300.1  m_riemann_solver_hllc_s_hllc_riemann_solver_898_gpu_1
+  8.5%      8.99      30     299.7  m_riemann_solver_hllc_s_hllc_riemann_solver_898_gpu_2
+  8.4%      8.88      90      98.7  m_weno_s_pack_weno_input_arr
+  7.2%      7.67      30     255.5  m_riemann_solver_hllc_s_hllc_riemann_solver
+  4.2%      4.45      30     148.4  m_time_steppers_s_tvd_rk
+  3.0%      3.21      30     107.0  m_rhs_s_compute_advection_source_term
+  3.0%      3.20      30     106.7  m_rhs_s_compute_advection_source_term
+  3.0%      3.20      30     106.6  m_rhs_s_compute_rhs
+  2.7%      2.89      30      96.2  m_rhs_s_compute_advection_source_term
+  2.5%      2.67      30      88.9  m_variables_conversion_s_convert_conservative_to_primitive_variables
+  2.3%      2.42      30      80.8  m_riemann_state_s_finalize_riemann_solver
+-- memcpy/memset
+       57.55 ms      98x  [CUDA memcpy Device-to-Host]
+       23.86 ms    2084x  [CUDA memcpy Host-to-Device]
+        0.25 ms     299x  [CUDA memset]
+-- NVTX ranges (wall, includes host waits)
+    31476.12 ms       1x  :INIT
+    30799.47 ms       1x  :INIT-MPI
+     2150.20 ms       1x  :FINALIZE-MODULES
+      906.12 ms       1x  :SIMULATION-TIME-MARCH
+      665.71 ms       1x  :INIT-MODULES
+      619.84 ms       1x  :SAVE-DATA
+      283.47 ms      10x  :TIMESTEP
+      277.81 ms      30x  :COMPUTE-RHS
+      157.55 ms      30x  :RHS-COMMUNICATION
+      102.09 ms      90x  :RHS-COMM-SENDRECV-NO-RMDA
+       51.22 ms      90x  :RHS-RECONSTRUCTION
+       45.43 ms      90x  :RHS-RIEMANN-SOLVER
+       22.78 ms      90x  :RHS-COMM-DEV2HOST
+       21.35 ms      90x  :RHS-COMM-HOST2DEV
+       16.22 ms      90x  :RHS-ADVECTION-SRC
+       10.93 ms       1x  :INIT-GPU-VARS
+-- top CUDA API (host)
+      235.47 ms     192x  cuMemFree_v2
+      119.83 ms    3127x  cuStreamSynchronize
+      117.53 ms       1x  cuModuleLoadDataEx
+       75.78 ms      98x  cuMemcpyDtoHAsync_v2
+       63.51 ms     274x  cuMemAlloc_v2
+       33.58 ms    2084x  cuMemcpyHtoDAsync_v2
+       25.73 ms       1x  cuMemHostAlloc
+        9.87 ms       2x  cuMemFreeHost
+-- MPI
+    28738.51 ms       1x  MPI_Init
+     2148.19 ms       1x  MPI_Finalize
+      874.90 ms     996x  MPI_Bcast
+      500.95 ms       8x  MPI_File_read_all
+      446.45 ms       8x  MPI_File_write_all
+      102.02 ms     186x  MPI_Sendrecv
+       34.80 ms       1x  MPI_File_delete
+       25.62 ms       5x  MPI_File_open
+
+=== per-rank overview
+rank  kernel ms  memcpy ms    MPI ms  launches
+   0      106.3       81.7   32875.2       992
+   1      107.6      113.8   43722.0      1352
+   2      107.4       84.1   31387.0      1352
+   3      108.2       83.8   40837.3      1712
+   4      106.9      109.7   31795.4      1352
+   5      107.8      108.7   31329.4      1712
+   6      107.9       85.4   31385.4      1712
+   7      108.1      111.9   32036.6      2072

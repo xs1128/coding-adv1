@@ -21,6 +21,8 @@ export OMPI_MCA_io=${OMPI_MCA_io:-romio321}
 out=$ROOT/results/$LABEL
 run=$ROOT/runs/$LABEL
 mkdir -p "$out" "$run"
+# nsys needs a writable TMPDIR; /tmp/nvidia on some nodes belongs to other users (job 600177).
+export TMPDIR=/dev/shm/${USER}_${SLURM_JOB_ID}; mkdir -p "$TMPDIR"; trap 'rm -rf "$TMPDIR"' EXIT
 cp "$ROOT/$CASE" "$run/case.py"
 {
   echo "job=$SLURM_JOB_ID host=$(hostname) date=$(date -Iseconds) mode=$MODE"

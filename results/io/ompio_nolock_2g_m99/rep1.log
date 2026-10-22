@@ -1,0 +1,6 @@
+ Simulating a case-optimized 99x99x99 case on 2 rank(s) with OpenACC offloading.
+ [  0%] step 1 of 5 (t_step 0) t/step  0.00E+00s (avg  0.00E+00s) ETA 0:00:00
+ [ 21%] step 2 of 5 (t_step 1) t/step  2.05E-02s (avg  0.00E+00s) ETA 0:00:00
+ [ 41%] step 3 of 5 (t_step 2) t/step  1.06E-02s (avg  0.00E+00s) ETA 0:00:00
+ [ 61%] step 4 of 5 (t_step 3) t/step  1.07E-02s (avg  1.07E-02s) ETA 0:00:00
+ Performance:   0.4556585135097532      ns/gp/eq/rhs

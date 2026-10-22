@@ -1,0 +1,21 @@
+Failed to create directory "/tmp/nvidia/nsight_systems": Permission denied
+
+NOTE: If you are using a system that does not allow writing to "/tmp" or
+where the "/tmp" directory has limited storage you can use the TMPDIR environment
+variable to set a different location.
+Failed to create directory "/tmp/nvidia/nsight_systems": Permission denied
+
+NOTE: If you are using a system that does not allow writing to "/tmp" or
+where the "/tmp" directory has limited storage you can use the TMPDIR environment
+variable to set a different location.
+--------------------------------------------------------------------------
+Primary job  terminated normally, but 1 process returned
+a non-zero exit code. Per user-direction, the job has been aborted.
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+mpirun detected that one or more processes exited with non-zero status, thus causing
+the job to be terminated. The first process to do so was:
+
+  Process name: [[13203,1],3]
+  Exit code:    1
+--------------------------------------------------------------------------
