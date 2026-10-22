@@ -1,1 +1,6 @@
-# UUIDs of ./mfc.sh test cases that already fail on pinned v5.7.0 on nano4 H200 (from the baseline suite run)
+# ./mfc.sh test cases that fail on the unmodified pinned v5.7.0 build on nano4 H200 (NVHPC 26.3, OpenACC).
+# Added only after reproducing the failure on the pinned build (results/test/rerun_a, rerun_b; jobs 600389/600390).
+2F35A1FE  1D model_eqns=3 riemann_solver=2  max err differs between runs (2.5 vs 1.0) -> nondeterministic
+B89B8C70  2D axisymmetric model_eqns=3      identical error both runs
+6241177B  3D model_eqns=3 riemann_solver=2  identical error both runs
+9E2CA336  3D example recovering_sphere      identical error both runs

@@ -34,11 +34,15 @@ in `runs/<LABEL>/` stay on nano4.
    `harness/known_test_failures.txt` (failures of the unmodified pinned build on this machine).
 3. Never edit tolerances, the reference run, or golden files.
 
-## Test-suite procedure
+## Test-suite procedure (GPU-frugal)
+No up-front full-suite baseline: it costs ~145 GPU-min and upstream CI runs the full suite on every PR anyway.
 1. After any change to the MFC checkout, build every test variant on the login node:
-   `cd $MFC_DIR && ./mfc.sh test --dry-run -j 8` (the suite needs `gpu-acc`, `gpu-acc-chem`, ... builds; the
-   sbatch runs with `--no-build`, so a missing variant shows up as a failure, e.g. C4EB58A8 in job 600296).
-2. `harness/run_suite.sh <tag>`: 4 shards × 2 GPUs, ~18 min each, chained with `AFTER=` because all runs share
-   `$MFC_DIR/tests/<UUID>/` (mfctest.sbatch also takes a `flock`).
-3. `harness/verify.py <label> --test-summary results/test/<tag>_s*/test_summary.json`.
-
+   `cd $MFC_DIR && ./mfc.sh test --dry-run -j 8` (the sbatch runs with `--no-build`, so a missing variant shows up
+   as a failure, e.g. C4EB58A8 in job 600296).
+2. During development: run only the tests that touch the changed code, 1 GPU, e.g.
+   `harness/submit.sh test/<tag> - 1 15 SCRIPT=mfctest "TEST_ARGS=-o 3D"` or `TEST_ARGS=--percent 10`.
+3. A failure counts as pre-existing only after rerunning that UUID on the pinned build (`MFC_DIR=$ROOT/mfc`,
+   `-o <UUID>`, ~1 min); then it goes in `harness/known_test_failures.txt` with the evidence.
+4. Full suite (`harness/run_suite.sh <tag>`: chained `--from/--to` shards, 2 GPUs each, ~145 GPU-min total)
+   only once, on the final optimized branch right before opening the upstream PR, and only with the user's go-ahead.
+5. `harness/verify.py <label> --test-summary results/test/<tag>*/test_summary.json`.
