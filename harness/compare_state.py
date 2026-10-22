@@ -21,9 +21,9 @@ import numpy as np
 
 def latest(run, step):
     files = glob.glob(os.path.join(run, "restart_data", "lustre_*.dat"))
-    if not files:
-        raise SystemExit(f"no restart_data/lustre_*.dat in {run}")
-    steps = {int(re.search(r"lustre_(\d+)\.dat$", f).group(1)): f for f in files}
+    steps = {int(m.group(1)): f for f in files if (m := re.search(r"lustre_(\d+)\.dat$", f))}
+    if not steps:
+        raise SystemExit(f"no restart_data/lustre_<step>.dat in {run}")
     return steps[step] if step is not None else steps[max(steps)], (step if step is not None else max(steps))
 
 
