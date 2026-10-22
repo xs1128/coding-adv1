@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Profiling job (submit via harness/submit.sh ... SCRIPT=profile). Env: MODE=nsys|ncu, NCU_SKIP NCU_COUNT
+# Profiling job (submit via harness/submit.sh ... SCRIPT=profile). Env: MODE=nsys|ncu, TRACE=1 (raw traces), NCU_SKIP NCU_COUNT
 #   NCU_SET NCU_KERNEL, plus the run.sbatch vars. CSV summaries -> results/, reports stay in runs/.
 #SBATCH -A acd110018
 #SBATCH -p dev
@@ -73,6 +73,8 @@ case "$MODE" in
       nsys stats --force-export=true --format csv --output "$out/$b" \
         --report cuda_gpu_kern_sum --report cuda_gpu_mem_time_sum --report cuda_api_sum \
         --report nvtx_sum --report mpi_event_sum "$f" > /dev/null 2>&1 || true
+      [[ ${TRACE:-0} == 1 ]] && nsys stats --force-export=true --format csv --output "$out/$b" \
+        --report cuda_api_trace --report cuda_gpu_trace --report nvtx_pushpop_trace "$f" > /dev/null 2>&1 || true
     done ;;
   ncu)
     ncu --import "$run/ncu_rank0.ncu-rep" --page raw --csv > "$out/ncu_raw.csv" 2>/dev/null || true
