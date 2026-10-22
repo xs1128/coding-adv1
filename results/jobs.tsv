@@ -1,0 +1,4 @@
+jobid	submitted	label	ngpu	minutes	vars
+600131	2026-10-22T09:16:25+08:00	base/generic_1g	1	15	BUILD=generic REPS=3
+600134	2026-10-22T09:17:31+08:00	base/generic_1g	1	15	BUILD=generic REPS=3
+600136	2026-10-22T09:18:34+08:00	base/generic_1g	1	15	BUILD=generic REPS=3

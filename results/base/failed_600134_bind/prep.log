@@ -1,0 +1,88 @@
+mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn001 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 1
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | --targets pre_process and simulation
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Acquiring /work/u1131128/coding-adv1/runs/base/generic_1g/case.py...
+ Acquiring /work/u1131128/coding-adv1/runs/base/generic_1g/case.py...
+ Build | syscheck, syscheck, pre_process, and simulation
+
+
+ Run
+   Using queue system Interactive.
+   Using baked-in template for default.
+   Generating input files for syscheck...
+     Generating syscheck.inp:
+       INFO: Forwarded 0/91 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
+   Generating input files for pre_process...
+     Generating pre_process.inp:
+       INFO: Forwarded 73/91 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
+   Generating input files for simulation...
+     Generating simulation.inp:
+       INFO: Forwarded 39/91 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
++-----------------------------------------------------------------------------------------------------------+ 
+| MFC case # MFC @ /work/u1131128/coding-adv1/runs/base/generic_1g/case.py:                                 |
++-----------------------------------------------------------------------------------------------------------+ 
+| * Start-time     09:17:36                            * Start-date     09:17:36                            |
+| * Partition      N/A                                 * Walltime       01:00:00                            |
+| * Account        N/A                                 * Nodes          1                                   |
+| * Job Name       MFC                                 * Engine         interactive                         |
+| * QoS            N/A                                 * Binary         mpirun                              |
+| * Queue System   Interactive                         * Email          N/A                                 |
++-----------------------------------------------------------------------------------------------------------+ 
+
+mfc: WARNING > This is the default template.
+mfc: WARNING > It is not intended to support all systems and execution engines.
+mfc: WARNING > Consider using a different template via the --computer option if you encounter problems.
+mfc: OK > :) Selected MPI launcher mpirun. Use --binary to override.
+mfc: OK > :) Running syscheck:
+
++ mpirun -np 1 /work/u1131128/coding-adv1/mfc/build/install/gpu-acc-869e78ff84/bin/syscheck
+--------------------------------------------------------------------------
+Open MPI tried to bind a new process, but something went wrong.  The
+process was killed without launching the target application.  Your job
+will now abort.
+
+  Local host:        25a-hgpn001
+  Application name:  /work/u1131128/coding-adv1/mfc/build/install/gpu-acc-869e78ff84/bin/syscheck
+  Error message:     hwloc_set_cpubind returned "Error" for bitmap "0"
+  Location:          ../../../../../orte/mca/rtc/hwloc/rtc_hwloc.c:382
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+mpirun was unable to start the specified application as it encountered an
+error:
+
+Error code: -125
+Error name: The specified application failed to start
+Node: 25a-hgpn001
+
+when attempting to start process rank 0.
+--------------------------------------------------------------------------
+
+mfc: ERROR > :( /work/u1131128/coding-adv1/mfc/build/install/gpu-acc-869e78ff84/bin/syscheck failed with exit code 131.
+
+ 
+
+Error: Submitting batch file for Interactive failed. It can be found here: /work/u1131128/coding-adv1/runs/base/generic_1g/MFC.sh. Please check the file for errors.
+
+Terminated
+
+mfc: ERROR > main.py finished with a 143 exit code.
+mfc: (venv) Exiting the Python virtual environment.
