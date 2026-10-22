@@ -12,6 +12,9 @@ source "$ROOT/scripts/env.sh"
 # Slurm cgroups only expose the allocated cores; OMPI's default core binding (core 0) then fails.
 # Default: no binding; explicit binding is a tuning experiment (MPIRUN_ARGS / RUN_ENV).
 export OMPI_MCA_hwloc_base_binding_policy=${OMPI_MCA_hwloc_base_binding_policy:-none}
+# OMPIO (default MPI-IO) on wekafs: write_all takes minutes at 2 ranks and File_close segfaults at 4
+# (jobs 600144/600148). ROMIO works (job 600167). I/O backend only — no effect on the numerics.
+export OMPI_MCA_io=${OMPI_MCA_io:-romio321}
 : "${LABEL:?}" "${CASE:?}" "${NGPU:=1}" "${REPS:=3}" "${BUILD:=generic}" "${CASE_ARGS:=}" "${MPIRUN_ARGS:=}" "${RUN_ENV:=}"
 out=$ROOT/results/$LABEL
 run=$ROOT/runs/$LABEL            # bulky outputs (D/, restart_data/, silo) live outside results/

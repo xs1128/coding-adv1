@@ -5,6 +5,7 @@
 #   --cells N     cells per GPU (approx.; global grid = N * ranks, decomposed by MFC). Overrides --m.
 #   --m M         global m=n=p (upstream: 200 -> 201^3 cells)
 #   --steps S     t_step_stop (= t_step_save, so only the initial and final states are written)
+#   --rdma        rdma_mpi=T: pass device buffers straight to (CUDA-aware) MPI
 #   --no-io       disable the database writes (format/parallel_io kept; prim_vars_wrt off, t_step_save > stop)
 import argparse
 import json
@@ -16,6 +17,7 @@ parser.add_argument("--cells", type=float, default=None)
 parser.add_argument("--m", type=int, default=200)
 parser.add_argument("--steps", type=int, default=30)
 parser.add_argument("--no-io", action="store_true")
+parser.add_argument("--rdma", action="store_true", help="rdma_mpi=T (GPU-aware MPI halo exchange)")
 args = parser.parse_args()
 
 m = n = p = args.m
@@ -133,6 +135,9 @@ case = {
     "fluid_pp(2)%gamma": 1.0e00 / (1.4e00 - 1.0e00),
     "fluid_pp(2)%eos": "ideal_gas",
 }
+
+if args.rdma:
+    case["rdma_mpi"] = "T"
 
 if args.no_io:
     case["prim_vars_wrt"] = "F"
