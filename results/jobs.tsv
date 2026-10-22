@@ -37,3 +37,9 @@ jobid	submitted	label	ngpu	minutes	vars
 600399	2026-10-22T10:58:29+08:00	test/base_full_s2	2	25	SCRIPT=mfctest TEST_ARGS=--from C06849AD --to 10CCE589 AFTER=600398
 600400	2026-10-22T10:58:30+08:00	test/base_full_s3	2	25	SCRIPT=mfctest TEST_ARGS=--from A96DA754 --to D0AC8751 AFTER=600399
 600407	2026-10-22T11:02:58+08:00	base/official_1g	1	10	BUILD=caseopt REPS=5 STEPPROF=1
+600470	2026-10-22T11:21:26+08:00	base/v493_official_1g	1	10	BUILD=caseopt REPS=5 MFC_DIR=/work/u1131128/coding-adv1/mfc-v4.9.3
+600471	2026-10-22T11:21:27+08:00	base/v493_samecfg_1g	1	10	BUILD=caseopt REPS=5 MFC_DIR=/work/u1131128/coding-adv1/mfc-v4.9.3 AFTER=600470
+600481	2026-10-22T11:24:53+08:00	base/v493_official_1g	1	10	BUILD=caseopt REPS=5 MFC_DIR=/work/u1131128/coding-adv1/mfc-v4.9.3
+600482	2026-10-22T11:24:54+08:00	base/v493_samecfg_1g	1	10	BUILD=caseopt REPS=5 MFC_DIR=/work/u1131128/coding-adv1/mfc-v4.9.3 AFTER=600481
+600682	2026-10-22T13:02:48+08:00	prof/nsys_v570_1g_30	1	10	SCRIPT=profile MODE=nsys BUILD=caseopt
+600683	2026-10-22T13:02:48+08:00	prof/nsys_v493_1g_30	1	10	SCRIPT=profile MODE=nsys BUILD=caseopt MFC_DIR=/work/u1131128/coding-adv1/mfc-v4.9.3

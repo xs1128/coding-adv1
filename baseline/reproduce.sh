@@ -2,7 +2,7 @@
 # Reproduce the 1-GPU baseline and the official-version comparison on nano4 (from $ROOT, after tools/sync.sh push).
 #   baseline/reproduce.sh checkout   # pinned v5.7.0 in mfc/, official-table version v4.9.3 in mfc-v4.9.3/
 #   baseline/reproduce.sh build      # login node, -j 8, ~15 min each
-#   baseline/reproduce.sh submit     # 3 jobs x 1 H200 x ~2 min
+#   baseline/reproduce.sh submit     # 5 jobs x 1 H200 x ~2 min
 #   baseline/reproduce.sh report     # verify + table (login node, no GPU)
 set -euo pipefail
 ROOT=/work/u1131128/coding-adv1
@@ -29,6 +29,10 @@ case "${1:?checkout|build|submit|report}" in
           BUILD=caseopt REPS=5 MFC_DIR=$ROOT/mfc-v4.9.3 AFTER=$a)
     bash harness/submit.sh base/v493_samecfg_1g harness/cases/official_v493.py 1 10 \
           BUILD=caseopt REPS=5 MFC_DIR=$ROOT/mfc-v4.9.3 AFTER=$b
+    # GPU kernel time per step, same 30-step configuration for both versions
+    bash harness/submit.sh prof/nsys_v570_1g_30 harness/cases/perf3d.py 1 10 SCRIPT=profile MODE=nsys BUILD=caseopt
+    bash harness/submit.sh prof/nsys_v493_1g_30 harness/cases/official_v493.py 1 10 SCRIPT=profile MODE=nsys \
+          BUILD=caseopt MFC_DIR=$ROOT/mfc-v4.9.3
     ;;
   report)
     py=mfc/build/venv/bin/python3
@@ -36,6 +40,7 @@ case "${1:?checkout|build|submit|report}" in
       $py harness/verify.py "$l" > /dev/null || true
     done
     $py harness/collect.py | grep -E "^label|^base/(official|v493)"
+    $py harness/nsys_summary.py results/prof/nsys_v570_1g_30 results/prof/nsys_v493_1g_30 2>/dev/null || true
     ;;
   *) echo "unknown step $1" >&2; exit 2 ;;
 esac

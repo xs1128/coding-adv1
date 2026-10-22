@@ -1,0 +1,13 @@
+{
+ "a": "/work/u1131128/coding-adv1/runs/ref/perf3d_201_30/restart_data/lustre_30.dat",
+ "b": "/work/u1131128/coding-adv1/runs/base/v493_official_1g/restart_data/lustre_30.dat",
+ "step": 30,
+ "n": 64964808,
+ "bitwise": false,
+ "nonfinite": 0,
+ "max_abs": 4.291534423828125e-06,
+ "max_rel": 0.0001539909119272374,
+ "l2_rel": 2.669775497600892e-16,
+ "rtol": 1e-12,
+ "status": "FAIL"
+}
