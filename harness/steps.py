@@ -48,6 +48,9 @@ def main():
     for p in ranks:
         r = re.search(r"steps_rank(\d+)_", p).group(1)
         d = load(p)
+        for new, old in (("TIMESTEP", "Time_Step"), ("RHS-COMMUNICATION", "RHS-MPI")):  # MFC v4.9.x names
+            if new not in d and old in d:
+                d[new] = d[old]
         steps = [x[1] for x in d.get("TIMESTEP", [])]
         rest = steps[1:]
         row = [r, len(steps), steps[0] if steps else float("nan"), med(rest), min(rest, default=float("nan")),

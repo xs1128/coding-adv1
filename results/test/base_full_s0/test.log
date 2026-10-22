@@ -1,0 +1,39 @@
+mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn019 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 4
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | 
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Build | syscheck and pre_process
+
+
+ Build | syscheck and simulation
+
+
+
+ Test pre_process and simulation | from EA8FA07E to 126FF74F (188 tests)
+  
+     Progress      Test Name                                        Time(s)   UUID
+  
+     (  1/188)    2D -> ICPP -> STL                                    18.82    138D6A0D
+     (  2/188)    2D -> IBM -> STL                                     21.46    EA8FA07E
+     (  3/188)    3D -> ICPP -> STL                                    21.48    E777BE53
+     (  4/188)    1D -> bc=-1                                          17.58    D79C3E6F
+     (  5/188)    3D -> IBM -> STL                                     37.40    4E0FBE72
+     (  6/188)    1D -> bc=-2                                          17.49    8A59E8E6
+     (  7/188)    1D -> bc=-4                                          17.43    70DAE9E8
+     (  8/188)    1D -> bc=-5                                          15.28    3AE495F4
+     (  9/188)    1D -> bc=-6                                          15.77    5EC236F2
+     ( 10/188)    1D -> bc=-8                                          16.54    AED93D34
+     ( 11/188)    1D -> bc=-7                                          16.68    48CCE072
+     ( 12/188)    1D -> bc=-9                                          16.01    C5B79059
+     ( 13/188)    1D -> bc=-10                                         15.66    727F72ED
+     ( 14/188)    1D -> bc=-12                                         15.50    3FC6FC4A
+     ( 15/188)    1D -> bc=-11                                         16.73    A60691E7
