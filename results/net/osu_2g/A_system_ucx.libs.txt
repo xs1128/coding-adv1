@@ -1,0 +1,5 @@
+## A_system_ucx
+LD_LIBRARY_PATH=/work/envstack/apps/nvhpc/26.3/Linux_x86_64/26.3/comm_libs/13.1/nvshmem/lib:/work/envstack/apps/nvhpc/26.3/Linux_x86_64/26.3/comm_libs/13.1/nccl/lib:/work/envstack/apps/nvhpc/26.3/Linux_x86_64/26.3/math_libs/13.1/lib64:/work/envstack/apps/nvhpc/26.3/Linux_x86_64/26.3/compilers/lib:/work/envstack/apps/nvhpc/26.3/Linux_x86_64/26.3/compilers/extras/qd/lib:/work/envstack/apps/nvhpc/26.3/Linux_x86_64/26.3/cuda/13.1/lib64:/usr/local/cuda-13.0/lib64::
+	libucp.so.0 => /lib64/libucp.so.0 (0x00001492835ff000)
+	libuct.so.0 => /lib64/libuct.so.0 (0x00001492835bf000)
+	libucs.so.0 => /lib64/libucs.so.0 (0x0000149283401000)

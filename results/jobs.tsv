@@ -25,3 +25,4 @@ jobid	submitted	label	ngpu	minutes	vars
 600180	2026-10-22T09:48:45+08:00	scale/weak_8g_rdma	8	12	BUILD=caseopt REPS=2 CASE_ARGS=--cells 8120601 --rdma
 600182	2026-10-22T09:48:47+08:00	prof/nsys_caseopt_8g_rdma	8	12	SCRIPT=profile MODE=nsys BUILD=caseopt CASE_ARGS=--steps 10 --rdma
 600185	2026-10-22T09:48:48+08:00	prof/nsys_caseopt_4g_romio	4	12	SCRIPT=profile MODE=nsys BUILD=caseopt CASE_ARGS=--steps 10
+600232	2026-10-22T10:00:27+08:00	net/osu_2g	2	8	SCRIPT=osu

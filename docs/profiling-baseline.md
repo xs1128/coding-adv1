@@ -78,3 +78,10 @@ GPU work is balanced (±2 %), but rank 7 spends **0.9 ms/stage more on the host*
 `GPU_UPDATE`s per call) → every other rank waits for it inside Sendrecv. Even rank 0 has 0.37 ms/stage of host
 gaps between kernels. ⇒ At 8 GPUs the parallel bottleneck is **host-side launch/sync latency + its imbalance**,
 not halo bandwidth (pure transfer ≈0.03 ms per face with RDMA).
+
+## MPI transport check (net/osu_2g, job 600232; OSU device buffers, GPU0↔GPU1)
+Hypothesis "pml_ucx links the system /lib64 UCX (no CUDA transports on the login node) ⇒ no NVLink IPC" is
+**refuted** on compute nodes: UCX 1.20 protocol table selects `cuda_ipc` zero-copy rendezvous for ≥1.3 KB device
+messages; D→D latency 3.1 µs (8 B) / 12.5 µs (1 MB) / 20.9 µs (4 MB); bandwidth 292 GB/s at 4 MB.
+⇒ a 2.6 MB MFC halo face costs ≈15–20 µs of transfer; the measured 0.34 ms median Sendrecv is waiting.
+(The HPC-X-UCX arm of the job did not run: `hpcx-init.sh` trips `set -u`; not re-run since arm A is at NVLink speed.)
