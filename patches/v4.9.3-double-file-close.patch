@@ -1,0 +1,13 @@
+diff --git a/src/simulation/m_data_output.fpp b/src/simulation/m_data_output.fpp
+index 875f0a9..43e12ea 100644
+--- a/src/simulation/m_data_output.fpp
++++ b/src/simulation/m_data_output.fpp
+@@ -1003,8 +1003,6 @@ contains
+             call MPI_FILE_CLOSE(ifile, ierr)
+         end if
+ 
+-        call MPI_FILE_CLOSE(ifile, ierr)
+-
+ #endif
+ 
+     end subroutine s_write_parallel_data_files

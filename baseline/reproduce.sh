@@ -14,7 +14,8 @@ case "${1:?checkout|build|submit|report}" in
     git -C mfc checkout --detach $V5
     git -C mfc fetch --depth 1 origin tag v4.9.3
     [[ -d mfc-v4.9.3 ]] || git -C mfc worktree add --detach ../mfc-v4.9.3 v4.9.3
-    git -C mfc-v4.9.3 apply patches/v4.9.3-cuda13-nvtx.patch   # CUDA >= 12.9 has no libnvToolsExt
+    git -C mfc-v4.9.3 apply ../patches/v4.9.3-cuda13-nvtx.patch        # CUDA >= 12.9 has no libnvToolsExt
+    git -C mfc-v4.9.3 apply ../patches/v4.9.3-double-file-close.patch  # 2nd MPI_FILE_CLOSE segfaults on OMPI 4.1.9
     ;;
   build)
     bash scripts/build.sh caseopt harness/cases/perf3d.py
