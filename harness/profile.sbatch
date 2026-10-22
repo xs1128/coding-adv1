@@ -10,6 +10,9 @@
 set -euo pipefail
 ROOT=/work/u1131128/coding-adv1
 source "$ROOT/scripts/env.sh"
+# Slurm cgroups only expose the allocated cores; OMPI's default core binding (core 0) then fails.
+# Default: no binding; explicit binding is a tuning experiment (MPIRUN_ARGS / RUN_ENV).
+export OMPI_MCA_hwloc_base_binding_policy=${OMPI_MCA_hwloc_base_binding_policy:-none}
 : "${LABEL:?}" "${CASE:?}" "${NGPU:=1}" "${BUILD:=generic}" "${MODE:=nsys}" "${CASE_ARGS:=}"
 : "${MPIRUN_ARGS:=}" "${RUN_ENV:=}" "${NCU_SKIP:=200}" "${NCU_COUNT:=120}" "${NCU_SET:=full}" "${NCU_KERNEL:=.*}"
 out=$ROOT/results/$LABEL

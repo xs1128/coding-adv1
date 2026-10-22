@@ -11,6 +11,7 @@
 | 1 | `tools/sync.sh push` mirrors with `--delete` but did not exclude the remote-only `logs/` dir, so the first push after starting the build deleted the live build log. | `tail logs/build_generic.log` → "No such file" | Excluded `/logs/` in sync.sh; recovered the stream from `/proc/<pid>/fd/1` of the running build. |
 | 2 | The environment-probe subagent was pointed at `nano4-chwang`/`f1-chwang` (other people's accounts) before checking ownership. | Main session cross-checked the hw3 CLAUDE.md rule against `hpc hosts` | Probe was read-only; all work now uses `nano4-u1131128` only (CLAUDE.md rule). |
 | 3 | First baseline job (600131) died in `syscheck`: MFC default template picked `srun`, and HPC-X Open MPI cannot init under srun here (OPAL help-file paths point at the /proj build prefix). | `results/base/generic_1g/prep.log` | Force `-b mpirun` in run/profile sbatch; export `OPAL_PREFIX` in env.sh. Cost: <1 GPU-min. |
+| 4 | Retry (600134) failed again: HPC-X `mpirun` binds rank 0 to core 0, outside the job's cgroup cpuset (`hwloc_set_cpubind ... "0"`). hw2 had already solved this with `--bind-to none` — prior-work lesson not carried over. | `results/base/generic_1g/prep.log` | Default `OMPI_MCA_hwloc_base_binding_policy=none` in both sbatch; binding becomes an explicit experiment. Cost: <1 GPU-min. |
 
 ## 3. Code the student must be able to defend
 (filled in as optimizations land)
