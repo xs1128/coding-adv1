@@ -28,7 +28,7 @@ cp "$ROOT/$CASE" "$run/case.py"
 
 opt=(); [[ $BUILD == caseopt ]] && opt=(--case-optimization)
 cd "$MFC_DIR"
-./mfc.sh run "$run/case.py" -n "$NGPU" -t pre_process simulation --no-build "${opt[@]}" \
+./mfc.sh run "$run/case.py" -n "$NGPU" -t pre_process simulation --no-build -b mpirun "${opt[@]}" \
     -- $CASE_ARGS > "$out/prep.log" 2>&1
 sim=$(grep -oE '[^ ]*/bin/simulation' "$out/prep.log" | tail -1)
 echo "sim=$sim" >> "$out/env.txt"

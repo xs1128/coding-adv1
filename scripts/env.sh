@@ -10,3 +10,5 @@ export CC=nvc CXX=nvc++ FC=nvfortran
 export MFC_CUDA_CC=90                       # H200 = sm_90
 export ROOT=/work/u1131128/coding-adv1      # repo mirror on nano4
 export MFC_DIR=$ROOT/mfc                    # MFC checkout (v5.7.0 + our branch)
+# HPC-X Open MPI was built under /proj/...; point it at the installed tree (help files, components).
+export OPAL_PREFIX=$NVHPC_ROOT/comm_libs/13.1/hpcx/hpcx-2.25.1/ompi
