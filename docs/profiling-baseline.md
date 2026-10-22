@@ -66,3 +66,15 @@ nsys per-step distribution (rank 0, 10 steps; prof/nsys_caseopt_{1g,4g_romio,8g_
 4. **Load imbalance**: kernel launches per rank 992–2072 (boundary ranks run BC/CBC kernels; interior ranks
    more pack/unpack) → neighbours wait in Sendrecv (variance: max/median Sendrecv ≈ 10×).
 5. **Variance / first-step cost of RDMA** (175 ms first step) — amortized in long runs, matters for short ones.
+
+## Per-rank imbalance at 8 GPUs (prof/nsys_caseopt_8g_{rdma,romio}, medians per stage)
+Decomposition 2×2×2: every rank has 3 MPI faces + 3 physical faces; `end` faces are CBC (bc=−6), `beg` reflective.
+| rank | GPU kernels | RHS − comm (RDMA) | comm (RDMA) | Sendrecv median (RDMA) |
+|---|---|---|---|---|
+| 0 (no CBC face) | 3.54 ms | 3.91 ms | 1.35 ms | 0.34 ms |
+| 3, 5, 6 (2 CBC faces) | 3.59–3.61 | 4.46–4.52 | 0.64–0.69 | 0.04 |
+| 7 (3 CBC faces) | 3.60 | **4.79** | 0.37 | 0.03 |
+GPU work is balanced (±2 %), but rank 7 spends **0.9 ms/stage more on the host** (CBC: tiny kernels + 5 blocking
+`GPU_UPDATE`s per call) → every other rank waits for it inside Sendrecv. Even rank 0 has 0.37 ms/stage of host
+gaps between kernels. ⇒ At 8 GPUs the parallel bottleneck is **host-side launch/sync latency + its imbalance**,
+not halo bandwidth (pure transfer ≈0.03 ms per face with RDMA).
