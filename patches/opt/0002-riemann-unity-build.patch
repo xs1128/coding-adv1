@@ -1,0 +1,33 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 8f4a96c..274cfdd 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -155,6 +155,28 @@ if (MFC_PRE_PROCESS)
+ endif()
+ 
+ if (MFC_SIMULATION)
++    # nvfortran does not inline device routines across source files (#2094): per-cell helpers called in the Riemann
++    # solver kernels (s_compute_mixture_coefficients, s_compute_speed_of_sound, s_compute_average_state, ...) stay real
++    # calls, which forces their arguments and every value live across them into local memory. Compile the modules
++    # between m_variables_conversion and m_riemann_solvers in the module dependency graph as one source file so these
++    # calls are inlined. The set must stay closed under "use" in both directions, or the build has a module cycle.
++    if (CMAKE_Fortran_COMPILER_ID STREQUAL "NVHPC" AND (MFC_OpenACC OR MFC_OpenMP))
++        set(_unity "${CMAKE_BINARY_DIR}/fypp/simulation/m_riemann_unity.f90")
++        set(_unity_txt "")
++        set(_unity_parts "")
++        foreach (_m m_variables_conversion m_riemann_state m_bubbles m_bubbles_EE m_muscl m_weno m_surface_tension
++                    m_riemann_solver_hll m_riemann_solver_hllc m_riemann_solver_hlld m_riemann_solver_hypo_hlld
++                    m_riemann_solver_lf m_riemann_solvers)
++            set(_f "${CMAKE_BINARY_DIR}/fypp/simulation/${_m}.fpp.f90")
++            string(APPEND _unity_txt "#include \"${_f}\"\n")
++            list(APPEND _unity_parts "${_f}")
++        endforeach()
++        file(CONFIGURE OUTPUT "${_unity}" CONTENT "${_unity_txt}")
++        set_source_files_properties(${_unity_parts} PROPERTIES HEADER_FILE_ONLY ON)
++        set_source_files_properties("${_unity}" PROPERTIES OBJECT_DEPENDS "${_unity_parts}")
++        list(APPEND simulation_SRCs "${_unity}")
++    endif()
++
+     MFC_SETUP_TARGET(TARGET  simulation
+                      SOURCES "${simulation_SRCs}"
+                      MPI FFTW OpenACC OpenMP)
