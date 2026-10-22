@@ -1,0 +1,52 @@
+Collecting data...
+Collecting data...
+Collecting data...
+Collecting data...
+Collecting data...
+Collecting data...
+Collecting data...
+Collecting data...
+ Simulating a case-optimized 200x200x200 case on 8 rank(s) with OpenACC offloading.
+ [  0%] step 1 of 11 (t_step 0) t/step  0.00E+00s (avg  0.00E+00s) ETA 0:00:00
+ [ 10%] step 2 of 11 (t_step 1) t/step  1.75E-01s (avg  0.00E+00s) ETA 0:00:00
+ [ 19%] step 3 of 11 (t_step 2) t/step  1.67E-02s (avg  0.00E+00s) ETA 0:00:00
+ [ 28%] step 4 of 11 (t_step 3) t/step  1.59E-02s (avg  1.59E-02s) ETA 0:00:00
+ [ 37%] step 5 of 11 (t_step 4) t/step  1.73E-02s (avg  1.66E-02s) ETA 0:00:00
+ [ 46%] step 6 of 11 (t_step 5) t/step  1.69E-02s (avg  1.67E-02s) ETA 0:00:00
+ [ 55%] step 7 of 11 (t_step 6) t/step  1.63E-02s (avg  1.66E-02s) ETA 0:00:00
+ [ 64%] step 8 of 11 (t_step 7) t/step  1.60E-02s (avg  1.65E-02s) ETA 0:00:00
+ [ 73%] step 9 of 11 (t_step 8) t/step  1.59E-02s (avg  1.64E-02s) ETA 0:00:00
+ [ 82%] step 10 of 11 (t_step 9) t/step  1.63E-02s (avg  1.64E-02s) ETA 0:00:00
+ Performance:   8.1732812500000002E-002 ns/gp/eq/rhs
+Generating '/dev/shm/u1131128_600182/nsys-report-b51c.qdstrm'
+Generating '/dev/shm/u1131128_600182/nsys-report-ef07.qdstrm'
+Generating '/dev/shm/u1131128_600182/nsys-report-b8ea.qdstrm'
+Generating '/dev/shm/u1131128_600182/nsys-report-21bb.qdstrm'
+Generating '/dev/shm/u1131128_600182/nsys-report-b998.qdstrm'
+[1/1] [0%                          ] nsys_rank7.nsys-repGenerating '/dev/shm/u1131128_600182/nsys-report-af9c.qdstrm'
+[1/1] [0%                          ] nsys_rank7.nsys-rep[1/1] [10%                         ] nsys_rank7.nsys-rep[1/1] [13%                         ] nsys_rank7.nsys-rep[1/1] [=15%                        ] nsys_rank7.nsys-rep[1/1] [=16%                        ] nsys_rank7.nsys-rep[1/1] [=17%                        ] nsys_rank7.nsys-rep[1/1] [====28%                     ] nsys_rank7.nsys-rep[1/1] [=======39%                  ] nsys_rank7.nsys-rep[1/1] [===========50%              ] nsys_rank7.nsys-rep[1/1] [===========53%              ] nsys_rank7.nsys-rep[1/1] [========================100%] nsys_rank7.nsys-rep[1/1] [========================100%] nsys_rank7.nsys-rep
+Generated:
+	/work/u1131128/coding-adv1/runs/prof/nsys_caseopt_8g_rdma/nsys_rank7.nsys-rep
+Generating '/dev/shm/u1131128_600182/nsys-report-472a.qdstrm'
+Generating '/dev/shm/u1131128_600182/nsys-report-2b3a.qdstrm'
+[1/1] [0%                          ] nsys_rank6.nsys-rep[1/1] [0%                          ] nsys_rank0.nsys-rep[1/1] [0%                          ] nsys_rank6.nsys-rep[1/1] [11%                         ] nsys_rank6.nsys-rep[1/1] [14%                         ] nsys_rank6.nsys-rep[1/1] [=16%                        ] nsys_rank6.nsys-rep[1/1] [=17%                        ] nsys_rank6.nsys-rep[1/1] [==18%                       ] nsys_rank6.nsys-rep[1/1] [==19%                       ] nsys_rank6.nsys-rep[1/1] [==20%                       ] nsys_rank6.nsys-rep[1/1] [0%                          ] nsys_rank0.nsys-rep[1/1] [=====32%                    ] nsys_rank6.nsys-rep[1/1] [=========45%                ] nsys_rank6.nsys-rep[1/1] [14%                         ] nsys_rank0.nsys-rep[1/1] [=17%                        ] nsys_rank0.nsys-rep[1/1] [==20%                       ] nsys_rank0.nsys-rep[1/1] [==21%                       ] nsys_rank0.nsys-rep[1/1] [===22%                      ] nsys_rank0.nsys-rep[1/1] [===23%                      ] nsys_rank0.nsys-rep[1/1] [=======37%                  ] nsys_rank0.nsys-rep[1/1] [===========52%              ] nsys_rank0.nsys-rep[1/1] [============54%             ] nsys_rank6.nsys-rep[1/1] [========================100%] nsys_rank6.nsys-rep[1/1] [============54%             ] nsys_rank0.nsys-rep[1/1] [========================100%] nsys_rank0.nsys-rep[1/1] [========================100%] nsys_rank6.nsys-rep
+Generated:
+	/work/u1131128/coding-adv1/runs/prof/nsys_caseopt_8g_rdma/nsys_rank6.nsys-rep
+[1/1] [========================100%] nsys_rank0.nsys-rep
+Generated:
+	/work/u1131128/coding-adv1/runs/prof/nsys_caseopt_8g_rdma/nsys_rank0.nsys-rep
+[1/1] [0%                          ] nsys_rank2.nsys-rep[1/1] [0%                          ] nsys_rank4.nsys-rep[1/1] [0%                          ] nsys_rank2.nsys-rep[1/1] [0%                          ] nsys_rank4.nsys-rep[1/1] [13%                         ] nsys_rank2.nsys-rep[1/1] [=16%                        ] nsys_rank2.nsys-rep[1/1] [13%                         ] nsys_rank4.nsys-rep[1/1] [=16%                        ] nsys_rank4.nsys-rep[1/1] [==19%                       ] nsys_rank2.nsys-rep[1/1] [==20%                       ] nsys_rank2.nsys-rep[1/1] [==19%                       ] nsys_rank4.nsys-rep[1/1] [==21%                       ] nsys_rank2.nsys-rep[1/1] [==20%                       ] nsys_rank4.nsys-rep[1/1] [==21%                       ] nsys_rank4.nsys-rep[1/1] [===22%                      ] nsys_rank2.nsys-rep[1/1] [===22%                      ] nsys_rank4.nsys-rep[1/1] [=======36%                  ] nsys_rank2.nsys-rep[1/1] [=======36%                  ] nsys_rank4.nsys-rep[1/1] [===========50%              ] nsys_rank2.nsys-rep[1/1] [==========49%               ] nsys_rank4.nsys-rep[1/1] [============54%             ] nsys_rank2.nsys-rep[1/1] [========================100%] nsys_rank2.nsys-rep[1/1] [============54%             ] nsys_rank4.nsys-rep[1/1] [========================100%] nsys_rank4.nsys-rep[1/1] [0%                          ] nsys_rank3.nsys-rep[1/1] [========================100%] nsys_rank2.nsys-rep
+Generated:
+	/work/u1131128/coding-adv1/runs/prof/nsys_caseopt_8g_rdma/nsys_rank2.nsys-rep
+[1/1] [========================100%] nsys_rank4.nsys-rep
+Generated:
+	/work/u1131128/coding-adv1/runs/prof/nsys_caseopt_8g_rdma/nsys_rank4.nsys-rep
+[1/1] [0%                          ] nsys_rank1.nsys-rep[1/1] [0%                          ] nsys_rank3.nsys-rep[1/1] [12%                         ] nsys_rank3.nsys-rep[1/1] [14%                         ] nsys_rank3.nsys-rep[1/1] [0%                          ] nsys_rank5.nsys-rep[1/1] [=17%                        ] nsys_rank3.nsys-rep[1/1] [==18%                       ] nsys_rank3.nsys-rep[1/1] [==19%                       ] nsys_rank3.nsys-rep[1/1] [=====32%                    ] nsys_rank3.nsys-rep[1/1] [=========44%                ] nsys_rank3.nsys-rep[1/1] [===========53%              ] nsys_rank3.nsys-rep[1/1] [========================100%] nsys_rank3.nsys-rep[1/1] [========================100%] nsys_rank3.nsys-rep
+Generated:
+	/work/u1131128/coding-adv1/runs/prof/nsys_caseopt_8g_rdma/nsys_rank3.nsys-rep
+[1/1] [0%                          ] nsys_rank1.nsys-rep[1/1] [13%                         ] nsys_rank1.nsys-rep[1/1] [=16%                        ] nsys_rank1.nsys-rep[1/1] [==19%                       ] nsys_rank1.nsys-rep[1/1] [==20%                       ] nsys_rank1.nsys-rep[1/1] [==21%                       ] nsys_rank1.nsys-rep[1/1] [===22%                      ] nsys_rank1.nsys-rep[1/1] [0%                          ] nsys_rank5.nsys-rep[1/1] [=======36%                  ] nsys_rank1.nsys-rep[1/1] [===========50%              ] nsys_rank1.nsys-rep[1/1] [11%                         ] nsys_rank5.nsys-rep[1/1] [14%                         ] nsys_rank5.nsys-rep[1/1] [=16%                        ] nsys_rank5.nsys-rep[1/1] [=17%                        ] nsys_rank5.nsys-rep[1/1] [==18%                       ] nsys_rank5.nsys-rep[1/1] [==19%                       ] nsys_rank5.nsys-rep[1/1] [==20%                       ] nsys_rank5.nsys-rep[1/1] [=====32%                    ] nsys_rank5.nsys-rep[1/1] [============54%             ] nsys_rank1.nsys-rep[1/1] [========================100%] nsys_rank1.nsys-rep[1/1] [=========45%                ] nsys_rank5.nsys-rep[1/1] [============54%             ] nsys_rank5.nsys-rep[1/1] [========================100%] nsys_rank5.nsys-rep[1/1] [========================100%] nsys_rank1.nsys-rep
+Generated:
+	/work/u1131128/coding-adv1/runs/prof/nsys_caseopt_8g_rdma/nsys_rank1.nsys-rep
+[1/1] [========================100%] nsys_rank5.nsys-rep
+Generated:
+	/work/u1131128/coding-adv1/runs/prof/nsys_caseopt_8g_rdma/nsys_rank5.nsys-rep

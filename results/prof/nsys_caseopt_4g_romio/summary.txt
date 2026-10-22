@@ -1,0 +1,55 @@
+
+=== rank 0: kernels 202.5 ms in 1322 launches, memcpy 108.2 ms, MPI 7261.5 ms
+ share  total ms    inst   mean us  kernel
+ 11.4%     23.12      30     770.8  m_weno_s_weno_1096_gpu__2
+ 11.4%     23.10      30     770.0  m_weno_s_weno_1096_gpu__1
+ 11.1%     22.51      30     750.3  m_weno_s_weno
+  8.5%     17.27      30     575.5  m_riemann_solver_hllc_s_hllc_riemann_solver_898_gpu_1
+  8.5%     17.21      30     573.8  m_riemann_solver_hllc_s_hllc_riemann_solver_898_gpu_2
+  8.2%     16.63      90     184.8  m_weno_s_pack_weno_input_arr
+-- memcpy/memset
+       65.78 ms      68x  [CUDA memcpy Device-to-Host]
+       41.94 ms    2349x  [CUDA memcpy Host-to-Device]
+        0.47 ms     569x  [CUDA memset]
+-- NVTX ranges (wall, includes host waits)
+     6293.46 ms       1x  :INIT
+     5667.98 ms       1x  :INIT-MPI
+     1189.22 ms       1x  :FINALIZE-MODULES
+     1121.89 ms       1x  :SIMULATION-TIME-MARCH
+      778.86 ms       1x  :SAVE-DATA
+      607.03 ms       1x  :INIT-MODULES
+      339.54 ms      10x  :TIMESTEP
+      329.61 ms      30x  :COMPUTE-RHS
+      105.49 ms      30x  :RHS-COMMUNICATION
+       92.61 ms      90x  :RHS-RECONSTRUCTION
+       79.02 ms      90x  :RHS-RIEMANN-SOLVER
+       39.93 ms      90x  :RHS-ADVECTION-SRC
+       35.56 ms      60x  :RHS-COMM-SENDRECV-NO-RMDA
+       30.29 ms      60x  :RHS-COMM-HOST2DEV
+       28.10 ms      60x  :RHS-COMM-DEV2HOST
+       18.43 ms       1x  :INIT-GPU-VARS
+-- top CUDA API (host)
+      217.20 ms    3842x  cuStreamSynchronize
+       75.52 ms      68x  cuMemcpyDtoHAsync_v2
+       70.75 ms       1x  cuModuleLoadDataEx
+       53.15 ms    2349x  cuMemcpyHtoDAsync_v2
+       37.32 ms     219x  cuMemFree_v2
+       34.16 ms     301x  cuMemAlloc_v2
+       23.04 ms       1x  cuMemHostAlloc
+        8.44 ms       2x  cuMemFreeHost
+-- MPI
+     4608.93 ms       1x  MPI_Init
+     1186.92 ms       1x  MPI_Finalize
+      562.23 ms       8x  MPI_File_write_all
+      418.62 ms       8x  MPI_File_read_all
+      416.88 ms     996x  MPI_Bcast
+       35.51 ms     124x  MPI_Sendrecv
+       26.94 ms       5x  MPI_File_open
+        3.35 ms      16x  MPI_File_set_view
+
+=== per-rank overview
+rank  kernel ms  memcpy ms    MPI ms  launches
+   0      202.5      108.2    7261.5      1322
+   1      203.1      105.0    6589.1      1682
+   2      203.3      106.3    6712.2      1682
+   3      202.9      109.3    6375.4      2042

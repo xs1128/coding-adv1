@@ -1,7 +1,7 @@
 mfc: Starting...
 mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
 
-      .=++*:          -+*+=.        | u1131128@25a-hgpn038 [Linux]
+      .=++*:          -+*+=.        | u1131128@25a-hgpn016 [Linux]
      :+   -*-        ==   =* .      | ----------------------------
    :*+      ==      ++    .+-       | 
   :*##-.....:*+   .#%+++=--+=:::.   | --jobs 1
@@ -41,7 +41,7 @@ mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
 +-----------------------------------------------------------------------------------------------------------+ 
 | MFC case # MFC @ /work/u1131128/coding-adv1/runs/prof/nsys_caseopt_4g_romio/case.py:                      |
 +-----------------------------------------------------------------------------------------------------------+ 
-| * Start-time     09:43:45                            * Start-date     09:43:45                            |
+| * Start-time     09:48:55                            * Start-date     09:48:55                            |
 | * Partition      N/A                                 * Walltime       01:00:00                            |
 | * Account        N/A                                 * Nodes          1                                   |
 | * Job Name       MFC                                 * Engine         interactive                         |
@@ -98,28 +98,28 @@ mfc: OK > :) Running pre_process:
  Pre-processing a 200x200x200 case on 4 rank(s)
  Processing patch            1
  Processing patch            2
- Elapsed Time    2.262635946273804     
+ Elapsed Time    2.289983034133911     
 
 mfc: OK > :) Running simulation:
 
 + mpirun -np 4 /work/u1131128/coding-adv1/mfc/build/install/gpu-acc-3b50febf95/bin/simulation
  Simulating a case-optimized 200x200x200 case on 4 rank(s) with OpenACC offloading.
  [  0%] step 1 of 11 (t_step 0) t/step  0.00E+00s (avg  0.00E+00s) ETA 0:00:00
- [ 10%] step 2 of 11 (t_step 1) t/step  4.19E-02s (avg  0.00E+00s) ETA 0:00:00
- [ 19%] step 3 of 11 (t_step 2) t/step  3.11E-02s (avg  0.00E+00s) ETA 0:00:00
- [ 28%] step 4 of 11 (t_step 3) t/step  3.11E-02s (avg  3.11E-02s) ETA 0:00:00
- [ 37%] step 5 of 11 (t_step 4) t/step  3.11E-02s (avg  3.11E-02s) ETA 0:00:00
- [ 46%] step 6 of 11 (t_step 5) t/step  3.10E-02s (avg  3.11E-02s) ETA 0:00:00
- [ 55%] step 7 of 11 (t_step 6) t/step  3.13E-02s (avg  3.11E-02s) ETA 0:00:00
- [ 64%] step 8 of 11 (t_step 7) t/step  3.33E-02s (avg  3.16E-02s) ETA 0:00:00
- [ 73%] step 9 of 11 (t_step 8) t/step  3.11E-02s (avg  3.15E-02s) ETA 0:00:00
- [ 82%] step 10 of 11 (t_step 9) t/step  3.13E-02s (avg  3.14E-02s) ETA 0:00:00
- Performance:   0.1607500000000000      ns/gp/eq/rhs
+ [ 10%] step 2 of 11 (t_step 1) t/step  4.31E-02s (avg  0.00E+00s) ETA 0:00:00
+ [ 19%] step 3 of 11 (t_step 2) t/step  3.13E-02s (avg  0.00E+00s) ETA 0:00:00
+ [ 28%] step 4 of 11 (t_step 3) t/step  3.13E-02s (avg  3.13E-02s) ETA 0:00:00
+ [ 37%] step 5 of 11 (t_step 4) t/step  3.13E-02s (avg  3.13E-02s) ETA 0:00:00
+ [ 46%] step 6 of 11 (t_step 5) t/step  3.29E-02s (avg  3.19E-02s) ETA 0:00:00
+ [ 55%] step 7 of 11 (t_step 6) t/step  3.13E-02s (avg  3.17E-02s) ETA 0:00:00
+ [ 64%] step 8 of 11 (t_step 7) t/step  3.13E-02s (avg  3.16E-02s) ETA 0:00:00
+ [ 73%] step 9 of 11 (t_step 8) t/step  3.12E-02s (avg  3.16E-02s) ETA 0:00:00
+ [ 82%] step 10 of 11 (t_step 9) t/step  3.14E-02s (avg  3.15E-02s) ETA 0:00:00
+ Performance:   0.1619046875000000      ns/gp/eq/rhs
 
 +-----------------------------------------------------------------------------------------------------------+ 
 | Finished MFC:                                                                                             |
 | * Total-time:    32s                                 * Exit Code:     0                                   |
-| * End-time:      09:44:17                            * End-date:      09:44:17                            |
+| * End-time:      09:49:27                            * End-date:      09:49:27                            |
 +-----------------------------------------------------------------------------------------------------------+ 
 
 mfc: (venv) Exiting the Python virtual environment.
