@@ -11,7 +11,9 @@ Every number below cites a job; details and rejected variants are in `docs/ladde
 | + P1 CBC async | 75.98 ms | 0.3933 | ~8.0 s | bitwise | 601152 |
 | + K4b Riemann unity build | 70.42 ms | 0.3632 | 7.33 s | bitwise | 602474 |
 | + K2 WENO register cap 128 | **62.99 ms** | **0.3255** | 6.9 s | bitwise | 602559 |
-| **total** | **−18.3 % (1.22×)** | **−18.3 %** | −14 % | | |
+| = clean series `sc26` (canonical) | 62.91 ms | 0.3248 | 7.13 s | bitwise | 602728 |
+| + T0.4 UCX on the GPU's own HCA (env, 1 GPU) | 63.00 ms | 0.3249 | **6.62 s** | bitwise | 602727 |
+| **total** | **−18.3 % (1.22×)** | **−18.4 %** | **−18 %** | | |
 
 The official MFC table lists 0.38 ns for H100 SXM. That number uses a different metric (v4.9.3, `s_compute_rhs` only,
 `cpu_time`, ghost cells counted), see `baseline/README.md`. Same-metric comparisons are within this table only.
@@ -45,11 +47,22 @@ The official MFC table lists 0.38 ns for H100 SXM. That number uses a different 
 - *Sweep.* 168 → 64.0 ms, 128 → 63.0 ms, 96 → 66.5 ms, so 96 spills too much.
 - *Disclosure.* This is a compiler-flag change, so it is disclosed.
 
+**T0.4: MPI start-up** (environment only, 1 GPU).
+- *Evidence.* `MPI_Init` alone took 1.70 s of the 1-rank wall time (nsys). A bare `MPI_Init` timer
+  (`harness/src/mpiinit.c`) showed the cost is UCX opening all 10 HCAs of the node; HCOLL/UCC off changed nothing.
+- *Change.* `harness/nicbind.sh` sets `UCX_NET_DEVICES` to the HCA next to each rank's GPU (read from
+  `nvidia-smi topo -m` per job). Wall 7.13 → 6.62 s at 1 GPU, step time unchanged.
+- *Not at multi-GPU.* At 4 GPUs it saves 3.1 s of start-up but makes every step 1.2 ms (4.5 %) slower, on every rank
+  and on two nodes. Default UCX stripes large messages over two rails. Break-even is ≈ 2700 steps, shorter than a
+  production run, so multi-GPU keeps the default.
+
 **Rejected, with evidence.**
 - NVHPC 25.9: no gain, not bitwise.
 - Compile-time `dir_idx` in HLLC: the SASS got worse (255 registers).
 - WENO `vector_length` 64/96.
 - WENO cap at 96.
+- One HCA per rank at multi-GPU (above). `ob1`/vader: peers unreachable in these jobs. UCX shared memory
+  (`UCX_POSIX_USE_PROC_LINK=n`): works, no gain.
 
 ## Correctness
 - **Benchmark output.** Every rung is bitwise identical to the pinned-v5.7.0 reference (`harness/verify.py`).
@@ -64,16 +77,27 @@ The official MFC table lists 0.38 ns for H100 SXM. That number uses a different 
     AFBACA70 had been wrongly listed as a known failure.
 - **Before an upstream PR:** the full suite.
 
-## Where the time is now (K4b profile, 69.6 ms of kernels per step; K2 profile pending)
+## Where the time is now (sc26 profile, 62.1 ms of kernels per step, job 602705)
 | Kernel | ms/step | Share | Note |
 |---|---|---|---|
-| WENO5 reconstruction | 25.4 | 36 % | K2 targets it (16 warps) |
-| HLLC | 12.9 | 18 % | 146–152 registers |
-| WENO input pack | 6.0 | 9 % | removed by NTHU's #2092 (not ours to claim) |
-| RK update, advection source, conversion, finalize | ~20 | 29 % | bandwidth-bound copies (#2087 pattern) |
+| WENO5 reconstruction (3 directions) | 17.9 | 29 % | was 25.3 before K2 |
+| HLLC | 12.9 | 21 % | 146–152 registers |
+| WENO input pack | 6.0 | 10 % | removed by NTHU's #2092 (not ours to claim) |
+| RK update, advection source, conversion, finalize | ~25 | 40 % | bandwidth-bound copies (#2087 pattern) |
+
+## 4 GPUs (201³ strong, host-staged halos)
+| Build | Step, median | Grind | Wall | Job |
+|---|---|---|---|---|
+| v5.7.0 baseline | — | 0.1534 / 0.1626 (2 reps) | 12.9 / 14.3 s | 600173 |
+| sc26 | 26.55 ms | 0.1325 (median of 3) | 12.44 s | 602703 (hgpn003) |
+| sc26 | 25.72 ms | 0.1377 (median of 3) | 13.07 s | 602770 (hgpn013) |
+
+- Strong-scaling efficiency 1 → 4 GPUs: 62.9 / (4 × 25.7–26.6) = **59–61 %**. Communication is 2.6–3.1 ms per step.
+- About 7.5 s of the 12–13 s wall is MPI start-up and finalize (5.9–6.4 s `MPI_Init` and 1.2 s `MPI_Finalize` at 4 ranks), so in a
+  30-step run the wall is mostly start-up.
+- The baseline has only 2 reps and no per-step data. A same-node baseline with ≥5 reps is needed for a final speedup claim.
 
 ## Next
-1. **Start-up.** Wall time is 6.9 s, of which only 2 s is time stepping (T0.4: environment only).
-2. **Multi-GPU re-measure.** Rerun 4 and 8 GPUs for P1+K4b+K2 to report strong-scaling efficiency next to time to
-   solution. Faster kernels lower the efficiency, as #2093 showed. The 8-GPU runs need the user's OK.
-3. **Remaining host-launch gaps (P2/P3).** These matter more at 8 GPUs, where kernels are short.
+1. **Same-node 4/8-GPU comparison** of baseline vs sc26, ≥5 reps. The 8-GPU runs need the user's OK.
+2. **Remaining host-launch gaps (P2/P3).** These matter more at 8 GPUs, where kernels are short.
+3. **Bandwidth-bound copies** (40 % of kernel time): fuse or skip them where the data is already in place.

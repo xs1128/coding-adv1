@@ -1,0 +1,16 @@
+variant	rep	wall_s	init_s	sendrecv_GBs	finalize_s
+default	1	9.083	6.388	48.64	1.213
+noproc	1	8.871	6.286	34.63	1.217
+nic_local	1	6.030	4.058	40.25	0.084
+nic_local_noproc	1	5.874	3.912	42.60	0.080
+ucx_1hca	1	5.364	3.915	45.78	0.091
+default	2	8.868	6.247	36.31	1.230
+noproc	2	8.885	6.314	50.30	1.200
+nic_local	2	6.240	4.232	44.19	0.079
+nic_local_noproc	2	5.935	3.871	43.61	0.080
+ucx_1hca	2	5.389	3.946	44.87	0.093
+default	3	9.154	6.543	35.92	1.218
+noproc	3	9.131	6.531	46.40	1.232
+nic_local	3	6.020	4.037	35.17	0.081
+nic_local_noproc	3	5.957	3.958	39.10	0.080
+ucx_1hca	3	5.418	3.987	40.78	0.095
