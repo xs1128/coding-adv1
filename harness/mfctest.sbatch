@@ -7,6 +7,7 @@
 set -uo pipefail
 ROOT=/work/u1131128/coding-adv1
 source "$ROOT/scripts/env.sh"
+export OMPI_MCA_rmaps_base_oversubscribe=1   # multi-rank tests share the 1-2 GPUs (correctness only)
 : "${LABEL:?}" "${NGPU:=1}" "${TEST_ARGS:=}" "${JOBS:=$((2 * NGPU))}"
 out=$ROOT/results/$LABEL; mkdir -p "$out"
 {

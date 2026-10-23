@@ -1,0 +1,76 @@
+mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn019 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 2
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | 
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Build | syscheck and pre_process
+
+
+ Build | syscheck and simulation
+
+
+
+ Test pre_process and simulation | Only 0347811A, 04E1CB26, 0ACB1F16, 0F6DB678, 16A922E4, 2A5CFF02, 31742FC7, 39816683, 448EA9A4, 48D5C130, 4A15969C, 4B7FC359, 56BB8D80, 5D68B0F5, 5F099890, 677DAA82, 7B71820F, 9090FC4B, 9E9DA539, A21CF713, A3EC9BD7, A72F7006, B3E70A3A, B8BF00C9, BB0418CD, CD6C83A2, D6415F48, E3EB6065, E719C5F2, EA9C3FA3, EDADA16E, EFDCFF72, and F9850EA5 (33 tests)
+  
+     Progress      Test Name                                        Time(s)   UUID
+  
+     (  1/ 33)    1D -> weno_order=3                                   16.73    2A5CFF02
+     (  2/ 33)    1D -> weno_order=3 -> wenoz=T                        16.73    F9850EA5
+     (  3/ 33)    1D -> weno_order=3 -> mapped_weno=T                  16.30    16A922E4
+     (  4/ 33)    1D -> weno_order=5 -> mp_weno=T                      16.26    B3E70A3A
+     (  5/ 33)    1D -> weno_order=5 -> teno=T                         16.52    48D5C130
+     (  6/ 33)    1D -> weno_order=5 -> wenoz=T                        16.48    9090FC4B
+     (  7/ 33)    1D -> weno_order=5 -> mapped_weno=T                  16.42    677DAA82
+     (  8/ 33)    1D -> weno_order=7                                   16.38    7B71820F
+     (  9/ 33)    1D -> weno_order=7 -> wenoz=T                        16.65    0347811A
+     ( 10/ 33)    1D -> weno_order=7 -> teno=T                         16.71    56BB8D80
+     ( 11/ 33)    2D -> weno_order=3                                   15.90    EA9C3FA3
+     ( 12/ 33)    1D -> weno_order=7 -> mapped_weno=T                  15.96    5D68B0F5
+     ( 13/ 33)    2D -> weno_order=3 -> wenoz=T                        17.18    A21CF713
+     ( 14/ 33)    2D -> weno_order=3 -> mapped_weno=T                  17.14    39816683
+     ( 15/ 33)    2D -> weno_order=5 -> teno=T                         16.67    E719C5F2
+     ( 16/ 33)    2D -> weno_order=5 -> mp_weno=T                      16.73    0ACB1F16
+     ( 17/ 33)    2D -> weno_order=5 -> mapped_weno=T                  16.89    D6415F48
+     ( 18/ 33)    2D -> weno_order=5 -> wenoz=T                        16.94    31742FC7
+     ( 19/ 33)    2D -> weno_order=7 -> teno=T                         16.67    B8BF00C9
+     ( 20/ 33)    2D -> weno_order=7                                   16.72    A72F7006
+     ( 21/ 33)    2D -> weno_order=7 -> wenoz=T                        17.57    9E9DA539
+     ( 22/ 33)    2D -> weno_order=7 -> mapped_weno=T                  17.52    448EA9A4
+     ( 23/ 33)    3D -> weno_order=3                                   19.49    4B7FC359
+     ( 24/ 33)    3D -> weno_order=3 -> wenoz=T                        19.45    BB0418CD
+     ( 25/ 33)    3D -> weno_order=3 -> mapped_weno=T                  19.09    EFDCFF72
+     ( 26/ 33)    3D -> weno_order=5 -> mp_weno=T                      19.04    A3EC9BD7
+     ( 27/ 33)    3D -> weno_order=5 -> wenoz=T                        19.33    5F099890
+     ( 28/ 33)    3D -> weno_order=5 -> teno=T                         19.40    EDADA16E
+     ( 29/ 33)    3D -> weno_order=5 -> mapped_weno=T                  20.11    04E1CB26
+     ( 30/ 33)    3D -> weno_order=7                                   20.96    4A15969C
+     ( 31/ 33)    3D -> weno_order=7 -> teno=T                         23.94    E3EB6065
+     ( 32/ 33)    3D -> weno_order=7 -> wenoz=T                        23.05    CD6C83A2
+     ( 33/ 33)    3D -> weno_order=7 -> mapped_weno=T                  19.38    0F6DB678
+
+  
+
+╭──────────────────────────────── Test Summary ────────────────────────────────╮
+│                                                                              │
+│  ✓ ALL TESTS PASSED                                                          │
+│                                                                              │
+│      33 passed                                                               │
+│       0 failed                                                               │
+│     727 skipped                                                              │
+│    ────────────                                                              │
+│     760 total                                                                │
+│                                                                              │
+│    Time: 5m 6.8s                                                             │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+
+mfc: (venv) Exiting the Python virtual environment.
