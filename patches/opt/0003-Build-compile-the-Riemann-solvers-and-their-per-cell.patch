@@ -1,0 +1,48 @@
+From 8b433d1162ddabd952c83c83824d7a71169bd896 Mon Sep 17 00:00:00 2001
+From: hipac1 <hipac1@lsalab.cs.nthu.edu.tw>
+Date: Fri, 23 Oct 2026 10:43:38 +0800
+Subject: [PATCH 3/4] Build: compile the Riemann solvers and their per-cell
+ helpers as one source on NVHPC GPU builds
+
+nvfortran does not inline acc routine seq calls across source files into device code, so the
+HLLC kernel called s_compute_mixture_coefficients, s_compute_speed_of_sound, s_compute_energy,
+s_compute_average_state, ... as real functions: their arguments lived in local memory, and the
+flux stores became generic stores that forced reloads after each one. Compiling the
+m_variables_conversion..m_riemann_solvers module slice as one unit inlines them (HLLC on H200:
+18.7 -> 12.9 ms per step for examples/3D_performance_test, results bitwise identical).
+---
+ CMakeLists.txt | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 8f4a96c..35ed49d 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -155,6 +155,27 @@ if (MFC_PRE_PROCESS)
+ endif()
+ 
+ if (MFC_SIMULATION)
++    if (CMAKE_Fortran_COMPILER_ID STREQUAL "NVHPC" AND (MFC_OpenACC OR MFC_OpenMP))
++        # nvfortran inlines device routines only within one source file (#2094). Compile the Riemann solvers together
++        # with the per-cell helpers they call (m_variables_conversion, m_riemann_state) so those calls are inlined
++        # instead of passing their arguments through local memory. The list must hold every module between
++        # m_variables_conversion and m_riemann_solvers in the "use" graph, or the build gets a module cycle.
++        set(_unity "${CMAKE_BINARY_DIR}/fypp/simulation/m_riemann_unity.f90")
++        set(_unity_txt "")
++        set(_unity_parts "")
++        foreach (_m m_variables_conversion m_riemann_state m_bubbles m_bubbles_EE
++                    m_riemann_solver_hll m_riemann_solver_hllc m_riemann_solver_hlld m_riemann_solver_hypo_hlld
++                    m_riemann_solver_lf m_riemann_solvers)
++            set(_f "${CMAKE_BINARY_DIR}/fypp/simulation/${_m}.fpp.f90")
++            string(APPEND _unity_txt "#include \"${_f}\"\n")
++            list(APPEND _unity_parts "${_f}")
++        endforeach()
++        file(CONFIGURE OUTPUT "${_unity}" CONTENT "${_unity_txt}")
++        set_source_files_properties(${_unity_parts} PROPERTIES HEADER_FILE_ONLY ON)
++        set_source_files_properties("${_unity}" PROPERTIES OBJECT_DEPENDS "${_unity_parts}")
++        list(APPEND simulation_SRCs "${_unity}")
++    endif()
++
+     MFC_SETUP_TARGET(TARGET  simulation
+                      SOURCES "${simulation_SRCs}"
+                      MPI FFTW OpenACC OpenMP)

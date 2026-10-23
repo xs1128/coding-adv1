@@ -1,13 +1,12 @@
-From d002e203a76e8a92ec48c47c6466eb98bcc1308b Mon Sep 17 00:00:00 2001
-From: u1131128 <hipac1@lsalab.cs.nthu.edu.tw>
-Date: Thu, 22 Oct 2026 14:57:11 +0800
-Subject: [PATCH] CBC: queue the per-face kernels and scalar updates async, one
+From 387a41fbd5171335cc143ba8b10523485a2b723e Mon Sep 17 00:00:00 2001
+From: hipac1 <hipac1@lsalab.cs.nthu.edu.tw>
+Date: Fri, 23 Oct 2026 10:43:38 +0800
+Subject: [PATCH 1/4] CBC: queue per-face kernels and scalar updates async, one
  wait per s_cbc call
 
-Each s_cbc call issued ~12 small kernels and 5 scalar updates, each followed by a blocking
-stream synchronize (~230 us of host round trips per call on H200). The work is GPU-to-GPU
-only, so it now goes on the OpenACC async queue with a wait before the synchronous
-primitive-to-flux conversion and one at the end of s_cbc. OpenMP path unchanged.
+Each s_cbc call issued ~12 small kernels and 5 scalar updates, each followed by a host
+synchronization (~230 us of round trips per call, up to 3 calls per RK stage at 1 GPU).
+Queue them on the async queue and wait once before the fluxes are consumed.
 ---
  src/simulation/m_cbc.fpp | 94 +++++++++++++++++++++-------------------
  1 file changed, 50 insertions(+), 44 deletions(-)
@@ -388,6 +387,3 @@ index f730a49..c96e7a7 100644
                  do r = is3%beg, is3%end
                      do k = is2%beg, is2%end
                          do j = -1, buff_size
--- 
-2.47.3
-

@@ -7,7 +7,7 @@ Plan: `PLAN.md`. Private notes: `JOURNEY.md` (gitignored). Agent mistakes: `AGEN
 ## App
 **MFC** v5.7.0 — https://github.com/MFlowCode/MFC, commit `0b3d56c8e1c9a3aa8d112681b72c87ab69fe5f13`.
 - `reference/MFC` — pinned submodule (read-only, for source reading/research).
-- nano4 `$ROOT/mfc` — working clone where builds happen; optimizations go on branch `opt` there and are
+- nano4 `$ROOT/mfc` — working clone where builds happen; optimizations go on branch `sc26` (worktree `mfc-sc26`: one clean commit per optimization; experiments on side branches) and are
   exported as patches into `patches/` here (so the history of every source change lives in this repo).
 
 ## SC26 rules we follow (spirit of scientific computing)

@@ -1,0 +1,28 @@
+From f6a2ed5e00c08636d28c8e12a76a0118013012d2 Mon Sep 17 00:00:00 2001
+From: hipac1 <hipac1@lsalab.cs.nthu.edu.tw>
+Date: Fri, 23 Oct 2026 10:43:39 +0800
+Subject: [PATCH 4/4] Build: cap registers of m_weno at 128 on NVHPC GPU builds
+
+The WENO5 reconstruction kernel uses 188 registers: 8 resident warps per SM on H200. A
+per-file cap of 128 gives 16 warps for a few L1-resident spills; 168/128/96 measured 64.0/63.0/
+66.5 ms per step vs 70.0 uncapped (examples/3D_performance_test, results bitwise identical).
+---
+ CMakeLists.txt | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 35ed49d..94f63e2 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -174,6 +174,11 @@ if (MFC_SIMULATION)
+         set_source_files_properties(${_unity_parts} PROPERTIES HEADER_FILE_ONLY ON)
+         set_source_files_properties("${_unity}" PROPERTIES OBJECT_DEPENDS "${_unity_parts}")
+         list(APPEND simulation_SRCs "${_unity}")
++
++        # The WENO reconstruction kernels need ~190 registers, which limits them to 8 resident warps per SM. Capping
++        # this file at 128 doubles that for a few L1-resident spills (best of 168/128/96 on H200).
++        set_source_files_properties("${CMAKE_BINARY_DIR}/fypp/simulation/m_weno.fpp.f90"
++                                    PROPERTIES COMPILE_OPTIONS "-gpu=maxregcount:128")
+     endif()
+ 
+     MFC_SETUP_TARGET(TARGET  simulation
