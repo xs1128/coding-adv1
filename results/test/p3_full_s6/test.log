@@ -1,0 +1,306 @@
+mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn006 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 2
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | 
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+oxidizer: T=1200.0 K rho=0.3855 c=630.7 m/s
+ambient N2 rho=1.1380 a1=353 | bubble rho=0.4879 (ratio 0.43) | shock M=2.5 u2=618 T2/T1=2.14
+ Build | syscheck and pre_process
+
+
+ Build | syscheck and simulation
+
+
+ Build | syscheck and pre_process | Chemistry: h2o2.yaml
+
+
+ Build | syscheck and simulation | Chemistry: h2o2.yaml
+
+
+
+ Test pre_process and simulation | from A96DA754 to 4A759316 (94 tests)
+  
+     Progress      Test Name                                        Time(s)   UUID
+  
+     (  1/ 94)    2D -> Hypoelasticity -> HLLD -> Shear guard -> ...   15.79    A96DA754
+     (  2/ 94)    2D -> Axisymmetric -> Hypoelasticity -> HLLD ->...   16.24    11DD3A5C
+     (  3/ 94)    2D -> Axisymmetric -> Hypoelasticity -> HLLD ->...   16.63    DC6D7467
+     (  4/ 94)    2D -> Hypoelasticity -> HLLD -> CBC uniform pre...   17.62    2274CB4E
+     (  5/ 94)    2D -> Hypoelasticity -> HLLD -> WENO5 RK3            18.57    D58700BB
+     (  6/ 94)    2D -> Axisymmetric -> Hypoelasticity -> HLLD ->...   17.88    7F964063
+     (  7/ 94)    3D -> Example -> acoustic_support11                  15.34    D827EA4B
+     (  8/ 94)    2D -> Example -> acoustic_support10_axisym           16.38    B85C5AB6
+     (  9/ 94)    2D -> Example -> axisym_shockwatercavity             17.51    3E400FBF
+     ( 10/ 94)    3D -> Example -> rotating_sphere                     17.24    6076815B
+     ( 11/ 94)    1D -> Example -> brio_wu_hlld                        17.41    E7732AC5
+     ( 12/ 94)    3D -> Example -> acoustic_support3                   17.90    D501F25E
+     ( 13/ 94)    1D -> Example -> shuosher_old                        14.95    1DBC8382
+     ( 14/ 94)    2D -> Example -> acoustic_pulse                      15.75    8370A3D9
+     ( 15/ 94)    1D -> Example -> dai_woodward_hlld                   17.84    2E1EEFBE
+     ( 16/ 94)    3D -> Example -> acoustic_support7                   18.60    72A40EA6
+     ( 17/ 94)    2D -> Example -> orszag_tang_hyper_cleaning          17.31    EC8F87D9
+     ( 18/ 94)    1D -> Example -> brio_wu                             17.79    70832086
+     ( 19/ 94)    2D -> Example -> orszag_tang                         15.07    F0402105
+     ( 20/ 94)    2D -> Example -> IGR_2fluid                          16.73    F926448C
+     ( 21/ 94)    3D -> Example -> IGR_TaylorGreenVortex               17.48    E49EF7B6
+     ( 22/ 94)    2D -> Example -> ibm                                 16.01    7CC8F995
+     ( 23/ 94)    2D -> Example -> shockdroplet                        18.46    82152069
+     ( 24/ 94)    3D -> Example -> IGR_jet                             18.63    18A71AB2
+     ( 25/ 94)    1D -> Example -> brio_wu_rmhd                        16.04    D9E1BECF
+     ( 26/ 94)    2D -> Example -> ibm_flameholder                     18.89    F200F862
+     ( 27/ 94)    3D -> Example -> brio_wu                             16.03    8DA238FF
+     ( 28/ 94)    1D -> Example -> titarevtorro                        17.10    EF3E3FF1
+     ( 29/ 94)    2D -> Example -> patch_modal_shape_exp               18.37    3F864CFF
+     ( 30/ 94)    2D -> Example -> poiseuille_thickening_nn            26.42    5304E59F
+     ( 31/ 94)    1D -> Example -> acoustic_dipole                     16.84    0083C150
+     ( 32/ 94)    2D -> Example -> shockdroplet_muscl                  17.20    BE796E10
+     ( 33/ 94)    1D -> Example -> poly_bubscreen                      14.37    AE9A7D73
+     ( 34/ 94)    2D -> Example -> mibm_shock_cylinder                 20.06    7FA04E95
+     ( 35/ 94)    2D -> Example -> richtmyer_meshkov                   39.56    986BC1A2
+     ( 36/ 94)    2D -> Example -> ibm_burning_grain                   16.75    E5B66084
+     ( 37/ 94)    2D -> Example -> tumbling_rectangle                  16.22    87C3F801
+  
+     ✗ FAILED: 2D -> Example -> isentropicvortex
+       UUID: 9A00542C
+       Attempts: 1
+       Error: Test tests/9A00542C: 2D -> Example -> isentropicvortex: Variable n°1 (1-indexed) in D/cons.6.00.000001.dat is not within tolerance:
+  - Candidate:   0.0
+  - Golden:      2.5
+  - Error:       abs: 2.50E+00, rel: 1.00E+00
+  - Tolerance:   abs: 1.00E-03, rel: 1.00E-03
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.6.00.000010.dat
+ - Variable n°34
+ - Candidate: 0.0
+ - Golden: 2.50000000243189
+ - Absolute Error: 2.50E+00
+ - Relative Error: 1.00E+00
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.6.00.000001.dat
+ - Variable n°377
+ - Candidate: 2.50000044967443
+ - Golden: 0.81896030914444
+ - Relative Error: 2.05E+00
+ - Absolute Error: 1.68E+00
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+     ( 38/ 94)    3D -> Example -> rayleigh_taylor_muscl               15.37    35635326
+     ( 39/ 94)    2D -> Example -> acoustic_support6_axisym            15.81    C0127FD0
+     ( 40/ 94)    2D -> Example -> lungwave_horizontal                 14.91    1BA21D14
+     ( 41/ 94)    2D -> Example -> zero_circ_vortex                    16.71    8FD91C41
+  
+     ✗ FAILED: 3D -> Example -> recovering_sphere
+       UUID: 9E2CA336
+       Attempts: 1
+       Error: Test tests/9E2CA336: 3D -> Example -> recovering_sphere: Variable n°6 (1-indexed) in D/cons.10.00.000050.dat is not within tolerance:
+  - Candidate:   2.50000393596863
+  - Golden:      250000.54741773778
+  - Error:       abs: 2.50E+05, rel: 1.00E+00
+  - Tolerance:   abs: 1.00E-03, rel: 1.00E-03
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.10.00.000050.dat
+ - Variable n°2814
+ - Candidate: 2.50103019921865
+ - Golden: 250143.77657722656
+ - Absolute Error: 2.50E+05
+ - Relative Error: 1.00E+00
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.9.00.000050.dat
+ - Variable n°3435
+ - Candidate: 0.10876207850042
+ - Golden: 0.00200087935417
+ - Relative Error: 5.34E+01
+ - Absolute Error: 1.07E-01
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+     ( 42/ 94)    3D -> Example -> ibm_stl_test                        19.41    6D1C9C2D
+     ( 43/ 94)    2D -> Example -> viscous_shock_tube                  42.14    70EC99CE
+     ( 44/ 94)    1D -> Example -> acoustic_gauss_sigmadist            15.97    BE3CF022
+     ( 45/ 94)    2D -> Example -> acoustic_support2                   16.13    DC391F9B
+     ( 46/ 94)    1D -> Example -> acoustic_sine_frequency             16.80    C7598989
+     ( 47/ 94)    2D -> Example -> icpp_stl_circle                     18.25    54CE477E
+     ( 48/ 94)    1D -> Example -> impact                              17.14    91938DCD
+     ( 49/ 94)    2D -> Example -> acoustic_support9                   16.46    02B08B80
+     ( 50/ 94)    3D -> Example -> icpp_stl_cube                       17.09    7C11F0ED
+     ( 51/ 94)    1D -> Example -> shuosher_teno7                      16.51    6247B427
+     ( 52/ 94)    2D -> Example -> shearlayer                          15.28    1D88CFE0
+  
+     ✗ FAILED: 1D -> Example -> vacuum
+       UUID: E8C7E354
+       Attempts: 1
+       Error: Test tests/E8C7E354: 1D -> Example -> vacuum: Variable n°99 (1-indexed) in D/cons.3.00.000050.dat is not within tolerance:
+  - Candidate:   -94655.54501070228
+  - Golden:      -94812.67840696829
+  - Error:       abs: 1.57E+02, rel: 1.66E-03
+  - Tolerance:   abs: 1.00E-03, rel: 1.00E-03
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.7.00.000050.dat
+ - Variable n°100
+ - Candidate: 732540999.5158952
+ - Golden: 736885081.6279409
+ - Absolute Error: 4.34E+06
+ - Relative Error: 5.90E-03
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.8.00.000050.dat
+ - Variable n°100
+ - Candidate: 0.01198829016922
+ - Golden: 541003.1978254081
+ - Relative Error: 1.00E+00
+ - Absolute Error: 5.41E+05
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+     ( 53/ 94)    1D -> Example -> shuosher_wenojs5                    20.00    B50DE910
+     ( 54/ 94)    1D -> Example -> dai_woodward                        20.79    641A6440
+     Still running (>2min) B97D4966  2D -> Example -> phasechange_bubble
+     Still running (>2min) DA8FCD2D  2D -> Example -> ibm_viscous_drag_over_cylinder
+     ( 55/ 94)    2D -> Example -> phasechange_bubble                 187.55    B97D4966
+     ( 56/ 94)    2D -> Example -> mibm_cylinder_in_cross_flow         17.95    127A967A
+     ( 57/ 94)    2D -> Example -> ibm_viscous_drag_over_cylinder     145.50    DA8FCD2D
+     ( 58/ 94)    1D -> Example -> sodshocktube_muscl                  15.21    F33CC4CA
+     ( 59/ 94)    2D -> Example -> TaylorGreenVortex                   15.27    304DAF95
+     ( 60/ 94)    3D -> Example -> shockdroplet_muscl                  16.31    23573861
+     ( 61/ 94)    2D -> Example -> jet                                 26.34    C7927D03
+  
+     ✗ FAILED: 2D -> Example -> rayleigh_taylor
+       UUID: 2BA0324F
+       Attempts: 1
+       Error: Test tests/2BA0324F: 2D -> Example -> rayleigh_taylor: Variable n°15 (1-indexed) in D/cons.6.00.000050.dat is not within tolerance:
+  - Candidate:   0.00536207306526
+  - Golden:      7.789732e-08
+  - Error:       abs: 5.36E-03, rel: 6.88E+04
+  - Tolerance:   abs: 1.00E-03, rel: 1.00E-03
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.9.00.000050.dat
+ - Variable n°313
+ - Candidate: 2.49999920522844
+ - Golden: 250053.35569953843
+ - Absolute Error: 2.50E+05
+ - Relative Error: 1.00E+00
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.6.00.000050.dat
+ - Variable n°15
+ - Candidate: 0.00536207306526
+ - Golden: 7.789732e-08
+ - Relative Error: 6.88E+04
+ - Absolute Error: 5.36E-03
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+     ( 62/ 94)    1D -> Example -> acoustic_sine_wavelength            14.05    78A3B0C4
+     ( 63/ 94)    2D -> Example -> ibm_stl_test                        14.00    99147C82
+     ( 64/ 94)    1D -> Example -> reactive_burn                       14.07    64F05A05
+     ( 65/ 94)    2D -> Example -> axisym_hypoelasticity               13.83    9C9B2CBC
+     ( 66/ 94)    0D -> Example -> bubblecollapse_adap                 13.94    F05E1CEF
+     ( 67/ 94)    2D -> Example -> lid_driven_cavity_nn                14.02    00C20EE8
+     ( 68/ 94)    1D -> Example -> acoustic_gauss_sigmatime            14.10    EE58C595
+     ( 69/ 94)    1D -> Example -> shuosher_wenom5                     13.97    C1134EF2
+     ( 70/ 94)    3D -> Example -> rayleigh_taylor                     15.91    D644524E
+     ( 71/ 94)    3D -> Example -> shockdroplet                        15.55    B5F0C655
+     ( 72/ 94)    2D -> Example -> riemann_test_muscl                  13.95    24119641
+     ( 73/ 94)    1D -> Example -> kapilashocktube                     13.49    E47F81A2
+     ( 74/ 94)    2D -> Example -> acoustic_support5                   14.45    C2D278B4
+     ( 75/ 94)    2D -> Example -> herschel_bulkley_poiseuille_nn      52.17    A582B270
+     ( 76/ 94)    3D -> Example -> patch_spherical_harmonic            15.29    87FBC893
+  
+     ✗ FAILED: 1D -> Example -> vacuum_restart
+       UUID: BA473AFF
+       Attempts: 1
+       Error: Test tests/BA473AFF: 1D -> Example -> vacuum_restart: Variable n°99 (1-indexed) in D/cons.3.00.000050.dat is not within tolerance:
+  - Candidate:   -94655.54501070228
+  - Golden:      -94812.67840696829
+  - Error:       abs: 1.57E+02, rel: 1.66E-03
+  - Tolerance:   abs: 1.00E-03, rel: 1.00E-03
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.7.00.000050.dat
+ - Variable n°100
+ - Candidate: 732540999.5158952
+ - Golden: 736885081.6279409
+ - Absolute Error: 4.34E+06
+ - Relative Error: 5.90E-03
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.8.00.000050.dat
+ - Variable n°100
+ - Candidate: 0.01198829016922
+ - Golden: 541003.1978254081
+ - Relative Error: 1.00E+00
+ - Absolute Error: 5.41E+05
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+     ( 77/ 94)    3D -> Example -> lagrange_shbubcollapse              15.19    5B195322
+     ( 78/ 94)    1D -> Example -> exp_bubscreen                       14.23    5CAA4E68
+     ( 79/ 94)    1D -> Example -> laxshocktube                        13.84    02D1E522
+     ( 80/ 94)    3D -> Example -> mibm_sphere_head_on_collision       16.93    AA49A8BC
+     ( 81/ 94)    2D -> Example -> reactive_shock_bubble               15.10    3F6DA12C
+     ( 82/ 94)    1D -> Example -> hypo_2materials                     15.61    4D95A70E
+     ( 83/ 94)    2D -> Example -> shock_cloud_rmhd                    17.23    AB5A57AE
+     ( 84/ 94)    2D -> Example -> 5wave_quasi1D                       16.64    5505A65C
+     ( 85/ 94)    2D -> Example -> whale_bubble_annulus                18.14    203572A8
+     ( 86/ 94)    2D -> Example -> riemann_test                        15.22    BCB15E8E
+     ( 87/ 94)    2D -> Example -> ibm_airfoil                         16.84    0B07F3A1
+     ( 88/ 94)    2D -> Example -> lungwave                            17.65    57FE221F
+     ( 89/ 94)    1D -> Example -> mhd_smooth_alfven_wave              17.95    4A759316
+
+  
+
+╭──────────────────────────────── Test Summary ────────────────────────────────╮
+│                                                                              │
+│  ✗ 5 TESTS FAILED                                                            │
+│                                                                              │
+│      89 passed                                                               │
+│       5 failed                                                               │
+│     666 skipped                                                              │
+│    ────────────                                                              │
+│     760 total                                                                │
+│                                                                              │
+│    Time: 16m 24.2s                                                           │
+│                                                                              │
+│    Failed Tests:                                                             │
+│      • 2D -> Example -> isentropicvortex                                     │
+│        UUID: 9A00542C                                                        │
+│        (tolerance mismatch)                                                  │
+│      • 3D -> Example -> recovering_sphere                                    │
+│        UUID: 9E2CA336                                                        │
+│        (tolerance mismatch)                                                  │
+│      • 1D -> Example -> vacuum                                               │
+│        UUID: E8C7E354                                                        │
+│        (tolerance mismatch)                                                  │
+│      • 2D -> Example -> rayleigh_taylor                                      │
+│        UUID: 2BA0324F                                                        │
+│        (tolerance mismatch)                                                  │
+│      • 1D -> Example -> vacuum_restart                                       │
+│        UUID: BA473AFF                                                        │
+│        (tolerance mismatch)                                                  │
+│                                                                              │
+│    Next Steps:                                                               │
+│      • Run with --generate to update golden files (if changes are            │
+│  intentional)                                                                │
+│      • Check individual test output in tests/<UUID>/                         │
+│      • Run specific test: ./mfc.sh test --only <UUID>                        │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+
+mfc: ERROR > main.py finished with a 5 exit code.
+mfc: (venv) Exiting the Python virtual environment.

@@ -11,3 +11,17 @@ FD891191  1D 2 fluid riemann_solver=2 model_eqns=3  pinned build: abs 1.90E-12 r
 1843DA80  2D 1 fluid viscous IBM mie_gruneisen model_eqns=3  pinned build: abs 2.50E+00 rel 1.00E+00; identical on K2 build (jobs 602681/602682)
 # Removed AFBACA70 (2 MPI ranks): it only failed because the 1-GPU job had one MPI slot; passes on pinned and K2 builds
 # with oversubscription (jobs 602681/602682), as does 0DDE8A87.
+61AF4509  1D -> 2 Fluid(s) -> eos=mie_gruneisen -> model_eqns=3  pinned: abs 1.21E-11 rel 1.49E-11; identical on P3 build (full suite 606006-606014; recheck 606331/606332)
+6AE3FB4E  1D -> 2 Fluid(s) -> eos=jwl -> model_eqns=3  pinned: abs 1.11E-12 rel 1.37E-12; identical on P3 build (full suite 606006-606014; recheck 606331/606332)
+7F70E665  2D -> 1 Fluid(s) -> Viscous -> IBM -> model_eqns=3 -> slip  pinned: abs 2.50E+00 rel 1.00E+00; identical on P3 build (full suite 606006-606014; recheck 606331/606332)
+B0CE19C5  2D -> 1 Fluid(s) -> Viscous -> IBM -> model_eqns=3  pinned: abs 2.50E+00 rel 1.00E+00; identical on P3 build (full suite 606006-606014; recheck 606331/606332)
+3859AF63  2D -> 2 Fluid(s) -> capillary=T -> model_eqns=3  pinned: abs 3.18E-02 rel 5.98E-02; identical on P3 build (full suite 606006-606014; recheck 606331/606332)
+4F2F4ACE  2D -> 2 Fluid(s) -> riemann_solver=2 -> model_eqns=3  pinned: abs 2.01E-12 rel 1.37E-12; identical on P3 build (full suite 606006-606014; recheck 606331/606332)
+0E240AD7  2D -> 2 Fluid(s) -> Viscous -> IBM -> Circle -> slip -> model_eqns=3 -> eos=mie_gruneisen  pinned: abs 8.40E-10 rel 9.33E-10; identical on P3 build (full suite 606006-606014; recheck 606331/606332)
+8D8F6424  2D -> 2 Fluid(s) -> Viscous -> IBM -> model_eqns=3 -> slip  pinned: abs 2.94E-09 rel 5.88E-09; identical on P3 build (full suite 606006-606014; recheck 606331/606332)
+F0E6771E  3D -> 2 Fluid(s) -> riemann_solver=2 -> model_eqns=3  pinned: abs 2.02E-01 rel 8.10E-01; identical on P3 build (full suite 606006-606014; recheck 606331/606332)
+9A00542C  2D -> Example -> isentropicvortex  pinned: abs 2.50E+00 rel 1.00E+00; identical on P3 build (full suite 606006-606014; recheck 606331/606332) [first reported variable differs between runs: output not deterministic]
+E8C7E354  1D -> Example -> vacuum  pinned: abs 1.57E+02 rel 1.66E-03; identical on P3 build (full suite 606006-606014; recheck 606331/606332)
+2BA0324F  2D -> Example -> rayleigh_taylor  pinned: abs 5.36E-03 rel 6.88E+04; identical on P3 build (full suite 606006-606014; recheck 606331/606332)
+BA473AFF  1D -> Example -> vacuum_restart  pinned: abs 1.57E+02 rel 1.66E-03; identical on P3 build (full suite 606006-606014; recheck 606331/606332)
+5F3BB2E0  1D -> Reactive Burn -> Condensed Programmed Detonation -> 6eq  pinned: fails to execute; identical on P3 build (full suite 606006-606014; recheck 606331/606332)

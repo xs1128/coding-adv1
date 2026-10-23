@@ -1,0 +1,610 @@
+mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn006 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 2
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | 
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Build | syscheck and pre_process
+
+
+ Build | syscheck and simulation
+
+
+
+ Test pre_process and simulation | Only 61AF4509, 6AE3FB4E, 7F70E665, B0CE19C5, 3859AF63, 4F2F4ACE, 0E240AD7, 8D8F6424, F0E6771E, 9A00542C, E8C7E354, 2BA0324F, BA473AFF, and 5F3BB2E0 (14 tests)
+  
+     Progress      Test Name                                        Time(s)   UUID
+  
+  
+     ✗ FAILED: 1D -> 2 Fluid(s) -> eos=mie_gruneisen -> model_...
+       UUID: 61AF4509
+       Attempts: 1
+       Error: Test tests/61AF4509: 1D -> 2 Fluid(s) -> eos=mie_gruneisen -> model_eqns=3: Variable n°1 (1-indexed) in D/cons.1.00.000050.dat is not within tolerance:
+  - Candidate:   0.80999999999592
+  - Golden:      0.80999999998385
+  - Error:       abs: 1.21E-11, rel: 1.49E-11
+  - Tolerance:   abs: 1.00E-12, rel: 1.00E-12
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.7.00.000050.dat
+ - Variable n°4
+ - Candidate: 0.4274999997676
+ - Golden: 2.25000000048846
+ - Absolute Error: 1.82E+00
+ - Relative Error: 8.10E-01
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.3.00.000050.dat
+ - Variable n°212
+ - Candidate: -3.12e-12
+ - Golden: 1.56e-12
+ - Relative Error: 3.00E+00
+ - Absolute Error: 4.68E-12
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+  
+     ✗ FAILED: 1D -> 2 Fluid(s) -> eos=jwl -> model_eqns=3
+       UUID: 6AE3FB4E
+       Attempts: 1
+       Error: Test tests/6AE3FB4E: 1D -> 2 Fluid(s) -> eos=jwl -> model_eqns=3: Variable n°5 (1-indexed) in D/cons.1.00.000050.dat is not within tolerance:
+  - Candidate:   0.81000000000119
+  - Golden:      0.81000000000008
+  - Error:       abs: 1.11E-12, rel: 1.37E-12
+  - Tolerance:   abs: 1.00E-12, rel: 1.00E-12
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.7.00.000050.dat
+ - Variable n°8
+ - Candidate: 0.14916258842607
+ - Golden: 2.57916258920037
+ - Absolute Error: 2.43E+00
+ - Relative Error: 9.42E-01
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.3.00.000050.dat
+ - Variable n°9
+ - Candidate: -9.409e-11
+ - Golden: -4.99e-12
+ - Relative Error: 1.79E+01
+ - Absolute Error: 8.91E-11
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+  
+     ✗ FAILED: 2D -> 1 Fluid(s) -> Viscous -> IBM -> model_eqn...
+       UUID: 7F70E665
+       Attempts: 1
+       Error: Test tests/7F70E665: 2D -> 1 Fluid(s) -> Viscous -> IBM -> model_eqns=3 -> slip: Variable n°1 (1-indexed) in D/cons.6.00.000050.dat is not within tolerance:
+  - Candidate:   0.0
+  - Golden:      2.5
+  - Error:       abs: 2.50E+00, rel: 1.00E+00
+  - Tolerance:   abs: 1.00E-10, rel: 1.00E-10
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.6.00.000050.dat
+ - Variable n°1
+ - Candidate: 0.0
+ - Golden: 2.5
+ - Absolute Error: 2.50E+00
+ - Relative Error: 1.00E+00
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.6.00.000050.dat
+ - Variable n°2341
+ - Candidate: 1.24999999381876
+ - Golden: 0.25000001320108
+ - Relative Error: 4.00E+00
+ - Absolute Error: 1.00E+00
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+  
+     ✗ FAILED: 2D -> 1 Fluid(s) -> Viscous -> IBM -> model_eqns=3
+       UUID: B0CE19C5
+       Attempts: 1
+       Error: Test tests/B0CE19C5: 2D -> 1 Fluid(s) -> Viscous -> IBM -> model_eqns=3: Variable n°1 (1-indexed) in D/cons.6.00.000050.dat is not within tolerance:
+  - Candidate:   0.0
+  - Golden:      2.5
+  - Error:       abs: 2.50E+00, rel: 1.00E+00
+  - Tolerance:   abs: 1.00E-10, rel: 1.00E-10
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.6.00.000050.dat
+ - Variable n°1
+ - Candidate: 0.0
+ - Golden: 2.5
+ - Absolute Error: 2.50E+00
+ - Relative Error: 1.00E+00
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.6.00.000050.dat
+ - Variable n°2341
+ - Candidate: 1.24999999381876
+ - Golden: 0.25000001320108
+ - Relative Error: 4.00E+00
+ - Absolute Error: 1.00E+00
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+  
+     ✗ FAILED: 2D -> 2 Fluid(s) -> riemann_solver=2 -> model_e...
+       UUID: 4F2F4ACE
+       Attempts: 1
+       Error: Test tests/4F2F4ACE: 2D -> 2 Fluid(s) -> riemann_solver=2 -> model_eqns=3: Variable n°6 (1-indexed) in D/cons.5.00.000050.dat is not within tolerance:
+  - Candidate:   1.46990460778269
+  - Golden:      1.4699046077847
+  - Error:       abs: 2.01E-12, rel: 1.37E-12
+  - Tolerance:   abs: 1.00E-12, rel: 1.00E-12
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.8.00.000050.dat
+ - Variable n°1
+ - Candidate: 0.42723145066296
+ - Golden: 2.24802238993771
+ - Absolute Error: 1.82E+00
+ - Relative Error: 8.10E-01
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.9.00.000050.dat
+ - Variable n°34
+ - Candidate: 0.05571211464645
+ - Golden: 0.31450700937027
+ - Relative Error: 8.23E-01
+ - Absolute Error: 2.59E-01
+
+  
+       Hint: Consider --generate to update golden files or check tolerances
+     ✗ FAILED: 2D -> 2 Fluid(s) -> capillary=T -> model_eqns=3
+  
+       UUID: 3859AF63
+       Attempts: 1
+       Error: Test tests/3859AF63: 2D -> 2 Fluid(s) -> capillary=T -> model_eqns=3: Variable n°5 (1-indexed) in D/cons.6.00.000050.dat is not within tolerance:
+  - Candidate:   0.56342150522054
+  - Golden:      0.53165149115811
+  - Error:       abs: 3.18E-02, rel: 5.98E-02
+  - Tolerance:   abs: 1.00E-12, rel: 1.00E-12
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.8.00.000050.dat
+ - Variable n°1
+ - Candidate: 0.4241685563166
+ - Golden: 2.22550007863861
+ - Absolute Error: 1.80E+00
+ - Relative Error: 8.09E-01
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.8.00.000050.dat
+ - Variable n°32
+ - Candidate: 0.37070755888787
+ - Golden: 0.1370675481351
+ - Relative Error: 1.70E+00
+ - Absolute Error: 2.34E-01
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+  
+     ✗ FAILED: 2D -> 2 Fluid(s) -> Viscous -> IBM -> model_eqn...
+       UUID: 8D8F6424
+       Attempts: 1
+       Error: Test tests/8D8F6424: 2D -> 2 Fluid(s) -> Viscous -> IBM -> model_eqns=3 -> slip: Variable n°6 (1-indexed) in D/cons.6.00.000050.dat is not within tolerance:
+  - Candidate:   0.50000000673073
+  - Golden:      0.50000000379261
+  - Error:       abs: 2.94E-09, rel: 5.88E-09
+  - Tolerance:   abs: 1.00E-10, rel: 1.00E-10
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.8.00.000050.dat
+ - Variable n°1
+ - Candidate: 0.4275
+ - Golden: 2.25
+ - Absolute Error: 1.82E+00
+ - Relative Error: 8.10E-01
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.8.00.000050.dat
+ - Variable n°1
+ - Candidate: 0.4275
+ - Golden: 2.25
+ - Relative Error: 8.10E-01
+ - Absolute Error: 1.82E+00
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+  
+     ✗ FAILED: 2D -> 2 Fluid(s) -> Viscous -> IBM -> Circle ->...
+       UUID: 0E240AD7
+       Attempts: 1
+       Error: Test tests/0E240AD7: 2D -> 2 Fluid(s) -> Viscous -> IBM -> Circle -> slip -> model_eqns=3 -> eos=mie_gruneisen: Variable n°5 (1-indexed) in D/cons.6.00.000050.dat is not within tolerance:
+  - Candidate:   0.89999999886745
+  - Golden:      0.89999999970756
+  - Error:       abs: 8.40E-10, rel: 9.33E-10
+  - Tolerance:   abs: 1.00E-10, rel: 1.00E-10
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.8.00.000050.dat
+ - Variable n°1
+ - Candidate: 0.657
+ - Golden: 2.4795
+ - Absolute Error: 1.82E+00
+ - Relative Error: 7.35E-01
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.9.00.000050.dat
+ - Variable n°1
+ - Candidate: 0.0475
+ - Golden: 0.25
+ - Relative Error: 8.10E-01
+ - Absolute Error: 2.03E-01
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+  
+     ✗ FAILED: 2D -> Example -> rayleigh_taylor
+       UUID: 2BA0324F
+       Attempts: 1
+       Error: Test tests/2BA0324F: 2D -> Example -> rayleigh_taylor: Variable n°15 (1-indexed) in D/cons.6.00.000050.dat is not within tolerance:
+  - Candidate:   0.00536207306526
+  - Golden:      7.789732e-08
+  - Error:       abs: 5.36E-03, rel: 6.88E+04
+  - Tolerance:   abs: 1.00E-03, rel: 1.00E-03
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.9.00.000050.dat
+ - Variable n°313
+ - Candidate: 2.49999920522844
+ - Golden: 250053.35569953843
+ - Absolute Error: 2.50E+05
+ - Relative Error: 1.00E+00
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.6.00.000050.dat
+ - Variable n°15
+ - Candidate: 0.00536207306526
+ - Golden: 7.789732e-08
+ - Relative Error: 6.88E+04
+ - Absolute Error: 5.36E-03
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+  
+     ✗ FAILED: 3D -> 2 Fluid(s) -> riemann_solver=2 -> model_e...
+       UUID: F0E6771E
+       Attempts: 1
+       Error: Test tests/F0E6771E: 3D -> 2 Fluid(s) -> riemann_solver=2 -> model_eqns=3: Variable n°1 (1-indexed) in D/cons.10.00.000050.dat is not within tolerance:
+  - Candidate:   0.04742906935491
+  - Golden:      0.24947823675474
+  - Error:       abs: 2.02E-01, rel: 8.10E-01
+  - Tolerance:   abs: 1.00E-12, rel: 1.00E-12
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.9.00.000050.dat
+ - Variable n°1
+ - Candidate: 0.42686162419418
+ - Golden: 2.24530413079269
+ - Absolute Error: 1.82E+00
+ - Relative Error: 8.10E-01
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.9.00.000050.dat
+ - Variable n°1
+ - Candidate: 0.42686162419418
+ - Golden: 2.24530413079269
+ - Relative Error: 8.10E-01
+ - Absolute Error: 1.82E+00
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+  
+     ✗ FAILED: 1D -> Example -> vacuum_restart
+       UUID: BA473AFF
+       Attempts: 1
+       Error: Test tests/BA473AFF: 1D -> Example -> vacuum_restart: Variable n°99 (1-indexed) in D/cons.3.00.000050.dat is not within tolerance:
+  - Candidate:   -94655.54501070228
+  - Golden:      -94812.67840696829
+  - Error:       abs: 1.57E+02, rel: 1.66E-03
+  - Tolerance:   abs: 1.00E-03, rel: 1.00E-03
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.7.00.000050.dat
+ - Variable n°100
+ - Candidate: 732540999.5158952
+ - Golden: 736885081.6279409
+ - Absolute Error: 4.34E+06
+ - Relative Error: 5.90E-03
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.8.00.000050.dat
+ - Variable n°100
+ - Candidate: 0.01198829016922
+ - Golden: 541003.1978254081
+ - Relative Error: 1.00E+00
+ - Absolute Error: 5.41E+05
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+  
+     ✗ FAILED: 2D -> Example -> isentropicvortex
+       UUID: 9A00542C
+       Attempts: 1
+       Error: Test tests/9A00542C: 2D -> Example -> isentropicvortex: Variable n°4 (1-indexed) in D/cons.6.00.000001.dat is not within tolerance:
+  - Candidate:   0.0
+  - Golden:      2.4999999999999
+  - Error:       abs: 2.50E+00, rel: 1.00E+00
+  - Tolerance:   abs: 1.00E-03, rel: 1.00E-03
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.6.00.000010.dat
+ - Variable n°34
+ - Candidate: 0.0
+ - Golden: 2.50000000243189
+ - Absolute Error: 2.50E+00
+ - Relative Error: 1.00E+00
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.6.00.000002.dat
+ - Variable n°377
+ - Candidate: 2.50000090201439
+ - Golden: 0.81896118768195
+ - Relative Error: 2.05E+00
+ - Absolute Error: 1.68E+00
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+  
+     ✗ FAILED: 1D -> Example -> vacuum
+       UUID: E8C7E354
+       Attempts: 1
+       Error: Test tests/E8C7E354: 1D -> Example -> vacuum: Variable n°99 (1-indexed) in D/cons.3.00.000050.dat is not within tolerance:
+  - Candidate:   -94655.54501070228
+  - Golden:      -94812.67840696829
+  - Error:       abs: 1.57E+02, rel: 1.66E-03
+  - Tolerance:   abs: 1.00E-03, rel: 1.00E-03
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.7.00.000050.dat
+ - Variable n°100
+ - Candidate: 732540999.5158952
+ - Golden: 736885081.6279409
+ - Absolute Error: 4.34E+06
+ - Relative Error: 5.90E-03
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.8.00.000050.dat
+ - Variable n°100
+ - Candidate: 0.01198829016922
+ - Golden: 541003.1978254081
+ - Relative Error: 1.00E+00
+ - Absolute Error: 5.41E+05
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+   mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn006 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 1
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | --targets pre_process and simulation
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Acquiring /work/u1131128/coding-adv1/mfc/tests/5F3BB2E0/case.py...
+ Acquiring /work/u1131128/coding-adv1/mfc/tests/5F3BB2E0/case.py...
+ Build | syscheck, syscheck, pre_process, and simulation
+
+
+ Run
+   Using queue system Interactive.
+   Using baked-in template for default.
+   Generating input files for syscheck...
+     Generating syscheck.inp:
+       INFO: Forwarded 0/98 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
+   Generating input files for pre_process...
+     Generating pre_process.inp:
+       INFO: Forwarded 63/98 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
+   Generating input files for simulation...
+     Generating simulation.inp:
+       INFO: Forwarded 69/98 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
++-----------------------------------------------------------------------------------------------------------+ 
+| MFC case # MFC @ /work/u1131128/coding-adv1/mfc/tests/5F3BB2E0/case.py:                                   |
++-----------------------------------------------------------------------------------------------------------+ 
+| * Start-time     03:44:46                            * Start-date     03:44:46                            |
+| * Partition      N/A                                 * Walltime       01:00:00                            |
+| * Account        N/A                                 * Nodes          1                                   |
+| * Job Name       MFC                                 * Engine         interactive                         |
+| * QoS            N/A                                 * Binary         mpirun                              |
+| * Queue System   Interactive                         * Email          N/A                                 |
++-----------------------------------------------------------------------------------------------------------+ 
+
+mfc: WARNING > This is the default template.
+mfc: WARNING > It is not intended to support all systems and execution engines.
+mfc: WARNING > Consider using a different template via the --computer option if you encounter problems.
+mfc: OK > :) Selected MPI launcher mpirun. Use --binary to override.
+mfc: OK > :) Running syscheck:
+
++ mpirun -np 1 /work/u1131128/coding-adv1/mfc/build/install/gpu-acc-869e78ff84/bin/syscheck
+ [TEST] MPI: call mpi_init(ierr)
+ [TEST] MPI: call mpi_comm_rank(MPI_COMM_WORLD, rank, ierr)
+ [TEST] MPI: call mpi_barrier(MPI_COMM_WORLD, ierr)
+ [TEST] MPI: call assert(rank >= 0)
+ [TEST] MPI: call mpi_comm_size(MPI_COMM_WORLD, nRanks, ierr)
+ [TEST] MPI: call assert(nRanks > 0 .and. rank < nRanks)
+ [TEST] ACC: devtype = acc_get_device_type()
+ [TEST] ACC: num_devices = acc_get_num_devices(devtype)
+ [TEST] ACC: call assert(num_devices > 0)
+ [TEST] ACC: call acc_set_device_num(mod(rank, num_devices), devtype)
+ [TEST] ACC: allocate(arr(1:N))
+ [TEST] ACC: !$acc enter data create(arr(1:N))
+ [TEST] ACC: !$acc parallel loop
+ [TEST] ACC: !$acc update host(arr(1:N))
+ [TEST] ACC: call assert(nint(sum(arr)) == N*(N + 1)/2)
+ [TEST] ACC: !$acc exit data delete(arr)
+ [SKIP] OMP: num_devices = omp_get_num_devices()
+ [SKIP] OMP: call assert(num_devices > 0)
+ [SKIP] OMP: call omp_set_default_device(mod(rank, num_devices))
+ [SKIP] OMP: allocate(arr(1:N))
+ [SKIP] OMP: !$omp target enter data map(alloc: arr(1:N))
+ [SKIP] OMP: !$omp target teams distribute parallel do
+ [SKIP] OMP: !$omp target update from(arr(1:N))
+ [SKIP] OMP: call assert(nint(sum(arr)) == N*(N + 1)/2)
+ [SKIP] OMP: !$omp target exit data map(delete: arr(1:N))
+ [TEST] MPI: call mpi_barrier(MPI_COMM_WORLD, ierr)
+ [TEST] MPI: call mpi_finalize(ierr)
+ 
+ Syscheck: PASSED.
+
+mfc: OK > :) Running pre_process:
+
++ mpirun -np 1 /work/u1131128/coding-adv1/mfc/build/install/gpu-acc-7d1e32e277/bin/pre_process
+ Pre-processing a 99x0x0 case on 1 rank(s)
+ Processing patch            1
+ Elapsed Time   3.3102035522460938E-002
+
+mfc: OK > :) Running simulation:
+
++ mpirun -np 1 /work/u1131128/coding-adv1/mfc/build/install/gpu-acc-c819d00b45/bin/simulation
+ Simulating a regular 99x0x0 case on 1 rank(s) with OpenACC offloading.
+ [  0%] step 1 of 41 (t_step 0) t/step  0.00E+00s (avg  0.00E+00s) ETA 0:00:00
+ [  3%] step 2 of 41 (t_step 1) t/step  1.31E-02s (avg  0.00E+00s) ETA 0:00:00
+ [  5%] step 3 of 41 (t_step 2) t/step  2.85E-03s (avg  0.00E+00s) ETA 0:00:00
+ [  8%] step 4 of 41 (t_step 3) t/step  2.80E-03s (avg  2.80E-03s) ETA 0:00:00
+ [ 10%] step 5 of 41 (t_step 4) t/step  2.88E-03s (avg  2.84E-03s) ETA 0:00:00
+ [ 13%] step 6 of 41 (t_step 5) t/step  2.80E-03s (avg  2.82E-03s) ETA 0:00:00
+ [ 15%] step 7 of 41 (t_step 6) t/step  2.82E-03s (avg  2.82E-03s) ETA 0:00:00
+ [ 18%] step 8 of 41 (t_step 7) t/step  2.78E-03s (avg  2.82E-03s) ETA 0:00:00
+ [ 20%] step 9 of 41 (t_step 8) t/step  2.81E-03s (avg  2.82E-03s) ETA 0:00:00
+ [ 22%] step 10 of 41 (t_step 9) t/step  2.94E-03s (avg  2.83E-03s) ETA 0:00:00
+ [ 25%] step 11 of 41 (t_step 10) t/step  2.84E-03s (avg  2.83E-03s) ETA 0:00:00
+ [ 27%] step 12 of 41 (t_step 11) t/step  2.78E-03s (avg  2.83E-03s) ETA 0:00:00
+ [ 30%] step 13 of 41 (t_step 12) t/step  2.82E-03s (avg  2.83E-03s) ETA 0:00:00
+ [ 32%] step 14 of 41 (t_step 13) t/step  2.83E-03s (avg  2.83E-03s) ETA 0:00:00
+ [ 35%] step 15 of 41 (t_step 14) t/step  2.82E-03s (avg  2.83E-03s) ETA 0:00:00
+ [ 37%] step 16 of 41 (t_step 15) t/step  2.88E-03s (avg  2.83E-03s) ETA 0:00:00
+ [ 40%] step 17 of 41 (t_step 16) t/step  2.85E-03s (avg  2.83E-03s) ETA 0:00:00
+ [ 42%] step 18 of 41 (t_step 17) t/step  2.91E-03s (avg  2.84E-03s) ETA 0:00:00
+ [ 44%] step 19 of 41 (t_step 18) t/step  2.79E-03s (avg  2.83E-03s) ETA 0:00:00
+ [ 47%] step 20 of 41 (t_step 19) t/step  2.83E-03s (avg  2.83E-03s) ETA 0:00:00
+ [ 49%] step 21 of 41 (t_step 20) t/step  2.79E-03s (avg  2.83E-03s) ETA 0:00:00
+ [ 52%] step 22 of 41 (t_step 21) t/step  2.87E-03s (avg  2.83E-03s) ETA 0:00:00
+ [ 54%] step 23 of 41 (t_step 22) t/step  2.81E-03s (avg  2.83E-03s) ETA 0:00:00
+ [ 57%] step 24 of 41 (t_step 23) t/step  2.86E-03s (avg  2.83E-03s) ETA 0:00:00
+ [ 59%] step 25 of 41 (t_step 24) t/step  2.86E-03s (avg  2.83E-03s) ETA 0:00:00
+ [ 61%] step 26 of 41 (t_step 25) t/step  2.84E-03s (avg  2.84E-03s) ETA 0:00:00
+ [ 64%] step 27 of 41 (t_step 26) t/step  2.85E-03s (avg  2.84E-03s) ETA 0:00:00
+ [ 66%] step 28 of 41 (t_step 27) t/step  2.81E-03s (avg  2.83E-03s) ETA 0:00:00
+ [ 69%] step 29 of 41 (t_step 28) t/step  2.80E-03s (avg  2.83E-03s) ETA 0:00:00
+ [ 71%] step 30 of 41 (t_step 29) t/step  2.81E-03s (avg  2.83E-03s) ETA 0:00:00
+ [ 74%] step 31 of 41 (t_step 30) t/step  2.89E-03s (avg  2.83E-03s) ETA 0:00:00
+ [ 76%] step 32 of 41 (t_step 31) t/step  2.84E-03s (avg  2.83E-03s) ETA 0:00:00
+ [ 79%] step 33 of 41 (t_step 32) t/step  2.85E-03s (avg  2.84E-03s) ETA 0:00:00
+ [ 81%] step 34 of 41 (t_step 33) t/step  2.81E-03s (avg  2.83E-03s) ETA 0:00:00
+ [ 83%] step 35 of 41 (t_step 34) t/step  2.81E-03s (avg  2.83E-03s) ETA 0:00:00
+ [ 86%] step 36 of 41 (t_step 35) t/step  2.80E-03s (avg  2.83E-03s) ETA 0:00:00
+ [ 88%] step 37 of 41 (t_step 36) t/step  2.80E-03s (avg  2.83E-03s) ETA 0:00:00
+ Pressure relaxation produced a non-physical phasic density. Exiting.
+--------------------------------------------------------------------------
+MPI_ABORT was invoked on rank 0 in communicator MPI_COMM_WORLD
+with errorcode 1.
+
+NOTE: invoking MPI_ABORT causes Open MPI to kill all MPI processes.
+You may or may not see output from other processes, depending on
+exactly when Open MPI kills them.
+--------------------------------------------------------------------------
+
+mfc: ERROR > :( /work/u1131128/coding-adv1/mfc/build/install/gpu-acc-c819d00b45/bin/simulation failed with exit code 1.
+
+ 
+
+Error: Submitting batch file for Interactive failed. It can be found here: /work/u1131128/coding-adv1/mfc/tests/5F3BB2E0/MFC.sh. Please check the file for errors.
+
+Terminated
+
+mfc: ERROR > main.py finished with a 143 exit code.
+mfc: (venv) Exiting the Python virtual environment.
+
+  
+     ✗ FAILED: 1D -> Reactive Burn -> Condensed Programmed Det...
+       UUID: 5F3BB2E0
+       Attempts: 1
+       Error: Test tests/5F3BB2E0: 1D -> Reactive Burn -> Condensed Programmed Detonation -> 6eq: Failed to execute MFC.
+       Hint: Check build logs and case parameters
+  
+
+  
+
+╭──────────────────────────────── Test Summary ────────────────────────────────╮
+│                                                                              │
+│  ✗ 14 TESTS FAILED                                                           │
+│                                                                              │
+│       0 passed                                                               │
+│      14 failed                                                               │
+│     746 skipped                                                              │
+│    ────────────                                                              │
+│     760 total                                                                │
+│                                                                              │
+│    Time: 2m 16.3s                                                            │
+│                                                                              │
+│    Failed Tests:                                                             │
+│      • 1D -> 2 Fluid(s) -> eos=mie_gruneisen...                              │
+│        UUID: 61AF4509                                                        │
+│        (tolerance mismatch)                                                  │
+│      • 1D -> 2 Fluid(s) -> eos=jwl -> model_...                              │
+│        UUID: 6AE3FB4E                                                        │
+│        (tolerance mismatch)                                                  │
+│      • 2D -> 1 Fluid(s) -> Viscous -> IBM ->...                              │
+│        UUID: 7F70E665                                                        │
+│        (tolerance mismatch)                                                  │
+│      • 2D -> 1 Fluid(s) -> Viscous -> IBM ->...                              │
+│        UUID: B0CE19C5                                                        │
+│        (tolerance mismatch)                                                  │
+│      • 2D -> 2 Fluid(s) -> riemann_solver=2 ...                              │
+│        UUID: 4F2F4ACE                                                        │
+│        (tolerance mismatch)                                                  │
+│      • 2D -> 2 Fluid(s) -> capillary=T -> mo...                              │
+│        UUID: 3859AF63                                                        │
+│        (tolerance mismatch)                                                  │
+│      • 2D -> 2 Fluid(s) -> Viscous -> IBM ->...                              │
+│        UUID: 8D8F6424                                                        │
+│        (tolerance mismatch)                                                  │
+│      • 2D -> 2 Fluid(s) -> Viscous -> IBM ->...                              │
+│        UUID: 0E240AD7                                                        │
+│        (tolerance mismatch)                                                  │
+│      • 2D -> Example -> rayleigh_taylor                                      │
+│        UUID: 2BA0324F                                                        │
+│        (tolerance mismatch)                                                  │
+│      • 3D -> 2 Fluid(s) -> riemann_solver=2 ...                              │
+│        UUID: F0E6771E                                                        │
+│        (tolerance mismatch)                                                  │
+│      ... and 4 more                                                          │
+│                                                                              │
+│    Next Steps:                                                               │
+│      • Run with --generate to update golden files (if changes are            │
+│  intentional)                                                                │
+│      • Check individual test output in tests/<UUID>/                         │
+│      • Run specific test: ./mfc.sh test --only <UUID>                        │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+
+mfc: ERROR > main.py finished with a 14 exit code.
+mfc: (venv) Exiting the Python virtual environment.

@@ -101,7 +101,8 @@ The official MFC table lists 0.38 ns for H100 SXM. That number uses a different 
   - All 19 chemistry tests: 19/19 (604755).
   - A 15 % sample: 100/106 (604601). Five failures were chemistry cases whose binaries had not been built; they now
     pass. The sixth, 1843DA80, fails identically on the unmodified build.
-- **Before an upstream PR:** the full suite.
+- **Full suite on the final series** (606006–606014): 690 pass, 23 fail, 0 new. All 23 fail identically on
+  unmodified v5.7.0 (rechecks 606331/606332 and earlier); listed in `harness/known_test_failures.txt`.
 
 ## Where the time is now (sc26 profile, 62.1 ms of kernels per step, job 602705)
 | Kernel | ms/step | Share | Note |

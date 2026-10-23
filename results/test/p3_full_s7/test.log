@@ -1,0 +1,288 @@
+mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn006 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 2
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | 
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+fresh T=300 rho=0.0844 | burned T=2187 rho=0.0127 | driver P=6.67e+04
+Stoichiometric mixture fraction: Z_st = 0.029
+Convective Mach: Ma = 0.1530510393535898
+Reynolds number: Re = 3524.088030224578
+ Build | syscheck and pre_process
+
+
+ Build | syscheck and simulation
+
+
+ Build | syscheck and pre_process | Chemistry: h2o2.yaml
+
+
+ Build | syscheck and simulation | Chemistry: h2o2.yaml
+
+
+ Build | syscheck and pre_process | Chemistry: /work/u1131128/coding-adv1/mfc-p3/examples/3D_reacting_mixing_layer/sandiego.yaml
+
+
+ Build | syscheck and simulation | Chemistry: /work/u1131128/coding-adv1/mfc-p3/examples/3D_reacting_mixing_layer/sandiego.yaml
+
+
+
+ Test pre_process and simulation | from A7E7A245 to D0AC8751 (55 tests)
+  
+     Progress      Test Name                                        Time(s)   UUID
+  
+     (  1/ 55)    2D -> Example -> mibm_particle_cloud                 17.73    A7E7A245
+     (  2/ 55)    2D -> Example -> IGR_triple_point                    30.94    B2EC143C
+     (  3/ 55)    2D -> Example -> GreshoVortex                        13.39    C9E0B721
+     (  4/ 55)    2D -> Example -> kelvin_helmholtz                    39.80    A078904B
+     (  5/ 55)    nD -> Example -> perfect_reactor                     15.75    0A62F0A6
+     (  6/ 55)    1D -> Example -> shuosher_teno5                      17.37    7BCDC8E7
+     (  7/ 55)    2D -> Example -> advection_muscl                     16.76    10DE58AA
+     (  8/ 55)    1D -> Example -> bubblescreen                        16.38    FBB296DA
+     (  9/ 55)    2D -> Example -> shockbubble                         16.75    24FD489A
+     ( 10/ 55)    2D -> Example -> axisym_shockbubble                  16.27    7A9F4EF4
+     ( 11/ 55)    2D -> Example -> mhd_magnetic_vortex                 17.14    A48CA601
+     ( 12/ 55)    2D -> Example -> lid_driven_cavity                   17.58    265366F3
+     ( 13/ 55)    2D -> Example -> patch_modal_shape                   16.36    1967AE06
+     ( 14/ 55)    2D -> Example -> ibm_ellipse                         17.16    5600D63B
+     ( 15/ 55)    2D -> Example -> mhd_rotor                           15.13    F057F8E6
+     ( 16/ 55)    2D -> Example -> shocktube_phasechange               16.27    82A64F89
+     ( 17/ 55)    3D -> Example -> TaylorGreenVortex                   16.95    C071BA12
+     ( 18/ 55)    1D -> Example -> sodshocktube                        14.64    BCA926AC
+     ( 19/ 55)    2D -> Example -> shock_flame                         13.88    CF4FE4C9
+     ( 20/ 55)    1D -> Example -> shuosher_wenoz5                     32.06    9843489C
+     ( 21/ 55)    1D -> Example -> exp_tube_phasechange                35.00    C93CB5DF
+     ( 22/ 55)    3D -> Example -> IGR_jet_1fluid                      16.15    43B5FEBD
+     ( 23/ 55)    2D -> Example -> cont_damage                         15.93    0BAA2F42
+     ( 24/ 55)    1D -> Chemistry -> Perfect Reactor                   15.42    5DCF300C
+     ( 25/ 55)    2D -> Chemistry -> Perfect Reactor                   15.25    1550B67E
+     ( 26/ 55)    3D -> Chemistry -> Perfect Reactor                   17.78    E8372F50
+     ( 27/ 55)    1D -> Chemistry -> Perfect Reactor -> Sub-stepp...   15.86    5D59DDF0
+     ( 28/ 55)    1D -> Chemistry -> Inert Shocktube -> Riemann S...   15.82    2BDE2018
+     ( 29/ 55)    1D -> Chemistry -> Inert Shocktube -> Riemann S...   16.93    4D7D85B4
+     ( 30/ 55)    1D -> Chemistry -> Inert Shocktube -> Riemann S...   15.70    6B3AE48F
+     ( 31/ 55)    1D -> Chemistry -> Inert Shocktube -> Riemann S...   16.28    F8ADA51B
+     ( 32/ 55)    1D -> Chemistry -> Inert Shocktube -> Reacting ...   16.18    7BBCE9E9
+     ( 33/ 55)    1D -> Chemistry -> Inert Shocktube -> Reacting ...   17.54    259B2428
+     ( 34/ 55)    2D -> Chemistry -> Reacting Mixing Layer             17.40    C4EB58A8
+     ( 35/ 55)    3D -> Chemistry -> Reacting Mixing Layer             22.37    3C77E5DD
+     ( 36/ 55)    2D -> Chemistry -> Spatial Reacting Mixing Layer     16.27    56F8C4BC
+     ( 37/ 55)    1D -> Chemistry -> Dual Isothermal Wall Gradient     18.00    8E56ACC1
+     ( 38/ 55)    2D -> Chemistry -> Isothermal Wall                   16.93    4587725A
+     ( 39/ 55)    1D -> Chemistry -> MultiComponent Diffusion          17.84    41AD0140
+     ( 40/ 55)    1D -> Reactive Burn -> Condensed Programmed Det...   15.99    F08B0D0E
+   mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn006 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 1
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | --targets pre_process and simulation
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Acquiring /work/u1131128/coding-adv1/mfc-p3/tests/5F3BB2E0/case.py...
+ Acquiring /work/u1131128/coding-adv1/mfc-p3/tests/5F3BB2E0/case.py...
+ Build | syscheck, syscheck, pre_process, and simulation
+
+
+ Run
+   Using queue system Interactive.
+   Using baked-in template for default.
+   Generating input files for syscheck...
+     Generating syscheck.inp:
+       INFO: Forwarded 0/98 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
+   Generating input files for pre_process...
+     Generating pre_process.inp:
+       INFO: Forwarded 63/98 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
+   Generating input files for simulation...
+     Generating simulation.inp:
+       INFO: Forwarded 69/98 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
++-----------------------------------------------------------------------------------------------------------+ 
+| MFC case # MFC @ /work/u1131128/coding-adv1/mfc-p3/tests/5F3BB2E0/case.py:                                |
++-----------------------------------------------------------------------------------------------------------+ 
+| * Start-time     03:35:55                            * Start-date     03:35:55                            |
+| * Partition      N/A                                 * Walltime       01:00:00                            |
+| * Account        N/A                                 * Nodes          1                                   |
+| * Job Name       MFC                                 * Engine         interactive                         |
+| * QoS            N/A                                 * Binary         mpirun                              |
+| * Queue System   Interactive                         * Email          N/A                                 |
++-----------------------------------------------------------------------------------------------------------+ 
+
+mfc: WARNING > This is the default template.
+mfc: WARNING > It is not intended to support all systems and execution engines.
+mfc: WARNING > Consider using a different template via the --computer option if you encounter problems.
+mfc: OK > :) Selected MPI launcher mpirun. Use --binary to override.
+mfc: OK > :) Running syscheck:
+
++ mpirun -np 1 /work/u1131128/coding-adv1/mfc-p3/build/install/gpu-acc-869e78ff84/bin/syscheck
+ [TEST] MPI: call mpi_init(ierr)
+ [TEST] MPI: call mpi_comm_rank(MPI_COMM_WORLD, rank, ierr)
+ [TEST] MPI: call mpi_barrier(MPI_COMM_WORLD, ierr)
+ [TEST] MPI: call assert(rank >= 0)
+ [TEST] MPI: call mpi_comm_size(MPI_COMM_WORLD, nRanks, ierr)
+ [TEST] MPI: call assert(nRanks > 0 .and. rank < nRanks)
+ [TEST] ACC: devtype = acc_get_device_type()
+ [TEST] ACC: num_devices = acc_get_num_devices(devtype)
+ [TEST] ACC: call assert(num_devices > 0)
+ [TEST] ACC: call acc_set_device_num(mod(rank, num_devices), devtype)
+ [TEST] ACC: allocate(arr(1:N))
+ [TEST] ACC: !$acc enter data create(arr(1:N))
+ [TEST] ACC: !$acc parallel loop
+ [TEST] ACC: !$acc update host(arr(1:N))
+ [TEST] ACC: call assert(nint(sum(arr)) == N*(N + 1)/2)
+ [TEST] ACC: !$acc exit data delete(arr)
+ [SKIP] OMP: num_devices = omp_get_num_devices()
+ [SKIP] OMP: call assert(num_devices > 0)
+ [SKIP] OMP: call omp_set_default_device(mod(rank, num_devices))
+ [SKIP] OMP: allocate(arr(1:N))
+ [SKIP] OMP: !$omp target enter data map(alloc: arr(1:N))
+ [SKIP] OMP: !$omp target teams distribute parallel do
+ [SKIP] OMP: !$omp target update from(arr(1:N))
+ [SKIP] OMP: call assert(nint(sum(arr)) == N*(N + 1)/2)
+ [SKIP] OMP: !$omp target exit data map(delete: arr(1:N))
+ [TEST] MPI: call mpi_barrier(MPI_COMM_WORLD, ierr)
+ [TEST] MPI: call mpi_finalize(ierr)
+ 
+ Syscheck: PASSED.
+
+mfc: OK > :) Running pre_process:
+
++ mpirun -np 1 /work/u1131128/coding-adv1/mfc-p3/build/install/gpu-acc-7d1e32e277/bin/pre_process
+ Pre-processing a 99x0x0 case on 1 rank(s)
+ Processing patch            1
+ Elapsed Time   2.9658079147338867E-002
+
+mfc: OK > :) Running simulation:
+
++ mpirun -np 1 /work/u1131128/coding-adv1/mfc-p3/build/install/gpu-acc-c819d00b45/bin/simulation
+ Simulating a regular 99x0x0 case on 1 rank(s) with OpenACC offloading.
+ [  0%] step 1 of 41 (t_step 0) t/step  0.00E+00s (avg  0.00E+00s) ETA 0:00:00
+ [  3%] step 2 of 41 (t_step 1) t/step  3.96E-02s (avg  0.00E+00s) ETA 0:00:00
+ [  5%] step 3 of 41 (t_step 2) t/step  2.53E-03s (avg  0.00E+00s) ETA 0:00:00
+ [  8%] step 4 of 41 (t_step 3) t/step  2.49E-03s (avg  2.49E-03s) ETA 0:00:00
+ [ 10%] step 5 of 41 (t_step 4) t/step  2.54E-03s (avg  2.51E-03s) ETA 0:00:00
+ [ 13%] step 6 of 41 (t_step 5) t/step  2.54E-03s (avg  2.52E-03s) ETA 0:00:00
+ [ 15%] step 7 of 41 (t_step 6) t/step  2.55E-03s (avg  2.53E-03s) ETA 0:00:00
+ [ 18%] step 8 of 41 (t_step 7) t/step  2.47E-03s (avg  2.52E-03s) ETA 0:00:00
+ [ 20%] step 9 of 41 (t_step 8) t/step  2.55E-03s (avg  2.52E-03s) ETA 0:00:00
+ [ 22%] step 10 of 41 (t_step 9) t/step  2.57E-03s (avg  2.53E-03s) ETA 0:00:00
+ [ 25%] step 11 of 41 (t_step 10) t/step  2.47E-03s (avg  2.52E-03s) ETA 0:00:00
+ [ 27%] step 12 of 41 (t_step 11) t/step  2.54E-03s (avg  2.52E-03s) ETA 0:00:00
+ [ 30%] step 13 of 41 (t_step 12) t/step  2.53E-03s (avg  2.52E-03s) ETA 0:00:00
+ [ 32%] step 14 of 41 (t_step 13) t/step  2.49E-03s (avg  2.52E-03s) ETA 0:00:00
+ [ 35%] step 15 of 41 (t_step 14) t/step  2.49E-03s (avg  2.52E-03s) ETA 0:00:00
+ [ 37%] step 16 of 41 (t_step 15) t/step  2.52E-03s (avg  2.52E-03s) ETA 0:00:00
+ [ 40%] step 17 of 41 (t_step 16) t/step  2.51E-03s (avg  2.52E-03s) ETA 0:00:00
+ [ 42%] step 18 of 41 (t_step 17) t/step  2.58E-03s (avg  2.52E-03s) ETA 0:00:00
+ [ 44%] step 19 of 41 (t_step 18) t/step  2.55E-03s (avg  2.52E-03s) ETA 0:00:00
+ [ 47%] step 20 of 41 (t_step 19) t/step  2.57E-03s (avg  2.53E-03s) ETA 0:00:00
+ [ 49%] step 21 of 41 (t_step 20) t/step  2.56E-03s (avg  2.53E-03s) ETA 0:00:00
+ [ 52%] step 22 of 41 (t_step 21) t/step  2.58E-03s (avg  2.53E-03s) ETA 0:00:00
+ [ 54%] step 23 of 41 (t_step 22) t/step  2.50E-03s (avg  2.53E-03s) ETA 0:00:00
+ [ 57%] step 24 of 41 (t_step 23) t/step  2.50E-03s (avg  2.53E-03s) ETA 0:00:00
+ [ 59%] step 25 of 41 (t_step 24) t/step  2.60E-03s (avg  2.53E-03s) ETA 0:00:00
+ [ 61%] step 26 of 41 (t_step 25) t/step  2.53E-03s (avg  2.53E-03s) ETA 0:00:00
+ [ 64%] step 27 of 41 (t_step 26) t/step  2.59E-03s (avg  2.53E-03s) ETA 0:00:00
+ [ 66%] step 28 of 41 (t_step 27) t/step  2.53E-03s (avg  2.53E-03s) ETA 0:00:00
+ [ 69%] step 29 of 41 (t_step 28) t/step  2.51E-03s (avg  2.53E-03s) ETA 0:00:00
+ [ 71%] step 30 of 41 (t_step 29) t/step  2.57E-03s (avg  2.53E-03s) ETA 0:00:00
+ [ 74%] step 31 of 41 (t_step 30) t/step  2.61E-03s (avg  2.54E-03s) ETA 0:00:00
+ [ 76%] step 32 of 41 (t_step 31) t/step  2.55E-03s (avg  2.54E-03s) ETA 0:00:00
+ [ 79%] step 33 of 41 (t_step 32) t/step  2.56E-03s (avg  2.54E-03s) ETA 0:00:00
+ [ 81%] step 34 of 41 (t_step 33) t/step  2.53E-03s (avg  2.54E-03s) ETA 0:00:00
+ [ 83%] step 35 of 41 (t_step 34) t/step  2.54E-03s (avg  2.54E-03s) ETA 0:00:00
+ [ 86%] step 36 of 41 (t_step 35) t/step  2.49E-03s (avg  2.54E-03s) ETA 0:00:00
+ [ 88%] step 37 of 41 (t_step 36) t/step  2.54E-03s (avg  2.54E-03s) ETA 0:00:00
+ Pressure relaxation produced a non-physical phasic density. Exiting.
+--------------------------------------------------------------------------
+MPI_ABORT was invoked on rank 0 in communicator MPI_COMM_WORLD
+with errorcode 1.
+
+NOTE: invoking MPI_ABORT causes Open MPI to kill all MPI processes.
+You may or may not see output from other processes, depending on
+exactly when Open MPI kills them.
+--------------------------------------------------------------------------
+
+mfc: ERROR > :( /work/u1131128/coding-adv1/mfc-p3/build/install/gpu-acc-c819d00b45/bin/simulation failed with exit code 1.
+
+ 
+
+Error: Submitting batch file for Interactive failed. It can be found here: /work/u1131128/coding-adv1/mfc-p3/tests/5F3BB2E0/MFC.sh. Please check the file for errors.
+
+Terminated
+
+mfc: ERROR > main.py finished with a 143 exit code.
+mfc: (venv) Exiting the Python virtual environment.
+
+  
+     ✗ FAILED: 1D -> Reactive Burn -> Condensed Programmed Det...
+       UUID: 5F3BB2E0
+       Attempts: 1
+       Error: Test tests/5F3BB2E0: 1D -> Reactive Burn -> Condensed Programmed Detonation -> 6eq: Failed to execute MFC.
+       Hint: Check build logs and case parameters
+  
+     ( 41/ 55)    1D -> Reactive Burn -> Condensed Programmed Det...   17.28    135ED2EF
+     ( 42/ 55)    1D -> Reactive Burn -> Condensed Programmed Det...   17.77    E639CA3A
+     ( 43/ 55)    1D -> Reactive Burn -> Condensed Programmed Det...   30.66    86893F55
+     ( 44/ 55)    1D -> Reactive Burn -> Condensed Programmed Det...   28.72    CB0DC420
+     ( 45/ 55)    3D Direction Symmetry -> Shock in X                  17.52    05D092C5
+     ( 46/ 55)    2D -> IBM -> Vieille Burn Rate                       18.41    B317404C
+     ( 47/ 55)    3D Direction Symmetry -> Shock in Y                  18.94    59C3F366
+     ( 48/ 55)    MPI Consistency -> 3D -> Bubbles                     36.09    75D7CC39
+     ( 49/ 55)    MPI Consistency -> 3D -> Viscous                     36.84    0090B316
+     ( 50/ 55)    MPI Consistency -> 3D -> Hypoelasticity              42.94    0DDE8A87
+     ( 51/ 55)    Restart Roundtrip -> 1D                              44.11    1A379909
+     ( 52/ 55)    Restart Roundtrip -> 3D                              47.21    C3A4DBAE
+     ( 53/ 55)    Kernel -> 3D -> Grid Stretching                      17.47    B49877F3
+     ( 54/ 55)    Kernel -> 2D -> MTHINC -> Grid Stretching            17.71    7A1719C6
+
+  
+
+╭──────────────────────────────── Test Summary ────────────────────────────────╮
+│                                                                              │
+│  ✗ 1 TEST FAILED                                                             │
+│                                                                              │
+│      54 passed                                                               │
+│       1 failed                                                               │
+│     705 skipped                                                              │
+│    ────────────                                                              │
+│     760 total                                                                │
+│                                                                              │
+│    Time: 11m 24.8s                                                           │
+│                                                                              │
+│    Failed Tests:                                                             │
+│      • 1D -> Reactive Burn -> Condensed Prog...                              │
+│        UUID: 5F3BB2E0                                                        │
+│        (execution failed)                                                    │
+│                                                                              │
+│    Next Steps:                                                               │
+│      • Run with --generate to update golden files (if changes are            │
+│  intentional)                                                                │
+│      • Check individual test output in tests/<UUID>/                         │
+│      • Run specific test: ./mfc.sh test --only <UUID>                        │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+
+mfc: ERROR > main.py finished with a 1 exit code.
+mfc: (venv) Exiting the Python virtual environment.

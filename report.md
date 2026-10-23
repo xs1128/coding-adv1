@@ -122,9 +122,16 @@ configuration together with `rdma_mpi`.
 
 ## 7. Correctness
 - Every benchmark run: final state bitwise identical to pinned v5.7.0 (`verify.json` per run).
-- `./mfc.sh test` on the final series: SUITE_RESULT
-- Known failures of the unmodified build (`harness/known_test_failures.txt`, each re-run on the pinned build):
-  9 tests, mostly `model_eqns=3` cases with errors just above 1e-12 or nondeterministic between runs.
+- **Full `./mfc.sh test` on the final series** (752 tests, 8 shards, jobs 606006–606014; generic build plus the 6
+  chemistry variants): **690 pass, 23 fail, 0 new failures** (`verify.py --test-summary`: PASS).
+- All 23 failures fail **identically on unmodified v5.7.0** in this environment: each was re-run on the pinned build
+  (606331 for the 14 found by the full suite; earlier rechecks for the other 9) and again on the final build (606332).
+  They are `model_eqns=3` cases (errors from just above 1e-12 up to O(1)), viscous IBM cases, and five examples
+  (vacuum, vacuum_restart, rayleigh_taylor, isentropicvortex, a reactive-burn case that does not start). The list,
+  with the error of each, is `harness/known_test_failures.txt`. One of them (isentropicvortex) reports a different
+  first failing variable from run to run on both builds.
+- What this means: the final series changes no test outcome. It does not mean v5.7.0's suite is clean on NVHPC 26.3 /
+  H200 — 23 tests already fail before our changes, which we report rather than hide.
 - Two harness holes we found and closed: `verify.py` once passed a run whose timed reps never started (it read the
   warm-up's output; AGENT_LOG #12); 1-GPU test jobs could not start 2-rank tests (fixed with MPI oversubscription;
   this also removed a wrongly "known" failure).
