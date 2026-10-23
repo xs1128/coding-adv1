@@ -22,3 +22,25 @@ mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
   
      Progress      Test Name                                        Time(s)   UUID
   
+     (  1/ 94)    1D -> Acoustic Source -> Sine -> Number of Pulses    14.95    E752CD0F
+     (  2/ 94)    1D -> Acoustic Source -> Square -> Frequency         14.96    2F58A83F
+     (  3/ 94)    1D -> Acoustic Source -> Square -> Delay             14.70    5DAF1F94
+     (  4/ 94)    1D -> Acoustic Source -> Square -> Wavelength        14.75    0FF51EDE
+     (  5/ 94)    1D -> Acoustic Source -> Gaussian -> Sigma Time      14.50    EE34D7DC
+     (  6/ 94)    1D -> Acoustic Source -> Square -> Number of Pu...   14.55    2DE548B7
+     (  7/ 94)    1D -> Acoustic Source -> Gaussian -> Sigma Dist      14.90    3053B44F
+     (  8/ 94)    1D -> Acoustic Source -> Gaussian -> Dipole          14.86    66693DCC
+     (  9/ 94)    1D -> Bubbles -> Polytropic -> bubble_model=3        15.08    3643454B
+     ( 10/ 94)    1D -> Bubbles -> 2 Fluid(s)                          15.14    903FA85A
+     ( 11/ 94)    1D -> Bubbles -> Polytropic -> bubble_model=2        15.23    63F2D0C0
+     ( 12/ 94)    1D -> Bubbles -> bubble_model=2                      15.19    749F3DD3
+     ( 13/ 94)    1D -> Bubbles -> nb=1                                15.42    11DAFD23
+     ( 14/ 94)    1D -> Bubbles -> adv_n=T                             15.39    105673CA
+     ( 15/ 94)    1D -> Bubbles -> artificial_Ma                       15.14    BE0B2040
+     ( 16/ 94)    1D -> Bubbles -> adv_n=T -> adap_dt=T                15.21    3B3F8C68
+     ( 17/ 94)    1D -> Bubbles -> low_Mach=2                          15.14    4927BF4B
+     ( 18/ 94)    1D -> Bubbles -> low_Mach=1                          15.19    F3E2DAC6
+     ( 19/ 94)    1D -> Bubbles -> QBMM                                16.48    CE9DBA3F
+     ( 20/ 94)    1D -> Bubbles -> QBMM -> Non-polytropic              16.49    356A5C50
+     ( 21/ 94)    1D -> Bubbles -> QBMM -> bubble_model=3              15.69    1E288DE4
+     ( 22/ 94)    1D -> Bubbles -> QBMM -> bubble_model=3 -> Non-...   15.69    5576FEEA

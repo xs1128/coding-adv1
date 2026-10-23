@@ -51,3 +51,45 @@
 ==PROF== Profiling "m_cbc_s_initialize_cbc_1103": 0%....50%....100% - 39 passes
 ==PROF== Profiling "m_cbc_s_initialize_cbc_1115": 0%....50%....100% - 39 passes
 ==PROF== Profiling "m_cbc_s_initialize_cbc_1126": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_initialize_cbc_1138": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_initialize_cbc_1161": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_variables_conversion_s_convert_primitive_to_flux_variables_1055": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_cbc_564": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_cbc_580": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_cbc_599": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_finalize_cbc_1292": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_finalize_cbc_1304": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_cbc_s_finalize_cbc_1327": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_rhs_s_compute_advection_source_term_1355": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_rhs_s_compute_advection_source_term_s_add_directional_advection_source_terms_1712": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_time_steppers_s_tvd_rk_489": 0%....50%....100% - 39 passes
+ [ 21%] step 2 of 5 (t_step 1) t/step  2.33E+02s (avg  0.00E+00s) ETA 0:00:00
+==PROF== Profiling "m_rhs_s_compute_rhs_596": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_variables_conversion_s_convert_conservative_to_primitive_variables_496": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_boundary_common_s_populate_bc_direction_151": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_boundary_common_s_populate_bc_direction_151": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_boundary_common_s_populate_bc_direction_151": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_boundary_common_s_populate_bc_direction_151": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_boundary_common_s_populate_bc_direction_151": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_boundary_common_s_populate_bc_direction_151": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_weno_s_pack_weno_input_arr_897": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_weno_s_weno_1096": 0%....50%....100% - 39 passes
+==PROF== Profiling "m_riemann_solver_hllc_s_hllc_riemann_solver_898": 0%....50%....100% - 39 passes
+ [ 41%] step 3 of 5 (t_step 2) t/step  5.13E+01s (avg  0.00E+00s) ETA 0:00:00
+ [ 61%] step 4 of 5 (t_step 3) t/step  6.62E-02s (avg  6.62E-02s) ETA 0:00:00
+ Performance:   0.3429390625000000      ns/gp/eq/rhs
+==PROF== Disconnected from process 3255084
+==WARNING== Failed to import the following source files:
+==WARNING==  default
+==PROF== Report: /work/u1131128/coding-adv1/runs/prof/ncu_final_1g/ncu_rank0.ncu-rep
+Traceback (most recent call last):
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap>", line 1176, in exec_module
+  File "<frozen site>", line 635, in <module>
+  File "<frozen site>", line 621, in main
+  File "<frozen site>", line 364, in addusersitepackages
+  File "<frozen site>", line 247, in addsitedir
+  File "<frozen site>", line 190, in addpackage
+LookupError: unknown encoding: utf-8-sig

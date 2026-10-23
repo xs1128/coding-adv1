@@ -126,7 +126,18 @@ configuration together with `rdma_mpi`.
   this also removed a wrongly "known" failure).
 
 ## 8. Why it runs at this speed now
-NCU_TABLE
+Per-kernel ncu, same settings before and after (600146 vs 606033; clocks locked at 1.48 GHz, so durations are
+inflated but ratios hold; 4 steps, kernels 140–210):
+
+| Kernel (per call) | v5.7.0 | Final | Why |
+|---|---|---|---|
+| WENO5 reconstruction | 3.39–3.49 ms; 188 regs; 12 % warps active; FP64 pipe 31 % | **2.34–2.56 ms**; 128 regs; 24 %; FP64 pipe 42–46 % | K2: occupancy doubled; the spills (3.4–4.8·10⁷ local ops) hit L1 |
+| HLLC | 2.13–2.48 ms; FP64 pipe 9–10 % | **1.57–1.62 ms**; FP64 pipe 13 % | K4b: helpers inlined, no local-memory traffic |
+| Copy-like (pack, finalize, flux difference, RK update, conversion) | 0.72–1.19 ms; 1.2–1.8 TB/s (25–37 % of HBM peak); SM 64–74 % busy | unchanged | not touched: instruction-bound index arithmetic |
+| All listed kernels | 35.10 ms | **28.20 ms (−19.7 %)** | |
+
+WENO5 is still latency-bound below the FP64 roof, and the copy-like kernels reach a third of HBM bandwidth because the
+SMs are busy with index arithmetic, not memory. Both are the next single-GPU targets.
 - 1 GPU: after P3 the host gaps inside the reconstruction and Riemann ranges are 0.002–0.012 ms per stage (trace
   604667), so kernel time is the step time. Kernel time (sc26 profile 602705) is in WENO5 (29 %), HLLC (21 %), the
   WENO input pack (10 %; removed by NTHU's open PR #2092, not ours to claim) and bandwidth-bound copies (40 %).
