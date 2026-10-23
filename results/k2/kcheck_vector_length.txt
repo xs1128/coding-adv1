@@ -1,0 +1,13 @@
+# tools/kcheck.sh, login node, case-opt flags of mfc-opt staging (no register cap); WENO kernels: REG/STACK/SASS mix
+== mfc-opt/src/simulation/m_weno.fpp
+m_weno_s_weno_1096_gpu__2 REG:196 STACK:0  inst:776 LDG:60 STG:2 LDL:0 STL:0 LD:0 ST:0 DFMA:119
+m_weno_s_weno_1096_gpu__1 REG:188 STACK:0  inst:768 LDG:60 STG:2 LDL:0 STL:0 LD:0 ST:0 DFMA:119
+m_weno_s_weno_1096_gpu REG:188 STACK:0  inst:752 LDG:60 STG:2 LDL:0 STL:0 LD:0 ST:0 DFMA:119
+== kcheck/k2v64/m_weno.fpp
+m_weno_s_weno_1096_gpu__2 REG:196 STACK:0  inst:776 LDG:60 STG:2 LDL:0 STL:0 LD:0 ST:0 DFMA:119
+m_weno_s_weno_1096_gpu__1 REG:188 STACK:0  inst:768 LDG:60 STG:2 LDL:0 STL:0 LD:0 ST:0 DFMA:119
+m_weno_s_weno_1096_gpu REG:206 STACK:0  inst:752 LDG:60 STG:2 LDL:0 STL:0 LD:0 ST:0 DFMA:119
+== kcheck/k2v96/m_weno.fpp
+m_weno_s_weno_1096_gpu__2 REG:196 STACK:0  inst:776 LDG:60 STG:2 LDL:0 STL:0 LD:0 ST:0 DFMA:119
+m_weno_s_weno_1096_gpu__1 REG:188 STACK:0  inst:768 LDG:60 STG:2 LDL:0 STL:0 LD:0 ST:0 DFMA:119
+m_weno_s_weno_1096_gpu REG:192 STACK:0  inst:752 LDG:60 STG:2 LDL:0 STL:0 LD:0 ST:0 DFMA:119

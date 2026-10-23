@@ -1,10 +1,10 @@
-From a88491728255c448a83c6722e04caaa5c15f36f4 Mon Sep 17 00:00:00 2001
+From d8366188e51c02be5d5995f9d2daaf6430ca1c41 Mon Sep 17 00:00:00 2001
 From: hipac1 <hipac1@lsalab.cs.nthu.edu.tw>
 Date: Fri, 23 Oct 2026 18:32:16 +0800
 Subject: [PATCH] Queue the per-stage kernels and scalar updates async on
  NVHPC, on the synchronous stream
 
-Every RK stage launched ~100 kernels and ~45 scalar host-to-device updates, each followed by a
+Every RK stage launched 44-68 kernels (by rank) and ~45 scalar host-to-device updates, each followed by a
 host synchronization: ~1 ms of GPU idle per stage, which does not shrink with the rank count and
 was ~20 % of a stage at 4 GPUs.
 

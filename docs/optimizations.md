@@ -15,7 +15,7 @@ Every number below cites a job; details and rejected variants are in `docs/ladde
 | Rung | Step, median | Grind (ns/gp/eq/rhs) | Wall | Final state | Job |
 |---|---|---|---|---|---|
 | v5.7.0 baseline | 77.06 ms | 0.3982 | 8.07 s | reference | 600407 |
-| + P1 CBC async | 75.98 ms | 0.3933 | ~8.0 s | bitwise | 601152 |
+| + P1 CBC async | 75.98 ms | 0.3935 | ~8.0 s | bitwise | 601152 |
 | + K4b Riemann unity build | 70.42 ms | 0.3632 | 7.33 s | bitwise | 602474 |
 | + K2 WENO register cap 128 | **62.99 ms** | **0.3255** | 6.9 s | bitwise | 602559 |
 | = clean series `sc26` (canonical) | 62.91 ms | 0.3248 | 7.13 s | bitwise | 602728 |
@@ -66,7 +66,7 @@ The official MFC table lists 0.38 ns for H100 SXM. That number uses a different 
   17.65 → 17.69 ms (noise), wall 13.03 → 9.28 s (−29 %).
 
 **P2+P3: no host round trip per kernel** (`patches/opt/0005`, 10 files, +170/−153).
-- *Evidence.* Each RK stage launched ~100 kernels and ~45 scalar `GPU_UPDATE`s, each followed by a host sync: ~1 ms of
+- *Evidence.* Each RK stage launched 44–68 kernels (by rank) and ~45 scalar `GPU_UPDATE`s, each followed by a host sync: ~1 ms of
   GPU idle per stage. That cost does not shrink with more GPUs, so it was ~20 % of a stage at 4 GPUs (trace 604253).
 - *Check first.* A 5-second NVHPC test (604388) showed: after `acc_set_cuda_stream(acc_async_noval, <sync stream>)`,
   async and synchronous work run in issue order on one stream; async scalar updates are staged when queued; an
@@ -107,7 +107,7 @@ The official MFC table lists 0.38 ns for H100 SXM. That number uses a different 
 ## Where the time is now (sc26 profile, 62.1 ms of kernels per step, job 602705)
 | Kernel | ms/step | Share | Note |
 |---|---|---|---|
-| WENO5 reconstruction (3 directions) | 17.9 | 29 % | was 25.3 before K2 |
+| WENO5 reconstruction (3 directions) | 18.0 | 29 % | was 25.4 before K2 |
 | HLLC | 12.9 | 21 % | 146–152 registers |
 | WENO input pack | 6.0 | 10 % | removed by NTHU's #2092 (not ours to claim) |
 | RK update, advection source, conversion, finalize | ~25 | 40 % | bandwidth-bound copies (#2087 pattern) |
