@@ -1,0 +1,6 @@
+sync stream 2 noval stream 35065392
+noval stream after alias 2
+staged update: mismatches 0 of 20000
+ordering async->sync: mismatches 0 of 16777216
+sync  update+kernel:    15.32 us
+async update+kernel:     4.05 us
