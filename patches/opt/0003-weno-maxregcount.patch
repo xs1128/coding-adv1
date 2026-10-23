@@ -1,0 +1,61 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 274cfdd..44b712d 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -164,8 +164,7 @@ if (MFC_SIMULATION)
+         set(_unity "${CMAKE_BINARY_DIR}/fypp/simulation/m_riemann_unity.f90")
+         set(_unity_txt "")
+         set(_unity_parts "")
+-        foreach (_m m_variables_conversion m_riemann_state m_bubbles m_bubbles_EE m_muscl m_weno m_surface_tension
+-                    m_riemann_solver_hll m_riemann_solver_hllc m_riemann_solver_hlld m_riemann_solver_hypo_hlld
++        foreach (_m m_variables_conversion m_riemann_state m_bubbles m_bubbles_EE m_riemann_solver_hll m_riemann_solver_hllc m_riemann_solver_hlld m_riemann_solver_hypo_hlld
+                     m_riemann_solver_lf m_riemann_solvers)
+             set(_f "${CMAKE_BINARY_DIR}/fypp/simulation/${_m}.fpp.f90")
+             string(APPEND _unity_txt "#include \"${_f}\"\n")
+@@ -175,6 +174,10 @@ if (MFC_SIMULATION)
+         set_source_files_properties(${_unity_parts} PROPERTIES HEADER_FILE_ONLY ON)
+         set_source_files_properties("${_unity}" PROPERTIES OBJECT_DEPENDS "${_unity_parts}")
+         list(APPEND simulation_SRCs "${_unity}")
++        # WENO reconstruction: 188 registers allow only 8 warps/SM; capping this file trades a few L1-resident spills
++        # for 16 warps/SM at 128 (best of 168/128/96 on H200; Riemann kernels in the unity source are not capped).
++        set_source_files_properties("${CMAKE_BINARY_DIR}/fypp/simulation/m_weno.fpp.f90"
++                                    PROPERTIES COMPILE_OPTIONS "-gpu=maxregcount:128")
+     endif()
+ 
+     MFC_SETUP_TARGET(TARGET  simulation
+diff --git a/src/simulation/m_muscl.fpp b/src/simulation/m_muscl.fpp
+index 23fa67c..8c30389 100644
+--- a/src/simulation/m_muscl.fpp
++++ b/src/simulation/m_muscl.fpp
+@@ -9,7 +9,6 @@ module m_muscl
+ 
+     use m_derived_types
+     use m_global_parameters
+-    use m_variables_conversion
+     use m_constants, only: muscl_order_first_order, muscl_order_second_order, muscl_lim_unlimited, muscl_lim_minmod, &
+         & muscl_lim_mc, muscl_lim_van_albada, muscl_lim_van_leer, muscl_lim_superbee
+ #ifdef MFC_OpenACC
+diff --git a/src/simulation/m_surface_tension.fpp b/src/simulation/m_surface_tension.fpp
+index 2fbe622..cfd95ac 100644
+--- a/src/simulation/m_surface_tension.fpp
++++ b/src/simulation/m_surface_tension.fpp
+@@ -11,7 +11,6 @@ module m_surface_tension
+     use m_derived_types
+     use m_global_parameters
+     use m_mpi_proxy
+-    use m_variables_conversion
+     use m_weno
+     use m_muscl
+     use m_helper
+diff --git a/src/simulation/m_weno.fpp b/src/simulation/m_weno.fpp
+index ef18917..65c7368 100644
+--- a/src/simulation/m_weno.fpp
++++ b/src/simulation/m_weno.fpp
+@@ -9,7 +9,6 @@ module m_weno
+ 
+     use m_derived_types
+     use m_global_parameters
+-    use m_variables_conversion
+     use m_mpi_proxy
+     use m_thinc, only: s_thinc_compression
+     use m_nvtx

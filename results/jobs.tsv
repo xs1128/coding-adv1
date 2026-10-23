@@ -61,3 +61,9 @@ jobid	submitted	label	ngpu	minutes	vars
 602485	2026-10-23T09:55:51+08:00	test/unity_rs5	1	10	SCRIPT=mfctest TEST_ARGS=-o riemann_solver=5 MFC_DIR=/work/u1131128/coding-adv1/mfc-opt AFTER=602484
 602486	2026-10-23T09:55:51+08:00	test/unity_st	1	10	SCRIPT=mfctest TEST_ARGS=-o surface_tension MFC_DIR=/work/u1131128/coding-adv1/mfc-opt AFTER=602485
 602487	2026-10-23T09:55:51+08:00	test/unity_mpp	1	10	SCRIPT=mfctest TEST_ARGS=-o mpp_lim MFC_DIR=/work/u1131128/coding-adv1/mfc-opt AFTER=602486
+602531	2026-10-23T10:07:55+08:00	k2/cap255_1g	1	8	BUILD=caseopt REPS=3 MFC_DIR=/work/u1131128/coding-adv1/mfc-k2
+602549	2026-10-23T10:14:58+08:00	k2/cap168_1g	1	8	BUILD=caseopt REPS=3 MFC_DIR=/work/u1131128/coding-adv1/mfc-k2
+602559	2026-10-23T10:21:02+08:00	k2/cap128_1g	1	8	BUILD=caseopt REPS=3 MFC_DIR=/work/u1131128/coding-adv1/mfc-k2
+602567	2026-10-23T10:27:37+08:00	k2/cap96_1g	1	8	BUILD=caseopt REPS=3 MFC_DIR=/work/u1131128/coding-adv1/mfc-k2
+602570	2026-10-23T10:30:02+08:00	test/pinned_recheck4	1	10	SCRIPT=mfctest TEST_ARGS=-o 043B535A 7DCE34B4 AA9C637F AFBACA70 MFC_DIR=/work/u1131128/coding-adv1/mfc
+602571	2026-10-23T10:30:04+08:00	test/unity_recheck4	1	10	SCRIPT=mfctest TEST_ARGS=-o 043B535A 7DCE34B4 AA9C637F AFBACA70 25EEEF0E 1ED671BA MFC_DIR=/work/u1131128/coding-adv1/mfc-opt AFTER=602570

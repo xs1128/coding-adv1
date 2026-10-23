@@ -1,0 +1,55 @@
+mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn001 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 2
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | 
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Build | syscheck and pre_process
+
+
+ Build | syscheck and simulation
+
+
+
+ Test pre_process and simulation | Only riemann_solver=5 (12 tests)
+  
+     Progress      Test Name                                        Time(s)   UUID
+  
+     (  1/ 12)    1D -> 1 Fluid(s) -> riemann_solver=5 -> mixture...   16.55    AFE4994E
+     (  2/ 12)    1D -> 1 Fluid(s) -> Viscous -> riemann_solver=5      16.57    1C88A727
+     (  3/ 12)    1D -> 2 Fluid(s) -> riemann_solver=5 -> mixture...   17.15    96AF00B3
+     (  4/ 12)    1D -> 2 Fluid(s) -> Viscous -> riemann_solver=5      17.11    27B24CD9
+     (  5/ 12)    2D -> 1 Fluid(s) -> riemann_solver=5 -> mixture...   17.52    09DDCC0C
+     (  6/ 12)    2D -> 1 Fluid(s) -> Viscous -> riemann_solver=5      17.47    4561DCE7
+     (  7/ 12)    2D -> 2 Fluid(s) -> riemann_solver=5 -> mixture...   17.48    9730B2DF
+     (  8/ 12)    2D -> 2 Fluid(s) -> Viscous -> riemann_solver=5      17.43    4C812637
+     (  9/ 12)    3D -> 1 Fluid(s) -> riemann_solver=5 -> mixture...   19.13    AFB46CF8
+     ( 10/ 12)    3D -> 1 Fluid(s) -> Viscous -> riemann_solver=5      19.10    6811629E
+     ( 11/ 12)    3D -> 2 Fluid(s) -> Viscous -> riemann_solver=5      19.75    AD1A50B7
+     ( 12/ 12)    3D -> 2 Fluid(s) -> riemann_solver=5 -> mixture...   19.81    4AADC848
+
+  
+
+╭──────────────────────────────── Test Summary ────────────────────────────────╮
+│                                                                              │
+│  ✓ ALL TESTS PASSED                                                          │
+│                                                                              │
+│      12 passed                                                               │
+│       0 failed                                                               │
+│     748 skipped                                                              │
+│    ────────────                                                              │
+│     760 total                                                                │
+│                                                                              │
+│    Time: 1m 48.4s                                                            │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+
+mfc: (venv) Exiting the Python virtual environment.

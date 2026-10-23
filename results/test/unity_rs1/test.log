@@ -1,0 +1,77 @@
+mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn004 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 2
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | 
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Build | syscheck and pre_process
+
+
+ Build | syscheck and simulation
+
+
+
+ Test pre_process and simulation | Only riemann_solver=1 (34 tests)
+  
+     Progress      Test Name                                        Time(s)   UUID
+  
+     (  1/ 34)    1D -> 1 Fluid(s) -> riemann_solver=1 -> mixture...   16.52    5527832F
+     (  2/ 34)    1D -> 1 Fluid(s) -> riemann_solver=1 -> avg_sta...   16.53    4AEF478A
+     (  3/ 34)    1D -> 1 Fluid(s) -> riemann_solver=1 -> avg_sta...   16.48    49501B5A
+     (  4/ 34)    1D -> 1 Fluid(s) -> riemann_solver=1 -> wave_sp...   16.53    32D0F235
+     (  5/ 34)    1D -> 1 Fluid(s) -> riemann_solver=1 -> low_Mach=1   16.57    66CB22E3
+     (  6/ 34)    1D -> 2 Fluid(s) -> riemann_solver=1 -> mixture...   16.52    1E738705
+     (  7/ 34)    1D -> 2 Fluid(s) -> riemann_solver=1 -> avg_sta...   16.25    0879E062
+     (  8/ 34)    1D -> 2 Fluid(s) -> riemann_solver=1 -> wave_sp...   16.20    83EFC30C
+     (  9/ 34)    1D -> 2 Fluid(s) -> riemann_solver=1 -> mpp_lim      16.06    1CCA82F5
+     ( 10/ 34)    1D -> 2 Fluid(s) -> riemann_solver=1 -> low_Mach=1   16.02    F5512823
+     ( 11/ 34)    2D -> 1 Fluid(s) -> riemann_solver=1 -> avg_sta...   17.20    3BFEAC19
+     ( 12/ 34)    2D -> 1 Fluid(s) -> riemann_solver=1 -> mixture...   17.25    7374E266
+     ( 13/ 34)    2D -> 1 Fluid(s) -> riemann_solver=1 -> wave_sp...   17.20    FBF808BE
+     ( 14/ 34)    2D -> 1 Fluid(s) -> riemann_solver=1 -> avg_sta...   17.15    3154EC76
+     ( 15/ 34)    2D -> 1 Fluid(s) -> riemann_solver=1 -> low_Mach=1   16.96    1A78D4CC
+     ( 16/ 34)    2D -> 2 Fluid(s) -> riemann_solver=1 -> mixture...   16.91    16FBF4C8
+     ( 17/ 34)    2D -> 2 Fluid(s) -> riemann_solver=1 -> avg_sta...   17.47    DC9CB97E
+     ( 18/ 34)    2D -> 2 Fluid(s) -> riemann_solver=1 -> wave_sp...   17.43    A5C93D62
+     ( 19/ 34)    2D -> 2 Fluid(s) -> riemann_solver=1 -> u-inter...   16.68    AE3ECF01
+     ( 20/ 34)    2D -> 2 Fluid(s) -> riemann_solver=1 -> mpp_lim      16.73    A6AC2E06
+     ( 21/ 34)    2D -> 2 Fluid(s) -> riemann_solver=1 -> u-inter...   16.61    4912EFF1
+     ( 22/ 34)    2D -> 2 Fluid(s) -> riemann_solver=1 -> low_Mach=1   16.57    B2AEF240
+     ( 23/ 34)    3D -> 1 Fluid(s) -> riemann_solver=1 -> mixture...   19.77    9ACD5174
+     ( 24/ 34)    3D -> 1 Fluid(s) -> riemann_solver=1 -> avg_sta...   19.73    73B0539E
+     ( 25/ 34)    3D -> 1 Fluid(s) -> riemann_solver=1 -> avg_sta...   18.98    C1974DB8
+     ( 26/ 34)    3D -> 1 Fluid(s) -> riemann_solver=1 -> wave_sp...   19.05    2A523AC1
+     ( 27/ 34)    3D -> 1 Fluid(s) -> riemann_solver=1 -> low_Mach=1   19.36    4D88A48D
+     ( 28/ 34)    3D -> 2 Fluid(s) -> riemann_solver=1 -> mixture...   19.33    C4A2FAA3
+     ( 29/ 34)    3D -> 2 Fluid(s) -> riemann_solver=1 -> wave_sp...   19.81    BD8004FF
+     ( 30/ 34)    3D -> 2 Fluid(s) -> riemann_solver=1 -> avg_sta...   19.88    851F7AE2
+     ( 31/ 34)    3D -> 2 Fluid(s) -> riemann_solver=1 -> mpp_lim      20.10    758D0268
+     ( 32/ 34)    3D -> 2 Fluid(s) -> riemann_solver=1 -> u-inter...   20.07    C7B686C0
+     ( 33/ 34)    3D -> 2 Fluid(s) -> riemann_solver=1 -> low_Mach=1   19.96    F9E0BE95
+     ( 34/ 34)    3D -> 2 Fluid(s) -> riemann_solver=1 -> u-inter...   20.01    A26B7E00
+
+  
+
+╭──────────────────────────────── Test Summary ────────────────────────────────╮
+│                                                                              │
+│  ✓ ALL TESTS PASSED                                                          │
+│                                                                              │
+│      34 passed                                                               │
+│       0 failed                                                               │
+│     726 skipped                                                              │
+│    ────────────                                                              │
+│     760 total                                                                │
+│                                                                              │
+│    Time: 5m 3.9s                                                             │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+
+mfc: (venv) Exiting the Python virtual environment.

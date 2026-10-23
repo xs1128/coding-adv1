@@ -1,0 +1,49 @@
+mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn004 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 2
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | 
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Build | syscheck and pre_process
+
+
+ Build | syscheck and simulation
+
+
+
+ Test pre_process and simulation | Only mpp_lim (6 tests)
+  
+     Progress      Test Name                                        Time(s)   UUID
+  
+     (  1/  6)    1D -> 2 Fluid(s) -> riemann_solver=2 -> mpp_lim      16.78    C4907722
+     (  2/  6)    1D -> 2 Fluid(s) -> riemann_solver=1 -> mpp_lim      16.78    1CCA82F5
+     (  3/  6)    2D -> 2 Fluid(s) -> riemann_solver=2 -> mpp_lim      16.66    F0F175B2
+     (  4/  6)    2D -> 2 Fluid(s) -> riemann_solver=1 -> mpp_lim      16.72    A6AC2E06
+     (  5/  6)    3D -> 2 Fluid(s) -> riemann_solver=2 -> mpp_lim      19.52    A0B82851
+     (  6/  6)    3D -> 2 Fluid(s) -> riemann_solver=1 -> mpp_lim      19.60    758D0268
+
+  
+
+╭──────────────────────────────── Test Summary ────────────────────────────────╮
+│                                                                              │
+│  ✓ ALL TESTS PASSED                                                          │
+│                                                                              │
+│       6 passed                                                               │
+│       0 failed                                                               │
+│     754 skipped                                                              │
+│    ────────────                                                              │
+│     760 total                                                                │
+│                                                                              │
+│    Time: 53.6s                                                               │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+
+mfc: (venv) Exiting the Python virtual environment.
