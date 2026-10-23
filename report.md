@@ -153,4 +153,11 @@ SMs are busy with index arithmetic, not memory. Both are the next single-GPU tar
 3. Submit P1/K4b/P3 upstream as three small PRs (K2 is a flag; K4b a CMake change).
 
 ## 10. Reproduce
-REPRODUCE
+On nano4, from a clone of this repository mirrored to `/work/u1131128/coding-adv1`:
+```
+bash harness/reproduce.sh build    # pinned v5.7.0 + patches/opt/0001-0005 (git am), case-opt + generic builds
+bash harness/reproduce.sh run      # the final 1/4/8-GPU same-node sets (harness/specs/final_*g.tsv)
+bash harness/reproduce.sh verify   # bitwise gate + median step per run
+```
+The patch series applied to v5.7.0 gives a tree identical to the one measured here (checked: empty diff against
+branch `p3`). Multi-GPU runs with `rdma_mpi` add `WRAP=$ROOT/harness/nicbind.sh` for the start-up fix (T0.4).
