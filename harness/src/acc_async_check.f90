@@ -7,7 +7,7 @@
 program acc_async_check
     use openacc
     implicit none
-    integer, parameter :: n = 20000, nb = 1 << 24
+    integer, parameter :: n = 20000, nb = 2**24
     integer :: s, i, bad
     integer, allocatable :: a(:)
     real(8), allocatable :: b(:), c(:)
