@@ -181,7 +181,7 @@ SMs are busy with index arithmetic, not memory. Both are the next single-GPU tar
 ## 10. Reproduce
 On nano4, from a clone of this repository mirrored to `/work/u1131128/coding-adv1`:
 ```
-bash harness/reproduce.sh build    # pinned v5.7.0 + patches/opt/0001-0005 (git am), case-opt + generic builds
+bash harness/reproduce.sh build    # v5.7.0 + patches/opt/0001-0005, case-opt + generic builds
 bash harness/reproduce.sh run      # the final 1/4/8-GPU same-node sets (harness/specs/final_*g.tsv)
 bash harness/reproduce.sh verify   # bitwise gate + median step per run
 ```
