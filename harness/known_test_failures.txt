@@ -4,3 +4,7 @@
 B89B8C70  2D axisymmetric model_eqns=3      identical error both runs
 6241177B  3D model_eqns=3 riemann_solver=2  identical error both runs
 9E2CA336  3D example recovering_sphere      identical error both runs
+043B535A  2D 1 fluid HLLC model_eqns=3       pinned build: abs 1.06E-12 rel 4.20E-12 (tol 1e-12); identical on unity build (jobs 602570/602571)
+7DCE34B4  2D 2 fluid viscous IBM model_eqns=3 pinned build: abs 2.94E-09 rel 5.88E-09 (tol 1e-10); identical on unity build (jobs 602570/602571)
+AA9C637F  3D 2 fluid capillary model_eqns=3  pinned build: abs 1.99E-01 rel 8.09E-01; identical on unity build (jobs 602570/602571)
+AFBACA70  3D 2 MPI ranks IBM sphere          pinned build: fails; identical on unity build (jobs 602570/602571)

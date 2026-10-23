@@ -22,3 +22,232 @@ mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
   
      Progress      Test Name                                        Time(s)   UUID
   
+  
+     ✗ FAILED: 2D -> 1 Fluid(s) -> riemann_solver=2 -> model_e...
+       UUID: 043B535A
+       Attempts: 1
+       Error: Test tests/043B535A: 2D -> 1 Fluid(s) -> riemann_solver=2 -> model_eqns=3: Variable n°1716 (1-indexed) in D/cons.4.00.000050.dat is not within tolerance:
+  - Candidate:   0.2524638156884
+  - Golden:      0.25246381568734
+  - Error:       abs: 1.06E-12, rel: 4.20E-12
+  - Tolerance:   abs: 1.00E-12, rel: 1.00E-12
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.6.00.000050.dat
+ - Variable n°246
+ - Candidate: 0.0
+ - Golden: 1.45783000484152
+ - Absolute Error: 1.46E+00
+ - Relative Error: 1.00E+00
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.6.00.000050.dat
+ - Variable n°1593
+ - Candidate: 1.28112046575091
+ - Golden: 0.51560121845524
+ - Relative Error: 1.48E+00
+ - Absolute Error: 7.66E-01
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+  
+     ✗ FAILED: 2D -> 2 Fluid(s) -> Viscous -> IBM -> model_eqns=3
+       UUID: 7DCE34B4
+       Attempts: 1
+       Error: Test tests/7DCE34B4: 2D -> 2 Fluid(s) -> Viscous -> IBM -> model_eqns=3: Variable n°6 (1-indexed) in D/cons.6.00.000050.dat is not within tolerance:
+  - Candidate:   0.50000000673073
+  - Golden:      0.50000000379261
+  - Error:       abs: 2.94E-09, rel: 5.88E-09
+  - Tolerance:   abs: 1.00E-10, rel: 1.00E-10
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.8.00.000050.dat
+ - Variable n°1
+ - Candidate: 0.4275
+ - Golden: 2.25
+ - Absolute Error: 1.82E+00
+ - Relative Error: 8.10E-01
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.8.00.000050.dat
+ - Variable n°1
+ - Candidate: 0.4275
+ - Golden: 2.25
+ - Relative Error: 8.10E-01
+ - Absolute Error: 1.82E+00
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+  
+     ✗ FAILED: 3D -> 2 Fluid(s) -> capillary=T -> model_eqns=3
+       UUID: AA9C637F
+       Attempts: 1
+       Error: Test tests/AA9C637F: 3D -> 2 Fluid(s) -> capillary=T -> model_eqns=3: Variable n°1 (1-indexed) in D/cons.10.00.000050.dat is not within tolerance:
+  - Candidate:   0.04700278934173
+  - Golden:      0.24632973365379
+  - Error:       abs: 1.99E-01, rel: 8.09E-01
+  - Tolerance:   abs: 1.00E-12, rel: 1.00E-12
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.9.00.000050.dat
+ - Variable n°1
+ - Candidate: 0.42302510407556
+ - Golden: 2.21696760288416
+ - Absolute Error: 1.79E+00
+ - Relative Error: 8.09E-01
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.10.00.000050.dat
+ - Variable n°22
+ - Candidate: 0.03755499301456
+ - Golden: 0.5341015460062
+ - Relative Error: 9.30E-01
+ - Absolute Error: 4.97E-01
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+   mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn019 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 1
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | --targets pre_process and simulation
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Acquiring /work/u1131128/coding-adv1/mfc/tests/AFBACA70/case.py...
+ Acquiring /work/u1131128/coding-adv1/mfc/tests/AFBACA70/case.py...
+ Build | syscheck, syscheck, pre_process, and simulation
+
+
+ Run
+   Using queue system Interactive.
+   Using baked-in template for default.
+   Generating input files for syscheck...
+     Generating syscheck.inp:
+       INFO: Forwarded 0/129 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
+   Generating input files for pre_process...
+     Generating pre_process.inp:
+       INFO: Forwarded 93/129 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
+   Generating input files for simulation...
+     Generating simulation.inp:
+       INFO: Forwarded 72/129 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
++-----------------------------------------------------------------------------------------------------------+ 
+| MFC case # MFC @ /work/u1131128/coding-adv1/mfc/tests/AFBACA70/case.py:                                   |
++-----------------------------------------------------------------------------------------------------------+ 
+| * Start-time     10:30:47                            * Start-date     10:30:47                            |
+| * Partition      N/A                                 * Walltime       01:00:00                            |
+| * Account        N/A                                 * Nodes          1                                   |
+| * Job Name       MFC                                 * Engine         interactive                         |
+| * QoS            N/A                                 * Binary         mpirun                              |
+| * Queue System   Interactive                         * Email          N/A                                 |
++-----------------------------------------------------------------------------------------------------------+ 
+
+mfc: WARNING > This is the default template.
+mfc: WARNING > It is not intended to support all systems and execution engines.
+mfc: WARNING > Consider using a different template via the --computer option if you encounter problems.
+mfc: OK > :) Selected MPI launcher mpirun. Use --binary to override.
+mfc: OK > :) Running syscheck:
+
++ mpirun -np 2 /work/u1131128/coding-adv1/mfc/build/install/gpu-acc-869e78ff84/bin/syscheck
+--------------------------------------------------------------------------
+There are not enough slots available in the system to satisfy the 2
+slots that were requested by the application:
+
+  /work/u1131128/coding-adv1/mfc/build/install/gpu-acc-869e78ff84/bin/syscheck
+
+Either request fewer slots for your application, or make more slots
+available for use.
+
+A "slot" is the Open MPI term for an allocatable unit where we can
+launch a process.  The number of slots available are defined by the
+environment in which Open MPI processes are run:
+
+  1. Hostfile, via "slots=N" clauses (N defaults to number of
+     processor cores if not provided)
+  2. The --host command line parameter, via a ":N" suffix on the
+     hostname (N defaults to 1 if not provided)
+  3. Resource manager (e.g., SLURM, PBS/Torque, LSF, etc.)
+  4. If none of a hostfile, the --host command line parameter, or an
+     RM is present, Open MPI defaults to the number of processor cores
+
+In all the above cases, if you want Open MPI to default to the number
+of hardware threads instead of the number of processor cores, use the
+--use-hwthread-cpus option.
+
+Alternatively, you can use the --oversubscribe option to ignore the
+number of available slots when deciding the number of processes to
+launch.
+--------------------------------------------------------------------------
+
+mfc: ERROR > :( /work/u1131128/coding-adv1/mfc/build/install/gpu-acc-869e78ff84/bin/syscheck failed with exit code 1.
+
+ 
+
+Error: Submitting batch file for Interactive failed. It can be found here: /work/u1131128/coding-adv1/mfc/tests/AFBACA70/MFC.sh. Please check the file for errors.
+
+Terminated
+
+mfc: ERROR > main.py finished with a 143 exit code.
+mfc: (venv) Exiting the Python virtual environment.
+
+  
+     ✗ FAILED: 3D -> 2 MPI Ranks -> IBM Sphere
+       UUID: AFBACA70
+       Attempts: 1
+       Error: Test tests/AFBACA70: 3D -> 2 MPI Ranks -> IBM Sphere: Failed to execute MFC.
+       Hint: Check build logs and case parameters
+  
+
+  
+
+╭──────────────────────────────── Test Summary ────────────────────────────────╮
+│                                                                              │
+│  ✗ 4 TESTS FAILED                                                            │
+│                                                                              │
+│       0 passed                                                               │
+│       4 failed                                                               │
+│     756 skipped                                                              │
+│    ────────────                                                              │
+│     760 total                                                                │
+│                                                                              │
+│    Time: 39.9s                                                               │
+│                                                                              │
+│    Failed Tests:                                                             │
+│      • 2D -> 1 Fluid(s) -> riemann_solver=2 ...                              │
+│        UUID: 043B535A                                                        │
+│        (tolerance mismatch)                                                  │
+│      • 2D -> 2 Fluid(s) -> Viscous -> IBM ->...                              │
+│        UUID: 7DCE34B4                                                        │
+│        (tolerance mismatch)                                                  │
+│      • 3D -> 2 Fluid(s) -> capillary=T -> mo...                              │
+│        UUID: AA9C637F                                                        │
+│        (tolerance mismatch)                                                  │
+│      • 3D -> 2 MPI Ranks -> IBM Sphere                                       │
+│        UUID: AFBACA70                                                        │
+│        (execution failed)                                                    │
+│                                                                              │
+│    Next Steps:                                                               │
+│      • Run with --generate to update golden files (if changes are            │
+│  intentional)                                                                │
+│      • Check individual test output in tests/<UUID>/                         │
+│      • Run specific test: ./mfc.sh test --only <UUID>                        │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+
+mfc: ERROR > main.py finished with a 4 exit code.
+mfc: (venv) Exiting the Python virtual environment.
