@@ -1,0 +1,3 @@
+# 4 GPUs, final build, rdma halos (NVLink cuda_ipc): default UCX vs per-GPU HCA binding (T0.4 revisited)
+final_rdma	mfc-p3	--rdma	-
+final_rdma_nic	mfc-p3	--rdma	WRAP=/work/u1131128/coding-adv1/harness/nicbind.sh
