@@ -56,7 +56,12 @@ The official MFC table lists 0.38 ns for H100 SXM. That number uses a different 
 - **K4b tests** (generic build, `./mfc.sh test`):
   - A 15 % sample, plus all HLL / HLLD / `mpp_lim` / surface-tension cases.
   - The only failures are 4 tests that fail identically on the unmodified build (`harness/known_test_failures.txt`).
-- **K2 tests:** pending (WENO3/5/7, mapped, WENO-Z, TENO, mp-WENO plus a 15 % sample).
+- **K2 tests** (generic build):
+  - All 33 WENO-variant cases pass: WENO3/5/7, mapped, WENO-Z, TENO, mp-WENO (602632).
+  - A 15 % sample: 102 of 106 pass (602634). Of the 4 failures, 2F35A1FE was already known to vary between runs;
+    FD891191 and 1843DA80 fail identically on the unmodified build (602681/602682); 0DDE8A87 had too few MPI slots.
+  - The 1-GPU test job now allows MPI oversubscription. With it, 0DDE8A87 and AFBACA70 pass on both builds;
+    AFBACA70 had been wrongly listed as a known failure.
 - **Before an upstream PR:** the full suite.
 
 ## Where the time is now (K4b profile, 69.6 ms of kernels per step; K2 profile pending)
