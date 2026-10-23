@@ -34,3 +34,51 @@ mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
      ( 10/ 41)    1D -> weno_order=7 -> wenoz=T                        15.89    0347811A
      ( 11/ 41)    1D -> weno_order=7 -> mapped_weno=T                  14.69    5D68B0F5
      ( 12/ 41)    1D -> 2 MPI Ranks                                    27.76    0FCCE9F1
+     ( 13/ 41)    2D -> weno_order=3                                   16.69    EA9C3FA3
+     ( 14/ 41)    2D -> weno_order=3 -> wenoz=T                        16.70    A21CF713
+     ( 15/ 41)    2D -> weno_order=5 -> mp_weno=T                      16.65    0ACB1F16
+     ( 16/ 41)    2D -> weno_order=3 -> mapped_weno=T                  16.70    39816683
+     ( 17/ 41)    2D -> weno_order=5 -> teno=T                         15.75    E719C5F2
+     ( 18/ 41)    2D -> weno_order=5 -> wenoz=T                        15.70    31742FC7
+     ( 19/ 41)    2D -> weno_order=7                                   16.02    A72F7006
+     ( 20/ 41)    2D -> weno_order=5 -> mapped_weno=T                  16.08    D6415F48
+     ( 21/ 41)    2D -> weno_order=7 -> teno=T                         16.91    B8BF00C9
+     ( 22/ 41)    2D -> weno_order=7 -> wenoz=T                        16.86    9E9DA539
+     ( 23/ 41)    2D -> weno_order=7 -> mapped_weno=T                  15.49    448EA9A4
+     ( 24/ 41)    2D -> 2 MPI Ranks                                    48.19    8C7AA13B
+     ( 25/ 41)    3D -> weno_order=3                                   18.31    4B7FC359
+     ( 26/ 41)    3D -> weno_order=3 -> wenoz=T                        18.31    BB0418CD
+     ( 27/ 41)    3D -> weno_order=5 -> mp_weno=T                      17.86    A3EC9BD7
+     ( 28/ 41)    3D -> weno_order=3 -> mapped_weno=T                  17.92    EFDCFF72
+     ( 29/ 41)    3D -> weno_order=5 -> teno=T                         17.90    EDADA16E
+     ( 30/ 41)    3D -> weno_order=5 -> wenoz=T                        17.87    5F099890
+     ( 31/ 41)    3D -> weno_order=5 -> mapped_weno=T                  18.84    04E1CB26
+     ( 32/ 41)    3D -> weno_order=7                                   20.19    4A15969C
+     ( 33/ 41)    3D -> weno_order=7 -> teno=T                         20.34    E3EB6065
+     ( 34/ 41)    3D -> weno_order=7 -> wenoz=T                        19.03    CD6C83A2
+     ( 35/ 41)    3D -> weno_order=7 -> mapped_weno=T                  18.22    0F6DB678
+     ( 36/ 41)    3D -> 2 MPI Ranks                                    27.79    CE232828
+     ( 37/ 41)    3D -> 2 MPI Ranks -> IBM Sphere                      28.26    AFBACA70
+     ( 38/ 41)    1D -> Reactive Burn -> Condensed Programmed Det...   24.25    CB0DC420
+     ( 39/ 41)    MPI Consistency -> 3D -> Bubbles                     28.81    75D7CC39
+     ( 40/ 41)    MPI Consistency -> 3D -> Viscous                     30.62    0090B316
+     ( 41/ 41)    MPI Consistency -> 3D -> Hypoelasticity              31.47    0DDE8A87
+
+  
+
+╭──────────────────────────────── Test Summary ────────────────────────────────╮
+│                                                                              │
+│  ✓ ALL TESTS PASSED                                                          │
+│                                                                              │
+│      41 passed                                                               │
+│       0 failed                                                               │
+│     719 skipped                                                              │
+│    ────────────                                                              │
+│     760 total                                                                │
+│                                                                              │
+│    Time: 9m 14.7s                                                            │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+
+mfc: (venv) Exiting the Python virtual environment.

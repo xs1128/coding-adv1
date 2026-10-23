@@ -1,7 +1,7 @@
 # MFC on H200: optimizations so far
 
 Case: `examples/3D_performance_test` (201³, 5-equation 2-fluid, WENO5 + HLLC, RK3, 30 steps), case-optimized build,
-NVHPC 26.3, 1× H200 unless noted. Code: branch `sc26` on nano4 (`mfc-sc26`), exported as `patches/opt/0001…0004`.
+NVHPC 26.3, 1× H200 unless noted. Code: branch `p3` on nano4 (`mfc-p3` = `sc26` + P3), exported as `patches/opt/0001…0005`.
 Every number below cites a job; details and rejected variants are in `docs/ladder.md`.
 
 ## Result (1 GPU)
@@ -13,7 +13,8 @@ Every number below cites a job; details and rejected variants are in `docs/ladde
 | + K2 WENO register cap 128 | **62.99 ms** | **0.3255** | 6.9 s | bitwise | 602559 |
 | = clean series `sc26` (canonical) | 62.91 ms | 0.3248 | 7.13 s | bitwise | 602728 |
 | + T0.4 UCX on the GPU's own HCA (env, 1 GPU) | 63.00 ms | 0.3249 | **6.62 s** | bitwise | 602727 |
-| **total** | **−18.3 % (1.22×)** | **−18.4 %** | **−18 %** | | |
+| + P3 async per-stage kernels (same-node A/B vs sc26: 62.87 → 61.79 ms) | **61.79 ms** | **0.3200** | — | bitwise | 604561 |
+| **total** | **−19.8 % (1.25×)** | **−19.6 %** | **−18 %** | | |
 
 The official MFC table lists 0.38 ns for H100 SXM. That number uses a different metric (v4.9.3, `s_compute_rhs` only,
 `cpu_time`, ghost cells counted), see `baseline/README.md`. Same-metric comparisons are within this table only.
@@ -56,6 +57,18 @@ The official MFC table lists 0.38 ns for H100 SXM. That number uses a different 
   and on two nodes. Default UCX stripes large messages over two rails. Break-even is ≈ 2700 steps, shorter than a
   production run, so multi-GPU keeps the default.
 
+**P2+P3: no host round trip per kernel** (`patches/opt/0005`, 10 files, +170/−153).
+- *Evidence.* Each RK stage launched ~100 kernels and ~45 scalar `GPU_UPDATE`s, each followed by a host sync: ~1 ms of
+  GPU idle per stage. That cost does not shrink with more GPUs, so it was ~20 % of a stage at 4 GPUs (trace 604253).
+- *Check first.* A 5-second NVHPC test (604388) showed: after `acc_set_cuda_stream(acc_async_noval, <sync stream>)`,
+  async and synchronous work run in issue order on one stream; async scalar updates are staged when queued; an
+  update+kernel pair drops from 15.3 to 4.05 µs of host time.
+- *Change.* The alias at start-up, and `GPU_ASYNC` (`'async'` on NVHPC, `None` elsewhere) on the 115 directives that run
+  every stage: WENO, Riemann state/HLLC, flux differences, conversion, boundaries, halo pack/unpack, RK update. One wait
+  before device buffers go to MPI. Other compilers and the OpenMP path generate the same code as before.
+- *Effect (same node, A/B).* 4 GPUs with `rdma_mpi`: step 18.81 → 17.71 ms (−5.8 %, every rank). 1 GPU: −1.7 %.
+- *Not covered.* NVHPC unified-memory builds (`--unified`, GH200) are untested with this change.
+
 **Rejected, with evidence.**
 - NVHPC 25.9: no gain, not bitwise.
 - Compile-time `dir_idx` in HLLC: the SASS got worse (255 registers).
@@ -85,19 +98,24 @@ The official MFC table lists 0.38 ns for H100 SXM. That number uses a different 
 | WENO input pack | 6.0 | 10 % | removed by NTHU's #2092 (not ours to claim) |
 | RK update, advection source, conversion, finalize | ~25 | 40 % | bandwidth-bound copies (#2087 pattern) |
 
-## 4 GPUs (201³ strong, host-staged halos)
-| Build | Step, median | Grind | Wall | Job |
+## 4 GPUs (201³ strong)
+| Build | Halo exchange | Step, median | Grind | Job |
 |---|---|---|---|---|
-| v5.7.0 baseline | — | 0.1534 / 0.1626 (2 reps) | 12.9 / 14.3 s | 600173 |
-| sc26 | 26.55 ms | 0.1325 (median of 3) | 12.44 s | 602703 (hgpn003) |
-| sc26 | 25.72 ms | 0.1377 (median of 3) | 13.07 s | 602770 (hgpn013) |
+| v5.7.0 baseline | host-staged | — (2 reps, no per-step data) | 0.1534 / 0.1626 | 600173 |
+| sc26 | host-staged | 25.72 ms | 0.1377 | 602770 |
+| sc26 | `rdma_mpi=T` | 18.81 ms | 0.0969 | 604560 a1 |
+| sc26 + P3 | `rdma_mpi=T` | **17.71 ms** | **0.0914** | 604560 b1 |
 
-- Strong-scaling efficiency 1 → 4 GPUs: 62.9 / (4 × 25.7–26.6) = **59–61 %**. Communication is 2.6–3.1 ms per step.
-- About 7.5 s of the 12–13 s wall is MPI start-up and finalize (5.9–6.4 s `MPI_Init` and 1.2 s `MPI_Finalize` at 4 ranks), so in a
-  30-step run the wall is mostly start-up.
-- The baseline has only 2 reps and no per-step data. A same-node baseline with ≥5 reps is needed for a final speedup claim.
+- `rdma_mpi=T` is an MFC input parameter: halos go GPU to GPU over NVLink instead of through host memory. Same
+  numerics, bitwise output, −27 % per step at 4 GPUs. It is our multi-GPU configuration (disclosed).
+- Strong-scaling efficiency 1 → 4 GPUs with P3 and `rdma_mpi`: 61.8 / (4 × 17.7) = **87 %**
+  (host-staged sc26: 61 %).
+- In a 30-step run, MPI start-up and finalize (~7.5 s) dominate the 12 s wall at 4 GPUs.
+- A 4-GPU trace on node hgpn012 (604667) showed one GPU uniformly 20 % slower in every kernel. The A/B runs on hgpn020
+  show balanced ranks (RHS 5.35–5.37 ms) at equal clocks, so this is a node anomaly, not load imbalance.
+- The baseline has 2 reps and no per-step data; the final comparison needs a same-node baseline with ≥5 reps.
 
 ## Next
-1. **Same-node 4/8-GPU comparison** of baseline vs sc26, ≥5 reps. The 8-GPU runs need the user's OK.
-2. **Remaining host-launch gaps (P2/P3).** These matter more at 8 GPUs, where kernels are short.
-3. **Bandwidth-bound copies** (40 % of kernel time): fuse or skip them where the data is already in place.
+1. **8-GPU confirmation, same node:** baseline vs final, host-staged vs `rdma_mpi`, ≥5 reps. Needs the user's OK.
+2. **Full `./mfc.sh test`** of the final series (SC26 requirement for `src/` changes).
+3. **Report:** scaling plots, roofline and achieved HBM bandwidth per kernel, `harness/run_all.sh` from a clean tree.

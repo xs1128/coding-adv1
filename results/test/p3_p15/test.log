@@ -1,0 +1,631 @@
+mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn004 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 2
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | 
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+fresh T=300 rho=0.0844 | burned T=2187 rho=0.0127 | driver P=6.67e+04
+oxidizer: T=1200.0 K rho=0.3855 c=630.7 m/s
+ Build | syscheck and pre_process
+
+
+ Build | syscheck and simulation
+
+
+ Build | syscheck and pre_process | Chemistry: h2o2.yaml
+
+
+ Build | syscheck and simulation | Chemistry: h2o2.yaml
+
+
+
+ Test pre_process and simulation | from EA8FA07E to D0AC8751 (106 tests)
+  
+     Progress      Test Name                                        Time(s)   UUID
+  
+     (  1/106)    2D -> Acoustic Source -> Transducer Array -> su...   15.31    E16570CC
+     (  2/106)    2D -> Axisymmetric -> Hypoelasticity -> HLLD ->...   17.73    7F964063
+     (  3/106)    3D -> bc=-15                                         15.38    6249EDDE
+     (  4/106)    1D -> 2 Fluid(s) -> riemann_solver=2 -> low_Mach=1   14.33    F28381D9
+   mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn004 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 1
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | --targets pre_process and simulation
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Acquiring /work/u1131128/coding-adv1/mfc-p3/tests/CF4FE4C9/case.py...
+ Acquiring /work/u1131128/coding-adv1/mfc-p3/tests/CF4FE4C9/case.py...
+ Build | syscheck, syscheck, pre_process, and simulation | Chemistry: h2o2.yaml
+
+
+ Run
+   Using queue system Interactive.
+   Using baked-in template for default.
+   Generating input files for syscheck...
+     Generating syscheck.inp:
+       INFO: Forwarded 0/163 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
+   Generating input files for pre_process...
+     Generating pre_process.inp:
+       INFO: Forwarded 110/163 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
+   Generating input files for simulation...
+     Generating simulation.inp:
+       INFO: Forwarded 67/163 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
++-----------------------------------------------------------------------------------------------------------+ 
+| MFC case # MFC @ /work/u1131128/coding-adv1/mfc-p3/tests/CF4FE4C9/case.py:                                |
++-----------------------------------------------------------------------------------------------------------+ 
+| * Start-time     18:40:21                            * Start-date     18:40:21                            |
+| * Partition      N/A                                 * Walltime       01:00:00                            |
+| * Account        N/A                                 * Nodes          1                                   |
+| * Job Name       MFC                                 * Engine         interactive                         |
+| * QoS            N/A                                 * Binary         mpirun                              |
+| * Queue System   Interactive                         * Email          N/A                                 |
++-----------------------------------------------------------------------------------------------------------+ 
+
+mfc: WARNING > This is the default template.
+mfc: WARNING > It is not intended to support all systems and execution engines.
+mfc: WARNING > Consider using a different template via the --computer option if you encounter problems.
+mfc: OK > :) Selected MPI launcher mpirun. Use --binary to override.
+mfc: OK > :) Running syscheck:
+
++ mpirun -np 1 /work/u1131128/coding-adv1/mfc-p3/build/install/gpu-acc-chem-1ceb207c70/bin/syscheck
+--------------------------------------------------------------------------
+mpirun was unable to launch the specified application as it could not access
+or execute an executable:
+
+Executable: /work/u1131128/coding-adv1/mfc-p3/build/install/gpu-acc-chem-1ceb207c70/bin/syscheck
+Node: 25a-hgpn004
+
+while attempting to start process rank 0.
+--------------------------------------------------------------------------
+
+mfc: ERROR > :( /work/u1131128/coding-adv1/mfc-p3/build/install/gpu-acc-chem-1ceb207c70/bin/syscheck failed with exit code 132.
+
+ 
+
+Error: Submitting batch file for Interactive failed. It can be found here: /work/u1131128/coding-adv1/mfc-p3/tests/CF4FE4C9/MFC.sh. Please check the file for errors.
+
+Terminated
+
+mfc: ERROR > main.py finished with a 143 exit code.
+mfc: (venv) Exiting the Python virtual environment.
+
+  
+     ✗ FAILED: 2D -> Example -> shock_flame
+       UUID: CF4FE4C9
+       Attempts: 1
+       Error: Test tests/CF4FE4C9: 2D -> Example -> shock_flame: Failed to execute MFC.
+       Hint: Check build logs and case parameters
+  
+     (  5/106)    2D -> Axisymmetric -> Hypoelasticity -> HLL -> ...   14.17    B76C4F04
+     (  6/106)    3D -> Viscosity -> Bubbles -> Polytropic -> bub...   15.62    8B679445
+     (  7/106)    2D -> Example -> acoustic_support10_axisym           14.77    B85C5AB6
+     (  8/106)    3D -> Hypoelasticity -> HLLD -> ADC -> alt_soun...   17.13    D41FFB94
+     (  9/106)    2D -> 1 Fluid(s) -> Viscous -> IGR -> igr_order...   14.89    EB58AF7F
+     ( 10/106)    2D -> Axisymmetric -> Hypoelasticity -> HLLD ->...   14.43    6AF90F3C
+     ( 11/106)    1D -> 2 Fluid(s) -> riemann_solver=1 -> mixture...   14.91    1E738705
+     ( 12/106)    2D -> Bubbles -> QBMM -> Non-polytropic              15.75    3D320EA4
+     ( 13/106)    3D -> 2 Fluid(s) -> riemann_solver=5 -> mixture...   15.89    4AADC848
+     ( 14/106)    3D -> bc=-2                                          15.16    09DAFEBA
+     ( 15/106)    1D -> bc=-12                                         14.75    3FC6FC4A
+     ( 16/106)    2D -> Axisymmetric -> HLL -> u-interface -> alt...   14.26    0533872C
+     ( 17/106)    2D -> Hypoelasticity -> HLLC -> alt_soundspeed=T     14.82    29C5D458
+     ( 18/106)    2D -> 1 Fluid(s) -> IBM -> Rectangle -> slip         14.41    C7BE8FEA
+     ( 19/106)    2D -> Bubbles -> low_Mach=2                          14.51    84FC700A
+     ( 20/106)    3D -> 1 Fluid(s) -> Viscous -> IGR -> igr_order...   15.94    106C0BE6
+   mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn004 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 1
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | --targets pre_process and simulation
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Acquiring /work/u1131128/coding-adv1/mfc-p3/tests/5D59DDF0/case.py...
+ Acquiring /work/u1131128/coding-adv1/mfc-p3/tests/5D59DDF0/case.py...
+ Build | syscheck, syscheck, pre_process, and simulation | Chemistry: h2o2.yaml
+
+
+ Run
+   Using queue system Interactive.
+   Using baked-in template for default.
+   Generating input files for syscheck...
+     Generating syscheck.inp:
+       INFO: Forwarded 0/117 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
+   Generating input files for pre_process...
+     Generating pre_process.inp:
+       INFO: Forwarded 64/117 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
+   Generating input files for simulation...
+     Generating simulation.inp:
+       INFO: Forwarded 65/117 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
++-----------------------------------------------------------------------------------------------------------+ 
+| MFC case # MFC @ /work/u1131128/coding-adv1/mfc-p3/tests/5D59DDF0/case.py:                                |
++-----------------------------------------------------------------------------------------------------------+ 
+| * Start-time     18:42:28                            * Start-date     18:42:29                            |
+| * Partition      N/A                                 * Walltime       01:00:00                            |
+| * Account        N/A                                 * Nodes          1                                   |
+| * Job Name       MFC                                 * Engine         interactive                         |
+| * QoS            N/A                                 * Binary         mpirun                              |
+| * Queue System   Interactive                         * Email          N/A                                 |
++-----------------------------------------------------------------------------------------------------------+ 
+
+mfc: WARNING > This is the default template.
+mfc: WARNING > It is not intended to support all systems and execution engines.
+mfc: WARNING > Consider using a different template via the --computer option if you encounter problems.
+mfc: OK > :) Selected MPI launcher mpirun. Use --binary to override.
+mfc: OK > :) Running syscheck:
+
++ mpirun -np 1 /work/u1131128/coding-adv1/mfc-p3/build/install/gpu-acc-chem-1ceb207c70/bin/syscheck
+--------------------------------------------------------------------------
+mpirun was unable to launch the specified application as it could not access
+or execute an executable:
+
+Executable: /work/u1131128/coding-adv1/mfc-p3/build/install/gpu-acc-chem-1ceb207c70/bin/syscheck
+Node: 25a-hgpn004
+
+while attempting to start process rank 0.
+--------------------------------------------------------------------------
+
+mfc: ERROR > :( /work/u1131128/coding-adv1/mfc-p3/build/install/gpu-acc-chem-1ceb207c70/bin/syscheck failed with exit code 132.
+
+ 
+
+Error: Submitting batch file for Interactive failed. It can be found here: /work/u1131128/coding-adv1/mfc-p3/tests/5D59DDF0/MFC.sh. Please check the file for errors.
+
+Terminated
+
+mfc: ERROR > main.py finished with a 143 exit code.
+mfc: (venv) Exiting the Python virtual environment.
+
+  
+     ✗ FAILED: 1D -> Chemistry -> Perfect Reactor -> Sub-stepp...
+       UUID: 5D59DDF0
+       Attempts: 1
+       Error: Test tests/5D59DDF0: 1D -> Chemistry -> Perfect Reactor -> Sub-stepped Reactions: Failed to execute MFC.
+       Hint: Check build logs and case parameters
+  
+     ( 21/106)    1D -> 2 Fluid(s) -> riemann_solver=1 -> avg_sta...   15.53    0879E062
+     ( 22/106)    2D -> Hypoelasticity -> HLLC -> ADC -> alt_soun...   14.26    D222AFB8
+     ( 23/106)    1D -> 2 Fluid(s) -> riemann_solver=2 -> avg_sta...   14.16    6D24B115
+   mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn004 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 1
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | --targets pre_process and simulation
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Acquiring /work/u1131128/coding-adv1/mfc-p3/tests/F200F862/case.py...
+ Acquiring /work/u1131128/coding-adv1/mfc-p3/tests/F200F862/case.py...
+ Build | syscheck, syscheck, pre_process, and simulation | Chemistry: h2o2.yaml
+
+
+ Run
+   Using queue system Interactive.
+   Using baked-in template for default.
+   Generating input files for syscheck...
+     Generating syscheck.inp:
+       INFO: Forwarded 0/136 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
+   Generating input files for pre_process...
+     Generating pre_process.inp:
+       INFO: Forwarded 81/136 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
+   Generating input files for simulation...
+     Generating simulation.inp:
+       INFO: Forwarded 81/136 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
++-----------------------------------------------------------------------------------------------------------+ 
+| MFC case # MFC @ /work/u1131128/coding-adv1/mfc-p3/tests/F200F862/case.py:                                |
++-----------------------------------------------------------------------------------------------------------+ 
+| * Start-time     18:42:49                            * Start-date     18:42:49                            |
+| * Partition      N/A                                 * Walltime       01:00:00                            |
+| * Account        N/A                                 * Nodes          1                                   |
+| * Job Name       MFC                                 * Engine         interactive                         |
+| * QoS            N/A                                 * Binary         mpirun                              |
+| * Queue System   Interactive                         * Email          N/A                                 |
++-----------------------------------------------------------------------------------------------------------+ 
+
+mfc: WARNING > This is the default template.
+mfc: WARNING > It is not intended to support all systems and execution engines.
+mfc: WARNING > Consider using a different template via the --computer option if you encounter problems.
+mfc: OK > :) Selected MPI launcher mpirun. Use --binary to override.
+mfc: OK > :) Running syscheck:
+
++ mpirun -np 1 /work/u1131128/coding-adv1/mfc-p3/build/install/gpu-acc-chem-1ceb207c70/bin/syscheck
+--------------------------------------------------------------------------
+mpirun was unable to launch the specified application as it could not access
+or execute an executable:
+
+Executable: /work/u1131128/coding-adv1/mfc-p3/build/install/gpu-acc-chem-1ceb207c70/bin/syscheck
+Node: 25a-hgpn004
+
+while attempting to start process rank 0.
+--------------------------------------------------------------------------
+
+mfc: ERROR > :( /work/u1131128/coding-adv1/mfc-p3/build/install/gpu-acc-chem-1ceb207c70/bin/syscheck failed with exit code 132.
+
+ 
+
+Error: Submitting batch file for Interactive failed. It can be found here: /work/u1131128/coding-adv1/mfc-p3/tests/F200F862/MFC.sh. Please check the file for errors.
+
+Terminated
+
+mfc: ERROR > main.py finished with a 143 exit code.
+mfc: (venv) Exiting the Python virtual environment.
+
+  
+     ✗ FAILED: 2D -> Example -> ibm_flameholder
+       UUID: F200F862
+       Attempts: 1
+       Error: Test tests/F200F862: 2D -> Example -> ibm_flameholder: Failed to execute MFC.
+       Hint: Check build logs and case parameters
+  
+     ( 24/106)    2D -> Hypoelasticity -> HLLC -> alt_soundspeed=F     14.31    34F3999B
+     ( 25/106)    2D -> 2 Fluid(s) -> Viscous -> weno_Re_flux          15.02    D6BAC936
+     ( 26/106)    2D -> Hypoelasticity -> 1 Fluid(s) -> Axisymmetric   13.81    059D137F
+     ( 27/106)    2D -> 2 Fluid(s) -> riemann_solver=5 -> mixture...   14.57    9730B2DF
+     ( 28/106)    3D -> Bubbles -> bubble_model=2                      17.84    6F35CD77
+     ( 29/106)    3D -> bc=-6                                          15.10    5010B814
+     ( 30/106)    3D -> 1 Fluid(s) -> riemann_solver=1 -> avg_sta...   15.71    C1974DB8
+     ( 31/106)    3D -> Example -> acoustic_support7                   15.14    72A40EA6
+     ( 32/106)    3D -> 1 Fluid(s) -> IBM -> Sphere -> slip            15.97    28D037A7
+     ( 33/106)    3D -> Phase Change model 5 -> 2 Fluid(s) -> mod...   15.56    344FAA70
+     ( 34/106)    3D -> 1 Fluid(s) -> riemann_solver=1 -> low_Mach=1   15.29    4D88A48D
+     ( 35/106)    1D -> Bubbles -> nb=1                                14.14    11DAFD23
+     ( 36/106)    3D -> Example -> shockdroplet                        15.84    B5F0C655
+     ( 37/106)    2D -> Axisymmetric -> Hypoelasticity -> HLLC ->...   14.23    5D536A45
+     ( 38/106)    2D -> weno_order=7 -> wenoz=T                        15.11    9E9DA539
+     ( 39/106)    3D -> Bubbles -> adv_n=T                             16.70    B2310476
+     ( 40/106)    1D -> 1 Fluid(s) -> Non-Newtonian -> nn=0.5          15.96    122B0BF3
+     ( 41/106)    3D -> muscl_order=2 -> muscl_eps=0 -> muscl_lim=1    16.48    4F79391A
+     ( 42/106)    1D -> Viscosity -> Bubbles -> QBMM -> bubble_mo...   15.25    37FA2CEF
+     ( 43/106)    3D -> Example -> lagrange_shbubcollapse              17.60    5B195322
+     ( 44/106)    3D -> Viscosity -> Bubbles -> QBMM -> bubble_mo...   17.20    07C54EDD
+     ( 45/106)    3D -> Example -> IGR_TaylorGreenVortex               15.83    E49EF7B6
+     ( 46/106)    1D -> Example -> hypo_2materials                     16.14    4D95A70E
+     ( 47/106)    3D -> weno_order=5 -> mapped_weno=T                  16.11    04E1CB26
+   mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn004 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 1
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | --targets pre_process and simulation
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Acquiring /work/u1131128/coding-adv1/mfc-p3/tests/1550B67E/case.py...
+ Acquiring /work/u1131128/coding-adv1/mfc-p3/tests/1550B67E/case.py...
+ Build | syscheck, syscheck, pre_process, and simulation | Chemistry: h2o2.yaml
+
+
+ Run
+   Using queue system Interactive.
+   Using baked-in template for default.
+   Generating input files for syscheck...
+     Generating syscheck.inp:
+       INFO: Forwarded 0/122 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
+   Generating input files for pre_process...
+     Generating pre_process.inp:
+       INFO: Forwarded 70/122 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
+   Generating input files for simulation...
+     Generating simulation.inp:
+       INFO: Forwarded 66/122 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
++-----------------------------------------------------------------------------------------------------------+ 
+| MFC case # MFC @ /work/u1131128/coding-adv1/mfc-p3/tests/1550B67E/case.py:                                |
++-----------------------------------------------------------------------------------------------------------+ 
+| * Start-time     18:45:58                            * Start-date     18:45:59                            |
+| * Partition      N/A                                 * Walltime       01:00:00                            |
+| * Account        N/A                                 * Nodes          1                                   |
+| * Job Name       MFC                                 * Engine         interactive                         |
+| * QoS            N/A                                 * Binary         mpirun                              |
+| * Queue System   Interactive                         * Email          N/A                                 |
++-----------------------------------------------------------------------------------------------------------+ 
+
+mfc: WARNING > This is the default template.
+mfc: WARNING > It is not intended to support all systems and execution engines.
+mfc: WARNING > Consider using a different template via the --computer option if you encounter problems.
+mfc: OK > :) Selected MPI launcher mpirun. Use --binary to override.
+mfc: OK > :) Running syscheck:
+
++ mpirun -np 1 /work/u1131128/coding-adv1/mfc-p3/build/install/gpu-acc-chem-1ceb207c70/bin/syscheck
+--------------------------------------------------------------------------
+mpirun was unable to launch the specified application as it could not access
+or execute an executable:
+
+Executable: /work/u1131128/coding-adv1/mfc-p3/build/install/gpu-acc-chem-1ceb207c70/bin/syscheck
+Node: 25a-hgpn004
+
+while attempting to start process rank 0.
+--------------------------------------------------------------------------
+
+mfc: ERROR > :( /work/u1131128/coding-adv1/mfc-p3/build/install/gpu-acc-chem-1ceb207c70/bin/syscheck failed with exit code 132.
+
+ 
+
+Error: Submitting batch file for Interactive failed. It can be found here: /work/u1131128/coding-adv1/mfc-p3/tests/1550B67E/MFC.sh. Please check the file for errors.
+
+Terminated
+
+mfc: ERROR > main.py finished with a 143 exit code.
+mfc: (venv) Exiting the Python virtual environment.
+
+  
+     ✗ FAILED: 2D -> Chemistry -> Perfect Reactor
+       UUID: 1550B67E
+       Attempts: 1
+       Error: Test tests/1550B67E: 2D -> Chemistry -> Perfect Reactor: Failed to execute MFC.
+       Hint: Check build logs and case parameters
+  
+     ( 48/106)    1D -> 2 Fluid(s) -> eos=mie_gruneisen -> bc=-5       14.63    A6846AD4
+     ( 49/106)    3D -> Cylindrical -> Viscous                         17.04    07C33719
+     ( 50/106)    2D -> 1 Fluid(s) -> IGR -> igr_order=3 -> Jacobi     14.96    AFBCBDFA
+     ( 51/106)    2D -> 2 Fluid(s) -> riemann_solver=1 -> low_Mach=1   15.30    B2AEF240
+     ( 52/106)    3D -> muscl_order=2 -> muscl_eps=0 -> muscl_lim=3    14.85    9BD657CB
+     ( 53/106)    1D -> 1 Fluid(s) -> riemann_solver=2 -> low_Mach=2   14.71    CB76A5E1
+     ( 54/106)    1D -> Example -> acoustic_gauss_sigmatime            14.77    EE58C595
+     ( 55/106)    3D -> 1 Fluid(s) -> eos=ideal_gas                    15.96    385F6582
+     ( 56/106)    1D -> Hypoelasticity -> 1 Fluid(s)                   14.94    9EB947DB
+     ( 57/106)    3D -> weno_order=3                                   15.71    4B7FC359
+     ( 58/106)    2D -> Example -> orszag_tang                         15.04    F0402105
+     ( 59/106)    2D -> 2 Fluid(s) -> riemann_solver=2 -> low_Mach=1   14.48    1929BEC7
+     ( 60/106)    3D -> Lagrange Bubbles -> Two-way Coupling -> I...   17.25    4CA9CAC0
+     ( 61/106)    1D -> Example -> kapilashocktube                     14.13    E47F81A2
+     ( 62/106)    2D -> 2 Fluid(s) -> riemann_solver=1 -> wave_sp...   14.15    A5C93D62
+     ( 63/106)    2D -> bc=-1                                          14.37    55533234
+     ( 64/106)    2D -> weno_order=3                                   14.44    EA9C3FA3
+     ( 65/106)    2D -> Bubbles -> bubble_model=2                      14.54    F9EB7B49
+     ( 66/106)    2D -> bc=-17                                         14.30    10DBA76B
+     ( 67/106)    2D -> Hypoelasticity -> 1 Fluid(s)                   14.55    122713AA
+     ( 68/106)    2D -> muscl_order=2 -> muscl_eps=0 -> muscl_lim=1    13.73    D68EDC50
+     ( 69/106)    2D -> 2 Fluid(s) -> muscl_order=2 -> int_comp=2...   15.42    4E4FECA9
+     ( 70/106)    1D -> 1 Fluid(s) -> riemann_solver=1 -> avg_sta...   14.89    4AEF478A
+     ( 71/106)    1D -> bc=-15                                         14.31    2FD933A2
+     ( 72/106)    3D -> Lagrange Bubbles -> Two-way Coupling -> I...   16.58    98ED56C3
+     ( 73/106)    1D -> Phase Change model 5 -> 2 Fluid(s) -> mod...   14.68    E6DBCBD9
+     ( 74/106)    1D -> Example -> shuosher_teno7                      14.57    6247B427
+     ( 75/106)    1D -> 1 Fluid(s) -> Viscous -> riemann_solver=5      14.47    1C88A727
+     ( 76/106)    1D -> Viscosity -> Bubbles -> Polytropic -> bub...   14.71    9465D0F5
+     ( 77/106)    1D -> bc=-8                                          14.50    AED93D34
+     ( 78/106)    2D -> bc=-12                                         14.95    BF46F657
+   mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn004 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 1
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | --targets pre_process and simulation
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Acquiring /work/u1131128/coding-adv1/mfc-p3/tests/F8ADA51B/case.py...
+ Acquiring /work/u1131128/coding-adv1/mfc-p3/tests/F8ADA51B/case.py...
+ Build | syscheck, syscheck, pre_process, and simulation | Chemistry: h2o2.yaml
+
+
+ Run
+   Using queue system Interactive.
+   Using baked-in template for default.
+   Generating input files for syscheck...
+     Generating syscheck.inp:
+       INFO: Forwarded 0/118 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
+   Generating input files for pre_process...
+     Generating pre_process.inp:
+       INFO: Forwarded 76/118 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
+   Generating input files for simulation...
+     Generating simulation.inp:
+       INFO: Forwarded 65/118 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
++-----------------------------------------------------------------------------------------------------------+ 
+| MFC case # MFC @ /work/u1131128/coding-adv1/mfc-p3/tests/F8ADA51B/case.py:                                |
++-----------------------------------------------------------------------------------------------------------+ 
+| * Start-time     18:50:18                            * Start-date     18:50:18                            |
+| * Partition      N/A                                 * Walltime       01:00:00                            |
+| * Account        N/A                                 * Nodes          1                                   |
+| * Job Name       MFC                                 * Engine         interactive                         |
+| * QoS            N/A                                 * Binary         mpirun                              |
+| * Queue System   Interactive                         * Email          N/A                                 |
++-----------------------------------------------------------------------------------------------------------+ 
+
+mfc: WARNING > This is the default template.
+mfc: WARNING > It is not intended to support all systems and execution engines.
+mfc: WARNING > Consider using a different template via the --computer option if you encounter problems.
+mfc: OK > :) Selected MPI launcher mpirun. Use --binary to override.
+mfc: OK > :) Running syscheck:
+
++ mpirun -np 1 /work/u1131128/coding-adv1/mfc-p3/build/install/gpu-acc-chem-1ceb207c70/bin/syscheck
+--------------------------------------------------------------------------
+mpirun was unable to launch the specified application as it could not access
+or execute an executable:
+
+Executable: /work/u1131128/coding-adv1/mfc-p3/build/install/gpu-acc-chem-1ceb207c70/bin/syscheck
+Node: 25a-hgpn004
+
+while attempting to start process rank 0.
+--------------------------------------------------------------------------
+
+mfc: ERROR > :( /work/u1131128/coding-adv1/mfc-p3/build/install/gpu-acc-chem-1ceb207c70/bin/syscheck failed with exit code 132.
+
+ 
+
+Error: Submitting batch file for Interactive failed. It can be found here: /work/u1131128/coding-adv1/mfc-p3/tests/F8ADA51B/MFC.sh. Please check the file for errors.
+
+Terminated
+
+mfc: ERROR > main.py finished with a 143 exit code.
+mfc: (venv) Exiting the Python virtual environment.
+
+  
+     ✗ FAILED: 1D -> Chemistry -> Inert Shocktube -> Riemann S...
+       UUID: F8ADA51B
+       Attempts: 1
+       Error: Test tests/F8ADA51B: 1D -> Chemistry -> Inert Shocktube -> Riemann Solver 2 -> Gamma Method 2: Failed to execute MFC.
+       Hint: Check build logs and case parameters
+  
+     ( 79/106)    2D -> Example -> herschel_bulkley_poiseuille_nn      54.79    A582B270
+     ( 80/106)    2D -> Example -> lid_driven_cavity_nn                15.66    00C20EE8
+     ( 81/106)    3D -> MHD                                            16.08    21983A82
+     ( 82/106)    2D -> Hypoelasticity -> 1 Fluid(s) -> bc=-2          14.50    595705C7
+     ( 83/106)    1D -> weno_order=7                                   13.47    7B71820F
+     ( 84/106)    2D -> Lagrange Bubbles -> One-way Coupling -> T...   17.43    54632DFD
+     ( 85/106)    3D -> Lagrange Bubbles -> Two-way Coupling -> I...   17.37    39AB5442
+     ( 86/106)    2D -> 1 Fluid(s) -> Viscous -> riemann_solver=5      14.90    4561DCE7
+     ( 87/106)    3D -> 2 Fluid(s) -> weno_order=5 -> int_comp=1       15.91    516A2067
+     ( 88/106)    2D -> 2 Fluid(s) -> riemann_solver=1 -> mpp_lim      16.25    A6AC2E06
+     ( 89/106)    2D -> Example -> poiseuille_thickening_nn            27.59    5304E59F
+  
+     ✗ FAILED: 2D -> 1 Fluid(s) -> Viscous -> IBM -> Circle ->...
+       UUID: 1843DA80
+       Attempts: 1
+       Error: Test tests/1843DA80: 2D -> 1 Fluid(s) -> Viscous -> IBM -> Circle -> slip -> model_eqns=3 -> eos=mie_gruneisen: Variable n°1 (1-indexed) in D/cons.6.00.000050.dat is not within tolerance:
+  - Candidate:   0.0
+  - Golden:      2.5
+  - Error:       abs: 2.50E+00, rel: 1.00E+00
+  - Tolerance:   abs: 1.00E-10, rel: 1.00E-10
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.6.00.000050.dat
+ - Variable n°1
+ - Candidate: 0.0
+ - Golden: 2.5
+ - Absolute Error: 2.50E+00
+ - Relative Error: 1.00E+00
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.6.00.000050.dat
+ - Variable n°1
+ - Candidate: 0.0
+ - Golden: 2.5
+ - Relative Error: 1.00E+00
+ - Absolute Error: 2.50E+00
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+     ( 90/106)    3D -> Hypoelasticity -> 1 Fluid(s) -> bc=-2          16.52    67A5ECF8
+     ( 91/106)    2D -> Phase Change model 5 -> 3 Fluid(s) -> mod...   14.74    8D0E7E1D
+     ( 92/106)    2D -> 1 Fluid(s) -> IBM -> Rectangle                 14.91    A2036630
+     ( 93/106)    2D -> bc=-4                                          13.46    20AE0551
+     ( 94/106)    1D -> Reactive Burn -> Condensed Programmed Det...   15.56    E639CA3A
+     ( 95/106)    3D -> 2 Fluid(s) -> riemann_solver=1 -> avg_sta...   16.21    851F7AE2
+     ( 96/106)    2D -> Example -> 5wave_quasi1D                       14.58    5505A65C
+     ( 97/106)    2D -> Hypoelasticity -> HLLD -> Shear guard -> ...   13.85    A96DA754
+     ( 98/106)    2D -> Viscosity -> Bubbles -> Polytropic -> bub...   15.37    9F3B58E7
+     ( 99/106)    2D -> 2 Fluid(s) -> IBM -> Periodic Circle           15.61    2EE0C3AA
+     (100/106)    2D -> 2 Fluid(s) -> Viscous -> riemann_solver=5      14.38    4C812637
+
+  
+
+╭──────────────────────────────── Test Summary ────────────────────────────────╮
+│                                                                              │
+│  ✗ 6 TESTS FAILED                                                            │
+│                                                                              │
+│     100 passed                                                               │
+│       6 failed                                                               │
+│     646 skipped                                                              │
+│    ────────────                                                              │
+│     752 total                                                                │
+│                                                                              │
+│    Time: 13m 39.0s                                                           │
+│                                                                              │
+│    Failed Tests:                                                             │
+│      • 2D -> Example -> shock_flame                                          │
+│        UUID: CF4FE4C9                                                        │
+│        (execution failed)                                                    │
+│      • 1D -> Chemistry -> Perfect Reactor ->...                              │
+│        UUID: 5D59DDF0                                                        │
+│        (execution failed)                                                    │
+│      • 2D -> Example -> ibm_flameholder                                      │
+│        UUID: F200F862                                                        │
+│        (execution failed)                                                    │
+│      • 2D -> Chemistry -> Perfect Reactor                                    │
+│        UUID: 1550B67E                                                        │
+│        (execution failed)                                                    │
+│      • 1D -> Chemistry -> Inert Shocktube ->...                              │
+│        UUID: F8ADA51B                                                        │
+│        (execution failed)                                                    │
+│      • 2D -> 1 Fluid(s) -> Viscous -> IBM ->...                              │
+│        UUID: 1843DA80                                                        │
+│        (tolerance mismatch)                                                  │
+│                                                                              │
+│    Next Steps:                                                               │
+│      • Run with --generate to update golden files (if changes are            │
+│  intentional)                                                                │
+│      • Check individual test output in tests/<UUID>/                         │
+│      • Run specific test: ./mfc.sh test --only <UUID>                        │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+
+mfc: ERROR > main.py finished with a 6 exit code.
+mfc: (venv) Exiting the Python virtual environment.
