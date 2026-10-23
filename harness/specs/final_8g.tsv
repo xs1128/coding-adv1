@@ -1,0 +1,4 @@
+# 8 GPUs: v5.7.0 default (host-staged halos), v5.7.0 with rdma_mpi, final with rdma_mpi
+base_host	mfc	-	-
+base_rdma	mfc	--rdma	-
+final_rdma	mfc-p3	--rdma	-

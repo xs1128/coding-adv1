@@ -1,0 +1,3 @@
+# 4 GPUs: code effect with the same halo mode
+base_rdma	mfc	--rdma	-
+final_rdma	mfc-p3	--rdma	-
