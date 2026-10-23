@@ -7,12 +7,14 @@
 #SBATCH -N 1
 set -uo pipefail
 ROOT=/work/u1131128/coding-adv1
-: "${LABEL:?}" "${SPEC:?}"
+: "${LABEL:?}" "${SPEC:?}" "${ONLY:=}"   # ONLY="name1 name2": run just these rows
 base=$LABEL
 while IFS=$'\t' read -r name dir cargs extra; do
   [[ -z $name || $name == \#* ]] && continue
+  [[ -n $ONLY && " $ONLY " != *" $name "* ]] && continue
   [[ $cargs == - ]] && cargs=
   [[ $extra == - ]] && extra=
-  env LABEL="$base/$name" MFC_DIR="$ROOT/$dir" CASE_ARGS="$cargs" $extra bash "$ROOT/harness/run.sbatch" ||
+  # stdin from /dev/null: mpirun/mfc.sh would otherwise read the remaining SPEC rows
+  env LABEL="$base/$name" MFC_DIR="$ROOT/$dir" CASE_ARGS="$cargs" $extra bash "$ROOT/harness/run.sbatch" < /dev/null ||
     echo "$name failed" >&2
 done < "$ROOT/$SPEC"

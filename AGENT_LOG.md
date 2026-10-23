@@ -32,3 +32,9 @@
 ## 13. Trailing comment on a fypp `$:` line (2026-10-23, P3 build)
 - Wrote `$:GPU_WAIT()  ! buff_send is packed asynchronously`. Fypp evaluates everything after `$:` as Python, so the
   build failed with a SyntaxError. Comments go on their own line above fypp directives.
+
+## 14. A `while read` loop around mpirun ran only the first row (2026-10-24, jobs 605961-3)
+- `harness/series.sbatch` read its spec with `while read ...; do bash run.sbatch; done < SPEC`. mpirun/mfc.sh inherited
+  stdin and swallowed the remaining rows, so each final set ran only its first (baseline) row. Cost: ~41 GPU-min, of
+  which the baseline rows are still valid. Fix: run the body with `< /dev/null`. Lesson: never let MPI launchers
+  inherit a loop's stdin.
