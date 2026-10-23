@@ -1,0 +1,24 @@
+[25a-hgpn003:3529736] ../../../../../ompi/mca/pml/ucx/pml_ucx.c:429  Error: ucp_ep_create(proc=3) failed: Destination is unreachable
+[1792726521.198541] [25a-hgpn003:3529736:0]          select.c:653  UCX  ERROR   no active messages transport to <no debug data>: self/memory - iface id and iface address differ (13590945751616954735 vs 1959691641060118314)
+--------------------------------------------------------------------------
+It looks like MPI_INIT failed for some reason; your parallel process is
+likely to abort.  There are many reasons that a parallel process can
+fail during MPI_INIT; some of which are due to configuration or environment
+problems.  This failure appears to be an internal failure; here's some
+additional information (which may only be relevant to an Open MPI
+developer):
+
+  PML add procs failed
+  --> Returned "Error" (-1) instead of "Success" (0)
+--------------------------------------------------------------------------
+[1792726521.201788] [25a-hgpn003:3529737:0]          select.c:653  UCX  ERROR   no active messages transport to <no debug data>: self/memory - iface id and iface address differ (1959691641060118314 vs 16748384714254295571)
+[25a-hgpn003:3529737] ../../../../../ompi/mca/pml/ucx/pml_ucx.c:429  Error: ucp_ep_create(proc=0) failed: Destination is unreachable
+[25a-hgpn003:3529736] *** An error occurred in MPI_Init
+[25a-hgpn003:3529736] *** reported by process [1363869697,2]
+[25a-hgpn003:3529736] *** on a NULL communicator
+[25a-hgpn003:3529736] *** Unknown error
+[25a-hgpn003:3529736] *** MPI_ERRORS_ARE_FATAL (processes in this communicator will now abort,
+[25a-hgpn003:3529736] ***    and potentially your MPI job)
+[25a-hgpn003:3529730] 1 more process has sent help message help-mpi-runtime.txt / mpi_init:startup:internal-failure
+[25a-hgpn003:3529730] Set MCA parameter "orte_base_help_aggregate" to 0 to see all help / error messages
+[25a-hgpn003:3529730] 1 more process has sent help message help-mpi-errors.txt / mpi_errors_are_fatal unknown handle

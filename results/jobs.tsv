@@ -74,3 +74,10 @@ jobid	submitted	label	ngpu	minutes	vars
 602681	2026-10-23T11:23:00+08:00	test/pinned_recheck_k2	1	10	SCRIPT=mfctest TEST_ARGS=-o 1843DA80 FD891191 0DDE8A87 AFBACA70 MFC_DIR=/work/u1131128/coding-adv1/mfc
 602682	2026-10-23T11:23:00+08:00	test/k2_recheck	1	10	SCRIPT=mfctest TEST_ARGS=-o 1843DA80 FD891191 0DDE8A87 AFBACA70 MFC_DIR=/work/u1131128/coding-adv1/mfc-k2 AFTER=602681
 602683	2026-10-23T11:24:12+08:00	t0/mpiinit_1g	1	5	SCRIPT=mpiinit
+602691	2026-10-23T11:27:22+08:00	t0/mfc_default_1g	1	8	BUILD=caseopt REPS=5 MFC_DIR=/work/u1131128/coding-adv1/mfc-k2
+602692	2026-10-23T11:27:23+08:00	t0/mfc_ucxshm_1g	1	8	BUILD=caseopt REPS=5 MFC_DIR=/work/u1131128/coding-adv1/mfc-k2 RUN_ENV=UCX_TLS=self,sm,cuda_copy,cuda_ipc AFTER=602691
+602693	2026-10-23T11:27:23+08:00	t0/mfc_ob1_1g	1	8	BUILD=caseopt REPS=5 MFC_DIR=/work/u1131128/coding-adv1/mfc-k2 RUN_ENV=OMPI_MCA_pml=ob1 OMPI_MCA_btl=self,vader OMPI_MCA_osc=^ucx OMPI_MCA_coll_hcoll_enable=0 OMPI_MCA_coll_ucc_enable=0 AFTER=602692
+602703	2026-10-23T11:32:51+08:00	sc26/default_4g	4	8	BUILD=caseopt REPS=3 MFC_DIR=/work/u1131128/coding-adv1/mfc-sc26
+602704	2026-10-23T11:32:52+08:00	sc26/ucxshm_4g	4	8	BUILD=caseopt REPS=3 MFC_DIR=/work/u1131128/coding-adv1/mfc-sc26 RUN_ENV=UCX_TLS=self,sm,cuda_copy,cuda_ipc AFTER=602703
+602705	2026-10-23T11:32:52+08:00	prof/nsys_sc26_1g_30	1	8	SCRIPT=profile MODE=nsys BUILD=caseopt MFC_DIR=/work/u1131128/coding-adv1/mfc-sc26 AFTER=602704
+602722	2026-10-23T11:38:04+08:00	t0/mpiinit_4g	4	5	SCRIPT=mpiinit VARIANTS=default ucx_shm_noproc ucx_1hca ob1

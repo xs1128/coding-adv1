@@ -22,3 +22,9 @@
 
 ## 3. Code the student must be able to defend
 (filled in as optimizations land)
+
+## 12. verify.py passed a run whose timed reps never started (2026-10-23, job 602704)
+- `run.sbatch` runs a warm-up through `mfc.sh run` first; it writes `restart_data/lustre_30.dat`, which the timed reps
+  overwrite. When rep 1 died in `MPI_Init`, the warm-up's file stayed and `verify.py` reported bitwise PASS.
+- Fix: delete `lustre_[1-9]*.dat` before the timed reps, so a failed rep leaves no final state and verify FAILs.
+  Earlier verdicts stand: every one had a grind number for every rep, so the last rep wrote the file.

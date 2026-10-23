@@ -43,6 +43,7 @@ sim=$(grep -oE '[^ ]*/bin/simulation' "$out/prep.log" | tail -1)
 echo "sim=$sim" >> "$out/env.txt"
 
 cd "$run"
+rm -f restart_data/lustre_[1-9]*.dat   # the warm-up's final state must not stand in for the timed reps' (verify reads it)
 printf 'rep\twall_s\tgrind_ns\n' > "$out/summary.tsv"
 for r in $(seq 1 "$REPS"); do
   t0=$(date +%s.%N)
