@@ -15,7 +15,10 @@ eval "$fy" "$src" "$out/$name.fpp.f90"
 cmd=$(python3 -c "
 import json,sys
 for c in json.load(open('$B/compile_commands.json')):
-    if c['file'].endswith('/$name.fpp.f90') and 'Minline=lib' in c['command']: print(c['command']); break")
+    if c['file'].endswith('/$name.fpp.f90') and 'Minline=lib' in c['command']: print(c['command']); break
+else:  # file compiled inside m_riemann_unity.f90: all simulation files share the same flags
+    for c in json.load(open('$B/compile_commands.json')):
+        if '/fypp/simulation/' in c['file'] and 'Minline=lib' in c['command']: print(c['command']); break")
 cmd=${cmd% -c *}
 cmd=${cmd//-Minline=lib:simulation_lib/-Minline=lib:$B/simulation_lib}
 $cmd -I"$B" -module "$out" -c "$out/$name.fpp.f90" -o "$out/$name.o" > compile.log 2>&1 || { tail -20 compile.log; exit 1; }
