@@ -1,0 +1,73 @@
+mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn004 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 2
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | 
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+oxidizer: T=1200.0 K rho=0.3855 c=630.7 m/s
+fresh T=300 rho=0.0844 | burned T=2187 rho=0.0127 | driver P=6.67e+04
+Stoichiometric mixture fraction: Z_st = 0.029
+Convective Mach: Ma = 0.1530510393535898
+Reynolds number: Re = 3524.088030224578
+ Build | syscheck and pre_process | Chemistry: h2o2.yaml
+
+
+ Build | syscheck and simulation | Chemistry: h2o2.yaml
+
+
+ Build | syscheck and pre_process | Chemistry: /work/u1131128/coding-adv1/mfc-p3/examples/3D_reacting_mixing_layer/sandiego.yaml
+
+
+ Build | syscheck and simulation | Chemistry: /work/u1131128/coding-adv1/mfc-p3/examples/3D_reacting_mixing_layer/sandiego.yaml
+
+
+
+ Test pre_process and simulation | Only F200F862, 0A62F0A6, CF4FE4C9, 5DCF300C, 1550B67E, E8372F50, 5D59DDF0, 4D7D85B4, 2BDE2018, 6B3AE48F, F8ADA51B, 7BBCE9E9, 259B2428, C4EB58A8, 3C77E5DD, 56F8C4BC, 8E56ACC1, 4587725A, and 41AD0140 (19 tests)
+  
+     Progress      Test Name                                        Time(s)   UUID
+  
+     (  1/ 19)    nD -> Example -> perfect_reactor                     15.63    0A62F0A6
+     (  2/ 19)    2D -> Example -> ibm_flameholder                     16.19    F200F862
+     (  3/ 19)    2D -> Example -> shock_flame                         15.69    CF4FE4C9
+     (  4/ 19)    1D -> Chemistry -> Perfect Reactor                   15.15    5DCF300C
+     (  5/ 19)    2D -> Chemistry -> Perfect Reactor                   17.25    1550B67E
+     (  6/ 19)    3D -> Chemistry -> Perfect Reactor                   18.57    E8372F50
+     (  7/ 19)    1D -> Chemistry -> Perfect Reactor -> Sub-stepp...   14.04    5D59DDF0
+     (  8/ 19)    1D -> Chemistry -> Inert Shocktube -> Riemann S...   13.75    4D7D85B4
+     (  9/ 19)    1D -> Chemistry -> Inert Shocktube -> Riemann S...   14.08    6B3AE48F
+     ( 10/ 19)    1D -> Chemistry -> Inert Shocktube -> Riemann S...   15.19    2BDE2018
+     ( 11/ 19)    1D -> Chemistry -> Inert Shocktube -> Reacting ...   15.20    7BBCE9E9
+     ( 12/ 19)    1D -> Chemistry -> Inert Shocktube -> Riemann S...   15.25    F8ADA51B
+     ( 13/ 19)    2D -> Chemistry -> Reacting Mixing Layer             15.46    C4EB58A8
+     ( 14/ 19)    1D -> Chemistry -> Inert Shocktube -> Reacting ...   15.51    259B2428
+     ( 15/ 19)    2D -> Chemistry -> Spatial Reacting Mixing Layer     19.65    56F8C4BC
+     ( 16/ 19)    3D -> Chemistry -> Reacting Mixing Layer             23.35    3C77E5DD
+     ( 17/ 19)    1D -> Chemistry -> Dual Isothermal Wall Gradient     16.42    8E56ACC1
+     ( 18/ 19)    2D -> Chemistry -> Isothermal Wall                   14.84    4587725A
+     ( 19/ 19)    1D -> Chemistry -> MultiComponent Diffusion          14.85    41AD0140
+
+  
+
+╭──────────────────────────────── Test Summary ────────────────────────────────╮
+│                                                                              │
+│  ✓ ALL TESTS PASSED                                                          │
+│                                                                              │
+│      19 passed                                                               │
+│       0 failed                                                               │
+│     741 skipped                                                              │
+│    ────────────                                                              │
+│     760 total                                                                │
+│                                                                              │
+│    Time: 2m 49.3s                                                            │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+
+mfc: (venv) Exiting the Python virtual environment.

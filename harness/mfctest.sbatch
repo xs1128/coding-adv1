@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # ./mfc.sh test on the generic build: harness/submit.sh test/<label> - NGPU MIN SCRIPT=mfctest [TEST_ARGS=..] [JOBS=..]
 # Out: results/<LABEL>/test_summary.json
+# Chemistry tests need their own builds (gpu-acc-chem-*): first, on the login node,
+#   ./mfc.sh test --dry-run -j 8 -o $(cat logs/chem_uuids.txt)   (else they fail with "could not access executable")
 #SBATCH -A acd110018
 #SBATCH -p dev
 #SBATCH -N 1

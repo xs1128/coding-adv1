@@ -88,6 +88,11 @@ The official MFC table lists 0.38 ns for H100 SXM. That number uses a different 
     FD891191 and 1843DA80 fail identically on the unmodified build (602681/602682); 0DDE8A87 had too few MPI slots.
   - The 1-GPU test job now allows MPI oversubscription. With it, 0DDE8A87 and AFBACA70 pass on both builds;
     AFBACA70 had been wrongly listed as a known failure.
+- **P3 tests** (generic build):
+  - 33 WENO variants plus all 8 multi-rank MPI tests: 41/41 pass (604600).
+  - All 19 chemistry tests: 19/19 (604755).
+  - A 15 % sample: 100/106 (604601). Five failures were chemistry cases whose binaries had not been built; they now
+    pass. The sixth, 1843DA80, fails identically on the unmodified build.
 - **Before an upstream PR:** the full suite.
 
 ## Where the time is now (sc26 profile, 62.1 ms of kernels per step, job 602705)
