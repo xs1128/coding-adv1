@@ -70,7 +70,7 @@ program acc_async_check
     print '(a,f8.2,a)', 'async update+kernel: ', 1d6*real(t1 - t0, 8)/rate/n, ' us'
 contains
     integer(8) function loc_stream(q)
-        integer, intent(in) :: q
+        integer(acc_handle_kind), intent(in) :: q
         loc_stream = transfer(acc_get_cuda_stream(q), 0_8)
     end function
 end program
