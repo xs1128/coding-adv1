@@ -4,7 +4,14 @@ Case: `examples/3D_performance_test` (201³, 5-equation 2-fluid, WENO5 + HLLC, R
 NVHPC 26.3, 1× H200 unless noted. Code: branch `p3` on nano4 (`mfc-p3` = `sc26` + P3), exported as `patches/opt/0001…0005`.
 Every number below cites a job; details and rejected variants are in `docs/ladder.md`.
 
-## Result (1 GPU)
+## Final, same node per row (the report's headline; `report.md` §1)
+| GPUs | v5.7.0 step | Final step | Speedup | Jobs |
+|---|---|---|---|---|
+| 1 | 76.74 ms | 61.88 ms | 1.24× | 606017 |
+| 4, both `rdma_mpi` | 23.10 ms | 17.72 ms | 1.30× | 606018 |
+| 8, v5.7.0 default vs final `rdma_mpi` | 21.94 ms | 10.22 ms | 2.15× | 605963/606019 |
+
+## Result (1 GPU, rung by rung)
 | Rung | Step, median | Grind (ns/gp/eq/rhs) | Wall | Final state | Job |
 |---|---|---|---|---|---|
 | v5.7.0 baseline | 77.06 ms | 0.3982 | 8.07 s | reference | 600407 |
