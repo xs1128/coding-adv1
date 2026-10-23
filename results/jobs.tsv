@@ -100,3 +100,17 @@ jobid	submitted	label	ngpu	minutes	vars
 604601	2026-10-23T18:30:19+08:00	test/p3_p15	1	22	SCRIPT=mfctest TEST_ARGS=--percent 15 MFC_DIR=/work/u1131128/coding-adv1/mfc-p3 AFTER=604600
 604667	2026-10-23T18:54:29+08:00	prof/trace_p3_4g_rdma	4	10	SCRIPT=profile MODE=nsys TRACE=1 BUILD=caseopt CASE_ARGS=--steps 5 --no-io --rdma MFC_DIR=/work/u1131128/coding-adv1/mfc-p3
 604755	2026-10-23T19:16:37+08:00	test/p3_chem	1	15	SCRIPT=mfctest TEST_ARGS=-o F200F862 0A62F0A6 CF4FE4C9 5DCF300C 1550B67E E8372F50 5D59DDF0 4D7D85B4 2BDE2018 6B3AE48F F8ADA51B 7BBCE9E9 259B2428 C4EB58A8 3C77E5DD 56F8C4BC 8E56ACC1 4587725A 41AD0140  MFC_DIR=/work/u1131128/coding-adv1/mfc-p3
+605961	2026-10-24T01:32:01+08:00	final/s1g	1	12	SCRIPT=series SPEC=harness/specs/final_1g.tsv BUILD=caseopt REPS=5
+605962	2026-10-24T01:32:02+08:00	final/s4g	4	12	SCRIPT=series SPEC=harness/specs/final_4g.tsv BUILD=caseopt REPS=5
+605963	2026-10-24T01:32:02+08:00	final/s8g	8	15	SCRIPT=series SPEC=harness/specs/final_8g.tsv BUILD=caseopt REPS=5
+606006	2026-10-24T01:37:02+08:00	test/p3_full_s0	1	25	SCRIPT=mfctest TEST_ARGS=--from EA8FA07E --to F1E9F8BC MFC_DIR=/work/u1131128/coding-adv1/mfc-p3
+606008	2026-10-24T01:37:04+08:00	test/p3_full_s1	1	25	SCRIPT=mfctest TEST_ARGS=--from E752CD0F --to 126FF74F AFTER=606006 MFC_DIR=/work/u1131128/coding-adv1/mfc-p3
+606009	2026-10-24T01:37:05+08:00	test/p3_full_s2	1	25	SCRIPT=mfctest TEST_ARGS=--from 290C3BA8 --to 8019ACE3 AFTER=606008 MFC_DIR=/work/u1131128/coding-adv1/mfc-p3
+606010	2026-10-24T01:37:06+08:00	test/p3_full_s3	1	25	SCRIPT=mfctest TEST_ARGS=--from B89113D9 --to AFB46CF8 AFTER=606009 MFC_DIR=/work/u1131128/coding-adv1/mfc-p3
+606011	2026-10-24T01:37:07+08:00	test/p3_full_s4	1	25	SCRIPT=mfctest TEST_ARGS=--from C06849AD --to 549393AA AFTER=606010 MFC_DIR=/work/u1131128/coding-adv1/mfc-p3
+606012	2026-10-24T01:37:07+08:00	test/p3_full_s5	1	25	SCRIPT=mfctest TEST_ARGS=--from 630E2099 --to 10CCE589 AFTER=606011 MFC_DIR=/work/u1131128/coding-adv1/mfc-p3
+606013	2026-10-24T01:37:08+08:00	test/p3_full_s6	1	25	SCRIPT=mfctest TEST_ARGS=--from A96DA754 --to 4A759316 AFTER=606012 MFC_DIR=/work/u1131128/coding-adv1/mfc-p3
+606014	2026-10-24T01:37:09+08:00	test/p3_full_s7	1	25	SCRIPT=mfctest TEST_ARGS=--from A7E7A245 --to D0AC8751 AFTER=606013 MFC_DIR=/work/u1131128/coding-adv1/mfc-p3
+606017	2026-10-24T01:38:22+08:00	final/s1g	1	12	SCRIPT=series SPEC=harness/specs/final_1g.tsv BUILD=caseopt REPS=5
+606018	2026-10-24T01:38:22+08:00	final/s4g	4	12	SCRIPT=series SPEC=harness/specs/final_4g.tsv BUILD=caseopt REPS=5
+606019	2026-10-24T01:38:23+08:00	final/s8g	8	10	SCRIPT=series SPEC=harness/specs/final_8g.tsv BUILD=caseopt REPS=5 ONLY=final_rdma NODE=25a-hgpn061
