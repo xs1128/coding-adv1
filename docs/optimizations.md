@@ -53,9 +53,10 @@ The official MFC table lists 0.38 ns for H100 SXM. That number uses a different 
   (`harness/src/mpiinit.c`) showed the cost is UCX opening all 10 HCAs of the node; HCOLL/UCC off changed nothing.
 - *Change.* `harness/nicbind.sh` sets `UCX_NET_DEVICES` to the HCA next to each rank's GPU (read from
   `nvidia-smi topo -m` per job). Wall 7.13 → 6.62 s at 1 GPU, step time unchanged.
-- *Not at multi-GPU.* At 4 GPUs it saves 3.1 s of start-up but makes every step 1.2 ms (4.5 %) slower, on every rank
-  and on two nodes. Default UCX stripes large messages over two rails. Break-even is ≈ 2700 steps, shorter than a
-  production run, so multi-GPU keeps the default.
+- *Host-staged multi-GPU: no.* At 4 GPUs it saves 3.1 s of start-up but makes every step 1.2 ms (4.5 %) slower,
+  on every rank and on two nodes: default UCX stripes large host messages over two rails.
+- *With `rdma_mpi`: yes.* Halos then go over NVLink, not the HCAs. Final build, 4 GPUs, same node (606032): step
+  17.65 → 17.69 ms (noise), wall 13.03 → 9.28 s (−29 %).
 
 **P2+P3: no host round trip per kernel** (`patches/opt/0005`, 10 files, +170/−153).
 - *Evidence.* Each RK stage launched ~100 kernels and ~45 scalar `GPU_UPDATE`s, each followed by a host sync: ~1 ms of

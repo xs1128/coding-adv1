@@ -112,3 +112,155 @@ Diagnostics - Maximum relative error among FAILING variables:
      ( 60/ 94)    1D -> 1 Fluid(s) -> Non-Newtonian -> nn=1.5          15.81    78EB6879
      ( 61/ 94)    1D -> 1 Fluid(s) -> Non-Newtonian -> tau0=0.001      15.21    B077CE88
      ( 62/ 94)    1D -> 2 Fluid(s) -> eos=mie_gruneisen                15.16    5AC2F65D
+     ( 63/ 94)    1D -> 2 Fluid(s) -> eos=jwl                          14.95    ED75D01D
+     ( 64/ 94)    1D -> 2 Fluid(s) -> eos=mie_gruneisen -> alt_so...   14.91    471270BB
+     ( 65/ 94)    1D -> 2 Fluid(s) -> eos=mie_gruneisen -> cubic ...   15.00    4A0CDF9C
+     ( 66/ 94)    1D -> 2 Fluid(s) -> eos=vinet                        15.05    120043F6
+  
+  
+     ✗ FAILED: 1D -> 2 Fluid(s) -> eos=mie_gruneisen -> model_...
+     ✗ FAILED: 1D -> 2 Fluid(s) -> eos=jwl -> model_eqns=3
+       UUID: 61AF4509
+       UUID: 6AE3FB4E
+       Attempts: 1
+       Attempts: 1
+       Error: Test tests/61AF4509: 1D -> 2 Fluid(s) -> eos=mie_gruneisen -> model_eqns=3: Variable n°1 (1-indexed) in D/cons.1.00.000050.dat is not within tolerance:
+  - Candidate:   0.80999999999592
+  - Golden:      0.80999999998385
+  - Error:       abs: 1.21E-11, rel: 1.49E-11
+  - Tolerance:   abs: 1.00E-12, rel: 1.00E-12
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.7.00.000050.dat
+ - Variable n°4
+ - Candidate: 0.4274999997676
+ - Golden: 2.25000000048846
+ - Absolute Error: 1.82E+00
+ - Relative Error: 8.10E-01
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.3.00.000050.dat
+ - Variable n°212
+ - Candidate: -3.12e-12
+ - Golden: 1.56e-12
+ - Relative Error: 3.00E+00
+ - Absolute Error: 4.68E-12
+
+       Error: Test tests/6AE3FB4E: 1D -> 2 Fluid(s) -> eos=jwl -> model_eqns=3: Variable n°5 (1-indexed) in D/cons.1.00.000050.dat is not within tolerance:
+  - Candidate:   0.81000000000119
+  - Golden:      0.81000000000008
+  - Error:       abs: 1.11E-12, rel: 1.37E-12
+  - Tolerance:   abs: 1.00E-12, rel: 1.00E-12
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.7.00.000050.dat
+ - Variable n°8
+ - Candidate: 0.14916258842607
+ - Golden: 2.57916258920037
+ - Absolute Error: 2.43E+00
+ - Relative Error: 9.42E-01
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.3.00.000050.dat
+ - Variable n°9
+ - Candidate: -9.409e-11
+ - Golden: -4.99e-12
+ - Relative Error: 1.79E+01
+ - Absolute Error: 8.91E-11
+
+       Hint: Consider --generate to update golden files or check tolerances
+       Hint: Consider --generate to update golden files or check tolerances
+  
+  
+     ( 67/ 94)    1D -> 2 Fluid(s) -> riemann_solver=1 -> mixture...   14.77    1E738705
+     ( 68/ 94)    1D -> 2 Fluid(s) -> eos=mie_gruneisen -> bc=-5       14.82    A6846AD4
+     ( 69/ 94)    1D -> 2 Fluid(s) -> riemann_solver=1 -> avg_sta...   14.95    0879E062
+     ( 70/ 94)    1D -> 2 Fluid(s) -> riemann_solver=1 -> wave_sp...   14.90    83EFC30C
+     ( 71/ 94)    1D -> 2 Fluid(s) -> riemann_solver=5 -> mixture...   14.83    96AF00B3
+     ( 72/ 94)    1D -> 2 Fluid(s) -> riemann_solver=1 -> mpp_lim      14.89    1CCA82F5
+     ( 73/ 94)    1D -> 2 Fluid(s) -> riemann_solver=2 -> mixture...   14.75    3A8359F6
+     ( 74/ 94)    1D -> 2 Fluid(s) -> riemann_solver=2 -> avg_sta...   14.70    6D24B115
+  
+     ✗ FAILED: 1D -> 2 Fluid(s) -> riemann_solver=2 -> model_e...
+       UUID: FD891191
+       Attempts: 1
+       Error: Test tests/FD891191: 1D -> 2 Fluid(s) -> riemann_solver=2 -> model_eqns=3: Variable n°28 (1-indexed) in D/cons.1.00.000050.dat is not within tolerance:
+  - Candidate:   0.62940616770028
+  - Golden:      0.62940616769838
+  - Error:       abs: 1.90E-12, rel: 3.02E-12
+  - Tolerance:   abs: 1.00E-12, rel: 1.00E-12
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.7.00.000050.dat
+ - Variable n°9
+ - Candidate: 0.42750000011747
+ - Golden: 2.25000000086559
+ - Absolute Error: 1.82E+00
+ - Relative Error: 8.10E-01
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.5.00.000050.dat
+ - Variable n°250
+ - Candidate: 0.49885566772123
+ - Golden: 0.20013801290901
+ - Relative Error: 1.49E+00
+ - Absolute Error: 2.99E-01
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+     ( 75/ 94)    1D -> 2 Fluid(s) -> riemann_solver=2 -> wave_sp...   14.88    461DCB09
+     ( 76/ 94)    1D -> 2 Fluid(s) -> riemann_solver=2 -> alt_sou...   14.91    9DAC4DDC
+     ( 77/ 94)    1D -> 2 Fluid(s) -> riemann_solver=2 -> mpp_lim      14.86    C4907722
+     ( 78/ 94)    1D -> 2 Fluid(s) -> riemann_solver=2 -> low_Mach=1   14.67    F28381D9
+     ( 79/ 94)    1D -> 2 Fluid(s) -> riemann_solver=1 -> low_Mach=1   14.73    F5512823
+     ( 80/ 94)    1D -> 2 Fluid(s) -> riemann_solver=2 -> low_Mach=2   14.85    0288BDAD
+     ( 81/ 94)    1D -> 2 Fluid(s) -> weno_order=5 -> int_comp=1       14.81    EBBC93BD
+     ( 82/ 94)    1D -> 2 Fluid(s) -> muscl_order=2 -> int_comp=1...   14.87    F1CF01C4
+     ( 83/ 94)    1D -> 2 Fluid(s) -> Viscous                          14.82    C79E1D3C
+     ( 84/ 94)    1D -> 2 Fluid(s) -> Viscous -> weno_Re_flux          15.65    CD9D3050
+     ( 85/ 94)    1D -> 2 Fluid(s) -> Viscous -> riemann_solver=5      15.60    27B24CD9
+     ( 86/ 94)    1D -> 2 Fluid(s) -> Viscous -> weno_Re_flux -> ...   13.91    2A6136EF
+     ( 87/ 94)    1D -> 2 MPI Ranks                                    25.16    0FCCE9F1
+     ( 88/ 94)    1D -> Acoustic Source -> Sine -> Wavelength          15.95    33813627
+     ( 89/ 94)    1D -> Acoustic Source -> Sine -> Frequency           15.96    1B0A7157
+     ( 90/ 94)    1D -> Acoustic Source -> Sine -> Delay               15.80    F1E9F8BC
+
+  
+
+╭──────────────────────────────── Test Summary ────────────────────────────────╮
+│                                                                              │
+│  ✗ 4 TESTS FAILED                                                            │
+│                                                                              │
+│      90 passed                                                               │
+│       4 failed                                                               │
+│     666 skipped                                                              │
+│    ────────────                                                              │
+│     760 total                                                                │
+│                                                                              │
+│    Time: 12m 39.8s                                                           │
+│                                                                              │
+│    Failed Tests:                                                             │
+│      • 1D -> 1 Fluid(s) -> riemann_solver=2 ...                              │
+│        UUID: 2F35A1FE                                                        │
+│        (tolerance mismatch)                                                  │
+│      • 1D -> 2 Fluid(s) -> eos=mie_gruneisen...                              │
+│        UUID: 61AF4509                                                        │
+│        (tolerance mismatch)                                                  │
+│      • 1D -> 2 Fluid(s) -> eos=jwl -> model_...                              │
+│        UUID: 6AE3FB4E                                                        │
+│        (tolerance mismatch)                                                  │
+│      • 1D -> 2 Fluid(s) -> riemann_solver=2 ...                              │
+│        UUID: FD891191                                                        │
+│        (tolerance mismatch)                                                  │
+│                                                                              │
+│    Next Steps:                                                               │
+│      • Run with --generate to update golden files (if changes are            │
+│  intentional)                                                                │
+│      • Check individual test output in tests/<UUID>/                         │
+│      • Run specific test: ./mfc.sh test --only <UUID>                        │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+
+mfc: ERROR > main.py finished with a 4 exit code.
+mfc: (venv) Exiting the Python virtual environment.

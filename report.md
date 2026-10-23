@@ -100,7 +100,10 @@ instead of through host memory. Bitwise; −27 % per step at 4 GPUs.
 **T0.4 — MPI start-up** (environment, disclosed). `MPI_Init` took 1.7 s at 1 rank and ~6 s at 4 ranks because UCX
 opens all 10 HCAs. Binding each rank's UCX to the HCA next to its GPU (`harness/nicbind.sh`, map from
 `nvidia-smi topo -m` per job): 1 GPU wall 7.13 → 6.62 s. With host-staged halos at 4 GPUs it also made every step
-4.5 % slower (UCX stripes large host messages over two rails), so it was rejected there. RESULT_T04_RDMA
+4.5 % slower (UCX stripes large host messages over two rails), so it was rejected there.
+With `rdma_mpi=T` the halos no longer use the HCAs, so the binding costs nothing per step: final build, 4 GPUs, same
+node (606032): step 17.65 → 17.69 ms (noise), **wall 13.03 → 9.28 s (−29 %)**. It is part of the final multi-GPU
+configuration together with `rdma_mpi`.
 
 ## 6. Negative results (kept, with evidence)
 | Idea | Result | Job |
