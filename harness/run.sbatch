@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Timing job (submit via harness/submit.sh). Env: LABEL CASE CASE_ARGS NGPU REPS BUILD MPIRUN_ARGS RUN_ENV
+# Timing job (submit via harness/submit.sh). Env: LABEL CASE CASE_ARGS NGPU REPS BUILD MPIRUN_ARGS RUN_ENV WRAP
 #   STEPPROF KEEP_OUTPUT MFC_DIR. Out: results/<LABEL>/{summary.tsv,steps.tsv,...}
 #SBATCH -A acd110018
 #SBATCH -p dev
@@ -7,7 +7,7 @@
 set -euo pipefail
 ROOT=/work/u1131128/coding-adv1
 source "$ROOT/scripts/env.sh"
-: "${LABEL:?}" "${CASE:?}" "${NGPU:=1}" "${REPS:=3}" "${BUILD:=generic}" "${CASE_ARGS:=}" "${MPIRUN_ARGS:=}" "${RUN_ENV:=}"
+: "${LABEL:?}" "${CASE:?}" "${NGPU:=1}" "${REPS:=3}" "${BUILD:=generic}" "${CASE_ARGS:=}" "${MPIRUN_ARGS:=}" "${RUN_ENV:=}" "${WRAP:=}"
 : "${STEPPROF:=1}" "${KEEP_OUTPUT:=0}"
 out=$ROOT/results/$LABEL
 run=$ROOT/runs/$LABEL            # bulky outputs (D/, restart_data/, silo) live outside results/
@@ -19,7 +19,7 @@ smi() { nvidia-smi --query-gpu=index,name,pci.bus_id,clocks.sm,clocks.mem,power.
 {
   echo "job=$SLURM_JOB_ID host=$(hostname) date=$(date -Iseconds)"
   echo "label=$LABEL case=$CASE case_args=$CASE_ARGS ngpu=$NGPU reps=$REPS build=$BUILD"
-  echo "mpirun_args=$MPIRUN_ARGS run_env=$RUN_ENV"
+  echo "mpirun_args=$MPIRUN_ARGS run_env=$RUN_ENV wrap=$WRAP nic_map=${NIC_MAP:-}"
   cat "$ROOT/.provenance"
   echo "nvhpc_module=$NVHPC_MODULE cuda=${NVHPC_CUDA_HOME:-bundled} cuda_module=${CUDA_MODULE:-} opal=$OPAL_PREFIX"
   echo "mfc_dir=$MFC_DIR mfc=$(git -C "$MFC_DIR" describe --always --dirty) $(git -C "$MFC_DIR" rev-parse HEAD)"
@@ -47,7 +47,7 @@ rm -f restart_data/lustre_[1-9]*.dat   # the warm-up's final state must not stan
 printf 'rep\twall_s\tgrind_ns\n' > "$out/summary.tsv"
 for r in $(seq 1 "$REPS"); do
   t0=$(date +%s.%N)
-  env $RUN_ENV mpirun -np "$NGPU" $MPIRUN_ARGS "$sim" > "$out/rep$r.log" 2>&1
+  env $RUN_ENV mpirun -np "$NGPU" $MPIRUN_ARGS $WRAP "$sim" > "$out/rep$r.log" 2>&1
   t1=$(date +%s.%N)
   g=$(awk '/Performance:/{print $2}' "$out/rep$r.log" | tail -1)
   printf '%s\t%.3f\t%s\n' "$r" "$(echo "$t1 - $t0" | bc)" "$g" >> "$out/summary.tsv"
@@ -60,7 +60,7 @@ if [[ $STEPPROF == 1 ]]; then
   printf '#!/usr/bin/env bash\nexec nsys profile --trace=nvtx --sample=none --cpuctxsw=none --force-overwrite=true -o "%s/steps_rank${OMPI_COMM_WORLD_RANK:-0}" "$@"\n' \
     "$run" > "$run/nvtxwrap.sh"
   chmod +x "$run/nvtxwrap.sh"
-  env $RUN_ENV mpirun -np "$NGPU" $MPIRUN_ARGS "$run/nvtxwrap.sh" "$sim" > "$out/steprep.log" 2>&1 || true
+  env $RUN_ENV mpirun -np "$NGPU" $MPIRUN_ARGS $WRAP "$run/nvtxwrap.sh" "$sim" > "$out/steprep.log" 2>&1 || true
   for f in "$run"/steps_rank*.nsys-rep; do
     nsys stats --force-export=true --format csv --report nvtx_pushpop_trace --output "${f%.nsys-rep}" "$f" \
       > /dev/null 2>&1 || true

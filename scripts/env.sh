@@ -15,3 +15,7 @@ export MFC_DIR=${MFC_DIR:-$ROOT/mfc}        # MFC checkout: mfc = pinned v5.7.0,
 OPAL_PREFIX=$(ls -d "$NVHPC_ROOT"/comm_libs/*/hpcx/hpcx-*/ompi | head -1); export OPAL_PREFIX
 export OMPI_MCA_hwloc_base_binding_policy=${OMPI_MCA_hwloc_base_binding_policy:-none}  # default binding fails in cgroups
 export OMPI_MCA_io=${OMPI_MCA_io:-romio321}  # OMPIO hangs/segfaults on wekafs
+# HCA next to each visible GPU, for harness/nicbind.sh (compute nodes only; empty on login nodes)
+if [[ -n ${SLURM_JOB_ID:-} ]] && command -v nvidia-smi >/dev/null; then
+  NIC_MAP=$("$ROOT/harness/nicbind.sh" --map 2>/dev/null); export NIC_MAP
+fi

@@ -16,14 +16,18 @@ declare -A V=(
   [ucx_shm]="UCX_TLS=self,sm,cuda_copy,cuda_ipc"
   [ucx_shm_noproc]="UCX_TLS=self,sm,cuda_copy,cuda_ipc UCX_POSIX_USE_PROC_LINK=n"
   [ucx_1hca]="UCX_NET_DEVICES=mlx5_0:1"
+  [noproc]="UCX_POSIX_USE_PROC_LINK=n"
+  [nic_local]=""
+  [nic_local_noproc]="UCX_POSIX_USE_PROC_LINK=n"
   [ob1]="OMPI_MCA_pml=ob1 OMPI_MCA_btl=self,vader OMPI_MCA_osc=^ucx OMPI_MCA_coll_hcoll_enable=0 OMPI_MCA_coll_ucc_enable=0"
 )
-{ echo "job=$SLURM_JOB_ID host=$(hostname) ngpu=$NGPU"; ibv_devices 2>&1 | head -20; } > "$out/env.txt"
+{ echo "job=$SLURM_JOB_ID host=$(hostname) ngpu=$NGPU nic_map=${NIC_MAP:-}"; ibv_devices 2>&1 | head -20; } > "$out/env.txt"
 printf 'variant\trep\twall_s\tinit_s\tsendrecv_GBs\tfinalize_s\n' > "$out/mpiinit.tsv"
 for rep in 1 2 3; do
   for v in ${VARIANTS:-default nocoll ucx_shm ucx_1hca ob1}; do
     t0=$(date +%s.%N)
-    r=$(env ${V[$v]} mpirun -np "$NGPU" "$bin" 2> "$out/$v.$rep.err" | head -1)
+    wrap=; [[ $v == nic_local* ]] && wrap=$ROOT/harness/nicbind.sh
+    r=$(env ${V[$v]} mpirun -np "$NGPU" $wrap "$bin" 2> "$out/$v.$rep.err" | head -1)
     t1=$(date +%s.%N)
     printf '%s\t%s\t%.3f\t%s\t%s\t%s\n' "$v" "$rep" "$(echo "$t1 - $t0" | bc)" \
       "$(awk '{print $2}' <<<"$r")" "$(awk '{print $4}' <<<"$r")" "$(awk '{print $6}' <<<"$r")" >> "$out/mpiinit.tsv"
