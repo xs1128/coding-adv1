@@ -90,6 +90,7 @@ latency-bound (FP64 pipe 31 %, "wait"/long-scoreboard stalls). `vector_length(64
 **P2+P3 — no host round trip per kernel** (`0005`, 10 files, +170/−153). After P1/K4b/K2 each RK stage still launched
 ~100 kernels and ~45 scalar `GPU_UPDATE`s, each followed by a host sync: ~1 ms of GPU idle per stage, which does not
 shrink with rank count (~20 % of a stage at 4 GPUs; trace 604253).
+
 - First a 5-second NVHPC check (604388): after `acc_set_cuda_stream(acc_async_noval, <sync stream>)` async and
   synchronous work share one stream (0 ordering errors in 16.8 M elements); async scalar updates are staged when
   queued (0 / 20 000 wrong); update+kernel host cost 15.3 → 4.05 µs.
@@ -151,6 +152,7 @@ inflated but ratios hold; 4 steps, kernels 140–210):
 
 WENO5 is still latency-bound below the FP64 roof, and the copy-like kernels reach a third of HBM bandwidth because the
 SMs are busy with index arithmetic, not memory. Both are the next single-GPU targets.
+
 - 1 GPU: after P3 the host gaps inside the reconstruction and Riemann ranges are 0.002–0.012 ms per stage (trace
   604667), so kernel time is the step time. Kernel time (sc26 profile 602705) is in WENO5 (29 %), HLLC (21 %), the
   WENO input pack (10 %; removed by NTHU's open PR #2092, not ours to claim) and bandwidth-bound copies (40 %).
