@@ -1,4 +1,4 @@
-From 2e4762174dde51d79fa5980b43f9c8971eaf63aa Mon Sep 17 00:00:00 2001
+From a88491728255c448a83c6722e04caaa5c15f36f4 Mon Sep 17 00:00:00 2001
 From: hipac1 <hipac1@lsalab.cs.nthu.edu.tw>
 Date: Fri, 23 Oct 2026 18:32:16 +0800
 Subject: [PATCH] Queue the per-stage kernels and scalar updates async on
@@ -27,9 +27,7 @@ test_format_tar_zst, a missing zstd on this machine.)
  src/simulation/m_start_up.fpp                 |   5 +
  src/simulation/m_time_steppers.fpp            |   2 +-
  src/simulation/m_weno.fpp                     |  19 +--
- tests/.harness.lock                           |   0
- 11 files changed, 170 insertions(+), 153 deletions(-)
- create mode 100644 tests/.harness.lock
+ 10 files changed, 170 insertions(+), 153 deletions(-)
 
 diff --git a/src/common/include/shared_parallel_macros.fpp b/src/common/include/shared_parallel_macros.fpp
 index 9abaf26..7f49937 100644
@@ -1197,9 +1195,6 @@ index 65c7368..6be5ec0 100644
                          do l = ${Z_BND}$%beg, ${Z_BND}$%end
                              do k = ${Y_BND}$%beg, ${Y_BND}$%end
                                  do j = ${X_BND}$%beg, ${X_BND}$%end
-diff --git a/tests/.harness.lock b/tests/.harness.lock
-new file mode 100644
-index 0000000..e69de29
 -- 
 2.47.3
 
