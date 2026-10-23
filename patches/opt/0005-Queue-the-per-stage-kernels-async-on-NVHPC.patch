@@ -1,0 +1,1205 @@
+From 2e4762174dde51d79fa5980b43f9c8971eaf63aa Mon Sep 17 00:00:00 2001
+From: hipac1 <hipac1@lsalab.cs.nthu.edu.tw>
+Date: Fri, 23 Oct 2026 18:32:16 +0800
+Subject: [PATCH] Queue the per-stage kernels and scalar updates async on
+ NVHPC, on the synchronous stream
+
+Every RK stage launched ~100 kernels and ~45 scalar host-to-device updates, each followed by a
+host synchronization: ~1 ms of GPU idle per stage, which does not shrink with the rank count and
+was ~20 % of a stage at 4 GPUs.
+
+On NVHPC, run the default async queue on the synchronous stream (acc_set_cuda_stream at start-up)
+and launch the WENO, Riemann-state/HLLC, flux-difference, conversion, boundary, halo pack/unpack
+and RK-update kernels and their scalar updates with GPU_ASYNC. Stream order keeps them ordered
+with all synchronous GPU work, so the host only waits before device buffers go to MPI. Other
+compilers and the OpenMP path are unchanged (GPU_ASYNC is None).
+
+(precheck: format/spell/source-lint/docs pass; toolchain lint fails only on
+test_format_tar_zst, a missing zstd on this machine.)
+---
+ src/common/include/shared_parallel_macros.fpp |   5 +
+ src/common/m_boundary_common.fpp              |   2 +-
+ src/common/m_mpi_common.fpp                   |  52 ++++----
+ src/common/m_variables_conversion.fpp         |   6 +-
+ src/simulation/m_rhs.fpp                      | 118 +++++++++---------
+ src/simulation/m_riemann_solver_hllc.fpp      |  38 +++---
+ src/simulation/m_riemann_state.fpp            |  76 +++++------
+ src/simulation/m_start_up.fpp                 |   5 +
+ src/simulation/m_time_steppers.fpp            |   2 +-
+ src/simulation/m_weno.fpp                     |  19 +--
+ tests/.harness.lock                           |   0
+ 11 files changed, 170 insertions(+), 153 deletions(-)
+ create mode 100644 tests/.harness.lock
+
+diff --git a/src/common/include/shared_parallel_macros.fpp b/src/common/include/shared_parallel_macros.fpp
+index 9abaf26..7f49937 100644
+--- a/src/common/include/shared_parallel_macros.fpp
++++ b/src/common/include/shared_parallel_macros.fpp
+@@ -8,6 +8,11 @@
+ #:set USING_CCE = (MFC_COMPILER == CCE_COMPILER_ID)
+ #:set USING_AMD = (MFC_COMPILER == AMD_COMPILER_ID)
+ 
++! Async clause for the kernels and scalar updates that run every RK stage. NVHPC runs the default async queue on the
++! synchronous stream (s_initialize_mpi_domain), so these stay ordered with all other GPU work and the host only waits
++! where device data leaves OpenACC (MPI with device buffers). Other compilers keep the synchronous behaviour.
++#:set GPU_ASYNC = 'async' if USING_NVHPC else None
++
+ #:def ASSERT_LIST(data, datatype)
+     #:assert data is not None
+     #:assert isinstance(data, list)
+diff --git a/src/common/m_boundary_common.fpp b/src/common/m_boundary_common.fpp
+index 2f86c02..bdd5e1c 100644
+--- a/src/common/m_boundary_common.fpp
++++ b/src/common/m_boundary_common.fpp
+@@ -148,7 +148,7 @@ contains
+             k_beg = -buff_size; k_end = m + buff_size; l_beg = -buff_size; l_end = n + buff_size
+         end if
+ 
+-        $:GPU_PARALLEL_LOOP(private='[l, k, bc_code]', collapse=2)
++        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, private='[l, k, bc_code]', collapse=2)
+         do l = l_beg, l_end
+             do k = k_beg, k_end
+                 if (bc_dir == 1) then
+diff --git a/src/common/m_mpi_common.fpp b/src/common/m_mpi_common.fpp
+index 5530539..061734d 100644
+--- a/src/common/m_mpi_common.fpp
++++ b/src/common/m_mpi_common.fpp
+@@ -603,7 +603,7 @@ contains
+                              & buff_size*v_size*(m + 2*buff_size + 1)*(n + 2*buff_size + 1)/)
+         end if
+ 
+-        $:GPU_UPDATE(device='[v_size]')
++        $:GPU_UPDATE(device='[v_size]', extraAccArgs=GPU_ASYNC)
+ 
+         buffer_count = buffer_counts(mpi_dir)
+         boundary_conditions = (/bc_x, bc_y, bc_z/)
+@@ -636,7 +636,7 @@ contains
+         #:for mpi_dir in [1, 2, 3]
+             if (mpi_dir == ${mpi_dir}$) then
+                 #:if mpi_dir == 1
+-                    $:GPU_PARALLEL_LOOP(collapse=4,private='[r]')
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4,private='[r]')
+                     do l = 0, p
+                         do k = 0, n
+                             do j = 0, buff_size - 1
+@@ -650,7 +650,7 @@ contains
+                     $:END_GPU_PARALLEL_LOOP()
+ 
+                     if (chem_diff_comm) then
+-                        $:GPU_PARALLEL_LOOP(collapse=3,private='[r]')
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3,private='[r]')
+                         do l = 0, p
+                             do k = 0, n
+                                 do j = 0, buff_size - 1
+@@ -663,7 +663,7 @@ contains
+                     end if
+ 
+                     if (qbmm_comm) then
+-                        $:GPU_PARALLEL_LOOP(collapse=4,private='[r]')
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4,private='[r]')
+                         do l = 0, p
+                             do k = 0, n
+                                 do j = 0, buff_size - 1
+@@ -678,7 +678,7 @@ contains
+                         end do
+                         $:END_GPU_PARALLEL_LOOP()
+ 
+-                        $:GPU_PARALLEL_LOOP(collapse=5,private='[r]')
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=5,private='[r]')
+                         do l = 0, p
+                             do k = 0, n
+                                 do j = 0, buff_size - 1
+@@ -694,7 +694,7 @@ contains
+                         $:END_GPU_PARALLEL_LOOP()
+                     end if
+                 #:elif mpi_dir == 2
+-                    $:GPU_PARALLEL_LOOP(collapse=4,private='[r]')
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4,private='[r]')
+                     do i = 1, nVar
+                         do l = 0, p
+                             do k = 0, buff_size - 1
+@@ -708,7 +708,7 @@ contains
+                     $:END_GPU_PARALLEL_LOOP()
+ 
+                     if (chem_diff_comm) then
+-                        $:GPU_PARALLEL_LOOP(collapse=3,private='[r]')
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3,private='[r]')
+                         do l = 0, p
+                             do k = 0, buff_size - 1
+                                 do j = -buff_size, m + buff_size
+@@ -721,7 +721,7 @@ contains
+                     end if
+ 
+                     if (qbmm_comm) then
+-                        $:GPU_PARALLEL_LOOP(collapse=5,private='[r]')
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=5,private='[r]')
+                         do i = nVar + 1, nVar + nnode
+                             do l = 0, p
+                                 do k = 0, buff_size - 1
+@@ -737,7 +737,7 @@ contains
+                         end do
+                         $:END_GPU_PARALLEL_LOOP()
+ 
+-                        $:GPU_PARALLEL_LOOP(collapse=5,private='[r]')
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=5,private='[r]')
+                         do i = nVar + 1, nVar + nnode
+                             do l = 0, p
+                                 do k = 0, buff_size - 1
+@@ -754,7 +754,7 @@ contains
+                         $:END_GPU_PARALLEL_LOOP()
+                     end if
+                 #:else
+-                    $:GPU_PARALLEL_LOOP(collapse=4,private='[r]')
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4,private='[r]')
+                     do i = 1, nVar
+                         do l = 0, buff_size - 1
+                             do k = -buff_size, n + buff_size
+@@ -769,7 +769,7 @@ contains
+                     $:END_GPU_PARALLEL_LOOP()
+ 
+                     if (chem_diff_comm) then
+-                        $:GPU_PARALLEL_LOOP(collapse=3,private='[r]')
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3,private='[r]')
+                         do l = 0, buff_size - 1
+                             do k = -buff_size, n + buff_size
+                                 do j = -buff_size, m + buff_size
+@@ -783,7 +783,7 @@ contains
+                     end if
+ 
+                     if (qbmm_comm) then
+-                        $:GPU_PARALLEL_LOOP(collapse=5,private='[r]')
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=5,private='[r]')
+                         do i = nVar + 1, nVar + nnode
+                             do l = 0, buff_size - 1
+                                 do k = -buff_size, n + buff_size
+@@ -799,7 +799,7 @@ contains
+                         end do
+                         $:END_GPU_PARALLEL_LOOP()
+ 
+-                        $:GPU_PARALLEL_LOOP(collapse=5,private='[r]')
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=5,private='[r]')
+                         do i = nVar + 1, nVar + nnode
+                             do l = 0, buff_size - 1
+                                 do k = -buff_size, n + buff_size
+@@ -824,6 +824,8 @@ contains
+         #:for rdma_mpi in [False, True]
+             if (use_rdma_transport .eqv. ${'.true.' if rdma_mpi else '.false.'}$) then
+                 #:if rdma_mpi
++                    ! buff_send is packed asynchronously
++                    $:GPU_WAIT()
+                     #:call GPU_HOST_DATA(use_device_addr='[buff_send, buff_recv]')
+                         call nvtxStartRange("RHS-COMM-SENDRECV-RDMA")
+ 
+@@ -856,7 +858,7 @@ contains
+         #:for mpi_dir in [1, 2, 3]
+             if (mpi_dir == ${mpi_dir}$) then
+                 #:if mpi_dir == 1
+-                    $:GPU_PARALLEL_LOOP(collapse=4,private='[r]')
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4,private='[r]')
+                     do l = 0, p
+                         do k = 0, n
+                             do j = -buff_size, -1
+@@ -876,7 +878,7 @@ contains
+                     $:END_GPU_PARALLEL_LOOP()
+ 
+                     if (chem_diff_comm) then
+-                        $:GPU_PARALLEL_LOOP(collapse=3,private='[r]')
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3,private='[r]')
+                         do l = 0, p
+                             do k = 0, n
+                                 do j = -buff_size, -1
+@@ -895,7 +897,7 @@ contains
+                     end if
+ 
+                     if (qbmm_comm) then
+-                        $:GPU_PARALLEL_LOOP(collapse=5,private='[r]')
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=5,private='[r]')
+                         do l = 0, p
+                             do k = 0, n
+                                 do j = -buff_size, -1
+@@ -910,7 +912,7 @@ contains
+                         end do
+                         $:END_GPU_PARALLEL_LOOP()
+ 
+-                        $:GPU_PARALLEL_LOOP(collapse=5,private='[r]')
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=5,private='[r]')
+                         do l = 0, p
+                             do k = 0, n
+                                 do j = -buff_size, -1
+@@ -926,7 +928,7 @@ contains
+                         $:END_GPU_PARALLEL_LOOP()
+                     end if
+                 #:elif mpi_dir == 2
+-                    $:GPU_PARALLEL_LOOP(collapse=4,private='[r]')
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4,private='[r]')
+                     do i = 1, nVar
+                         do l = 0, p
+                             do k = -buff_size, -1
+@@ -946,7 +948,7 @@ contains
+                     $:END_GPU_PARALLEL_LOOP()
+ 
+                     if (chem_diff_comm) then
+-                        $:GPU_PARALLEL_LOOP(collapse=3,private='[r]')
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3,private='[r]')
+                         do l = 0, p
+                             do k = -buff_size, -1
+                                 do j = -buff_size, m + buff_size
+@@ -965,7 +967,7 @@ contains
+                     end if
+ 
+                     if (qbmm_comm) then
+-                        $:GPU_PARALLEL_LOOP(collapse=5,private='[r]')
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=5,private='[r]')
+                         do i = nVar + 1, nVar + nnode
+                             do l = 0, p
+                                 do k = -buff_size, -1
+@@ -981,7 +983,7 @@ contains
+                         end do
+                         $:END_GPU_PARALLEL_LOOP()
+ 
+-                        $:GPU_PARALLEL_LOOP(collapse=5,private='[r]')
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=5,private='[r]')
+                         do i = nVar + 1, nVar + nnode
+                             do l = 0, p
+                                 do k = -buff_size, -1
+@@ -998,7 +1000,7 @@ contains
+                         $:END_GPU_PARALLEL_LOOP()
+                     end if
+                 #:else
+-                    $:GPU_PARALLEL_LOOP(collapse=4,private='[r]')
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4,private='[r]')
+                     do i = 1, nVar
+                         do l = -buff_size, -1
+                             do k = -buff_size, n + buff_size
+@@ -1019,7 +1021,7 @@ contains
+                     $:END_GPU_PARALLEL_LOOP()
+ 
+                     if (chem_diff_comm) then
+-                        $:GPU_PARALLEL_LOOP(collapse=3,private='[r]')
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3,private='[r]')
+                         do l = -buff_size, -1
+                             do k = -buff_size, n + buff_size
+                                 do j = -buff_size, m + buff_size
+@@ -1039,7 +1041,7 @@ contains
+                     end if
+ 
+                     if (qbmm_comm) then
+-                        $:GPU_PARALLEL_LOOP(collapse=5,private='[r]')
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=5,private='[r]')
+                         do i = nVar + 1, nVar + nnode
+                             do l = -buff_size, -1
+                                 do k = -buff_size, n + buff_size
+@@ -1055,7 +1057,7 @@ contains
+                         end do
+                         $:END_GPU_PARALLEL_LOOP()
+ 
+-                        $:GPU_PARALLEL_LOOP(collapse=5,private='[r]')
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=5,private='[r]')
+                         do i = nVar + 1, nVar + nnode
+                             do l = -buff_size, -1
+                                 do k = -buff_size, n + buff_size
+diff --git a/src/common/m_variables_conversion.fpp b/src/common/m_variables_conversion.fpp
+index a787a97..78a1945 100644
+--- a/src/common/m_variables_conversion.fpp
++++ b/src/common/m_variables_conversion.fpp
+@@ -493,9 +493,9 @@ contains
+         real(wp)               :: f, dGa_dW, dp_dW, df_dW  !< Functions within Newton-Raphson iteration
+         integer                :: iter                     !< Newton-Raphson iteration counter
+ 
+-        $:GPU_PARALLEL_LOOP(collapse=3, private='[alpha_K, alpha_rho_K, Re_K, nRtmp, rho_K, gamma_K, pi_inf_K, qv_K, dyn_pres_K, &
+-                            & rhoYks, B, pres, vftmp, nbub_sc, G_K, solid_partial_density, T, pres_mag, Ga, B2, m2, S, W, dW, E, &
+-                            & D, f, dGa_dW, dp_dW, df_dW, iter]')
++        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3, private='[alpha_K, alpha_rho_K, Re_K, nRtmp, rho_K, gamma_K, &
++                            & pi_inf_K, qv_K, dyn_pres_K, rhoYks, B, pres, vftmp, nbub_sc, G_K, solid_partial_density, T, &
++                            & pres_mag, Ga, B2, m2, S, W, dW, E, D, f, dGa_dW, dp_dW, df_dW, iter]')
+         do l = ibounds(3)%beg, ibounds(3)%end
+             do k = ibounds(2)%beg, ibounds(2)%end
+                 do j = ibounds(1)%beg, ibounds(1)%end
+diff --git a/src/simulation/m_rhs.fpp b/src/simulation/m_rhs.fpp
+index edd500e..3ce385a 100644
+--- a/src/simulation/m_rhs.fpp
++++ b/src/simulation/m_rhs.fpp
+@@ -593,7 +593,7 @@ contains
+ 
+         if (.not. igr) then
+             ! Association/Population of Working Variables
+-            $:GPU_PARALLEL_LOOP(private='[i, j, k, l]', collapse=4)
++            $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, private='[i, j, k, l]', collapse=4)
+             do i = 1, sys_size
+                 do l = idwbuff(3)%beg, idwbuff(3)%end
+                     do k = idwbuff(2)%beg, idwbuff(2)%end
+@@ -1068,7 +1068,8 @@ contains
+         end if
+ 
+         if (alt_soundspeed) then
+-            $:GPU_PARALLEL_LOOP(private='[k_loop, l_loop, q_loop, pres_K, alpha_K, alpha_rho_K, blkmod_K]', collapse=3)
++            $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, private='[k_loop, l_loop, q_loop, pres_K, alpha_K, alpha_rho_K, &
++                                & blkmod_K]', collapse=3)
+             do q_loop = 0, p
+                 do l_loop = 0, n
+                     do k_loop = 0, m
+@@ -1111,7 +1112,8 @@ contains
+             end if
+ 
+             if (hypo_nc_mode /= hypo_nc_mode_dual_pass) then
+-                $:GPU_PARALLEL_LOOP(collapse=4,private='[j, k_loop, l_loop, q_loop, inv_ds, flux_face1, flux_face2]')
++                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4, &
++                                    & private='[j, k_loop, l_loop, q_loop, inv_ds, flux_face1, flux_face2]')
+                 do j = 1, sys_size
+                     do q_loop = 0, p
+                         do l_loop = 0, n
+@@ -1126,7 +1128,7 @@ contains
+                 end do
+                 $:END_GPU_PARALLEL_LOOP()
+             else if (is_hat_L) then
+-                $:GPU_PARALLEL_LOOP(collapse=4,private='[j, k_loop, l_loop, q_loop, inv_ds, flux_face2]')
++                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4,private='[j, k_loop, l_loop, q_loop, inv_ds, flux_face2]')
+                 do j = 1, sys_size
+                     do q_loop = 0, p
+                         do l_loop = 0, n
+@@ -1140,7 +1142,7 @@ contains
+                 end do
+                 $:END_GPU_PARALLEL_LOOP()
+             else  ! is_hat_R
+-                $:GPU_PARALLEL_LOOP(collapse=4,private='[j, k_loop, l_loop, q_loop, inv_ds, flux_face1]')
++                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4,private='[j, k_loop, l_loop, q_loop, inv_ds, flux_face1]')
+                 do j = 1, sys_size
+                     do q_loop = 0, p
+                         do l_loop = 0, n
+@@ -1156,8 +1158,8 @@ contains
+             end if
+ 
+             if (model_eqns == model_eqns_6eq) then
+-                $:GPU_PARALLEL_LOOP(collapse=4,private='[i_fluid_loop, k_loop, l_loop, q_loop, inv_ds, advected_qty_val, &
+-                                    & pressure_val, flux_face1, flux_face2]')
++                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4,private='[i_fluid_loop, k_loop, l_loop, q_loop, inv_ds, &
++                                    & advected_qty_val, pressure_val, flux_face1, flux_face2]')
+                 do q_loop = 0, p
+                     do l_loop = 0, n
+                         do k_loop = 0, m
+@@ -1187,7 +1189,7 @@ contains
+             end if
+ 
+             if (hypo_nc_mode /= hypo_nc_mode_dual_pass) then
+-                $:GPU_PARALLEL_LOOP(collapse=4,private='[j, k, l, q, inv_ds, flux_face1, flux_face2]')
++                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4,private='[j, k, l, q, inv_ds, flux_face1, flux_face2]')
+                 do j = 1, sys_size
+                     do l = 0, p
+                         do k = 0, n
+@@ -1202,7 +1204,7 @@ contains
+                 end do
+                 $:END_GPU_PARALLEL_LOOP()
+             else if (is_hat_L) then
+-                $:GPU_PARALLEL_LOOP(collapse=4,private='[j, k, l, q, inv_ds, flux_face2]')
++                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4,private='[j, k, l, q, inv_ds, flux_face2]')
+                 do j = 1, sys_size
+                     do l = 0, p
+                         do k = 0, n
+@@ -1216,7 +1218,7 @@ contains
+                 end do
+                 $:END_GPU_PARALLEL_LOOP()
+             else  ! is_hat_R
+-                $:GPU_PARALLEL_LOOP(collapse=4,private='[j, k, l, q, inv_ds, flux_face1]')
++                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4,private='[j, k, l, q, inv_ds, flux_face1]')
+                 do j = 1, sys_size
+                     do l = 0, p
+                         do k = 0, n
+@@ -1232,8 +1234,8 @@ contains
+             end if
+ 
+             if (model_eqns == model_eqns_6eq) then
+-                $:GPU_PARALLEL_LOOP(collapse=4,private='[i_fluid_loop, k, l, q, inv_ds, advected_qty_val, pressure_val, &
+-                                    & flux_face1, flux_face2]')
++                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4,private='[i_fluid_loop, k, l, q, inv_ds, advected_qty_val, &
++                                    & pressure_val, flux_face1, flux_face2]')
+                 do l = 0, p
+                     do k = 0, n
+                         do q = 0, m
+@@ -1266,7 +1268,7 @@ contains
+                     ! centers this equals the annular finite-volume divergence (r_+ F_+ - r_- F_-)/(y_cc*dy) for the rows
+                     ! whose geometric flux is the full radial flux.
+                     if (is_hat_L) then
+-                        $:GPU_PARALLEL_LOOP(collapse=4,private='[j, k, l, q, flux_face2]')
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4,private='[j, k, l, q, flux_face2]')
+                         do j = 1, sys_size
+                             do l = 0, p
+                                 do k = 0, n
+@@ -1279,7 +1281,7 @@ contains
+                         end do
+                         $:END_GPU_PARALLEL_LOOP()
+                     else  ! is_hat_R
+-                        $:GPU_PARALLEL_LOOP(collapse=4,private='[j, k, l, q, flux_face1]')
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4,private='[j, k, l, q, flux_face1]')
+                         do j = 1, sys_size
+                             do l = 0, p
+                                 do k = 0, n
+@@ -1293,7 +1295,7 @@ contains
+                         $:END_GPU_PARALLEL_LOOP()
+                     end if
+                 else
+-                    $:GPU_PARALLEL_LOOP(collapse=4,private='[j, k, l, q, flux_face1, flux_face2]')
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4,private='[j, k, l, q, flux_face1, flux_face2]')
+                     do j = 1, sys_size
+                         do l = 0, p
+                             do k = 0, n
+@@ -1319,7 +1321,8 @@ contains
+             end if
+ 
+             if (grid_geometry == 3) then  ! Cylindrical Coordinates
+-                $:GPU_PARALLEL_LOOP(collapse=4,private='[j, k, l, q, inv_ds, velocity_val, flux_face1, flux_face2]')
++                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4, &
++                                    & private='[j, k, l, q, inv_ds, velocity_val, flux_face1, flux_face2]')
+                 do j = 1, sys_size
+                     do k = 0, p
+                         do q = 0, n
+@@ -1334,7 +1337,7 @@ contains
+                     end do
+                 end do
+                 $:END_GPU_PARALLEL_LOOP()
+-                $:GPU_PARALLEL_LOOP(collapse=4,private='[j, k, l, q, flux_face1, flux_face2]')
++                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4,private='[j, k, l, q, flux_face1, flux_face2]')
+                 do j = 1, sys_size
+                     do k = 0, p
+                         do q = 0, n
+@@ -1349,7 +1352,7 @@ contains
+                 $:END_GPU_PARALLEL_LOOP()
+             else  ! Cartesian Coordinates
+                 if (hypo_nc_mode /= hypo_nc_mode_dual_pass) then
+-                    $:GPU_PARALLEL_LOOP(collapse=4,private='[j, k, l, q, inv_ds, flux_face1, flux_face2]')
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4,private='[j, k, l, q, inv_ds, flux_face1, flux_face2]')
+                     do j = 1, sys_size
+                         do k = 0, p
+                             do q = 0, n
+@@ -1364,7 +1367,7 @@ contains
+                     end do
+                     $:END_GPU_PARALLEL_LOOP()
+                 else if (is_hat_L) then
+-                    $:GPU_PARALLEL_LOOP(collapse=4,private='[j, k, l, q, inv_ds, flux_face2]')
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4,private='[j, k, l, q, inv_ds, flux_face2]')
+                     do j = 1, sys_size
+                         do k = 0, p
+                             do q = 0, n
+@@ -1378,7 +1381,7 @@ contains
+                     end do
+                     $:END_GPU_PARALLEL_LOOP()
+                 else  ! is_hat_R
+-                    $:GPU_PARALLEL_LOOP(collapse=4,private='[j, k, l, q, inv_ds, flux_face1]')
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4,private='[j, k, l, q, inv_ds, flux_face1]')
+                     do j = 1, sys_size
+                         do k = 0, p
+                             do q = 0, n
+@@ -1395,8 +1398,8 @@ contains
+             end if
+ 
+             if (model_eqns == model_eqns_6eq) then
+-                $:GPU_PARALLEL_LOOP(collapse=4,private='[i_fluid_loop, k, l, q, inv_ds, advected_qty_val, pressure_val, &
+-                                    & flux_face1, flux_face2]')
++                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4,private='[i_fluid_loop, k, l, q, inv_ds, advected_qty_val, &
++                                    & pressure_val, flux_face1, flux_face2]')
+                 do k = 0, p
+                     do q = 0, n
+                         do l = 0, m
+@@ -1446,8 +1449,8 @@ contains
+             case (1)  ! x-direction
+                 if (adv_src_mode == adv_src_mode_alpha_iface) then
+                     ! Alpha-interface: flux_src(j_adv) supplies interface alpha_k. RHS applies velocity * d(alpha_k)/dx.
+-                    $:GPU_PARALLEL_LOOP(collapse=4,private='[j_adv, k_idx, l_idx, q_idx, local_inv_ds, local_term_coeff, &
+-                                        & local_flux1, local_flux2]')
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4,private='[j_adv, k_idx, l_idx, q_idx, local_inv_ds, &
++                                        & local_term_coeff, local_flux1, local_flux2]')
+                     do j_adv = eqn_idx%adv%beg, eqn_idx%adv%end
+                         do q_idx = 0, p  ! z_extent
+                             do l_idx = 0, n  ! y_extent
+@@ -1464,8 +1467,8 @@ contains
+                     end do
+                     $:END_GPU_PARALLEL_LOOP()
+                     if (alt_soundspeed) then  ! K*div(u) correction
+-                        $:GPU_PARALLEL_LOOP(collapse=3, private='[k_idx, l_idx, q_idx, local_inv_ds, local_k_term_val, &
+-                                            & local_flux1, local_flux2]')
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3, private='[k_idx, l_idx, q_idx, local_inv_ds, &
++                                            & local_k_term_val, local_flux1, local_flux2]')
+                         do q_idx = 0, p; do l_idx = 0, n; do k_idx = 0, m
+                             local_inv_ds = 1._wp/dx(k_idx)
+                             local_k_term_val = Kterm_arg(k_idx, l_idx, q_idx)
+@@ -1480,8 +1483,8 @@ contains
+                     end if
+                 else if (adv_src_mode == adv_src_mode_vel_iface) then
+                     ! u-interface: flux_src(adv%beg) supplies one shared face-normal velocity. RHS applies alpha_k * du/dx.
+-                    $:GPU_PARALLEL_LOOP(collapse=4, private='[j_adv, k_idx, l_idx, q_idx, local_inv_ds, local_term_coeff, &
+-                                        & local_flux1, local_flux2]')
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4, private='[j_adv, k_idx, l_idx, q_idx, local_inv_ds, &
++                                        & local_term_coeff, local_flux1, local_flux2]')
+                     do j_adv = eqn_idx%adv%beg, eqn_idx%adv%end
+                         do q_idx = 0, p; do l_idx = 0, n; do k_idx = 0, m
+                             local_inv_ds = 1._wp/dx(k_idx)
+@@ -1494,8 +1497,8 @@ contains
+                     end do
+                     $:END_GPU_PARALLEL_LOOP()
+                     if (alt_soundspeed) then  ! K*div(u) correction
+-                        $:GPU_PARALLEL_LOOP(collapse=3, private='[k_idx, l_idx, q_idx, local_inv_ds, local_k_term_val, &
+-                                            & local_flux1, local_flux2]')
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3, private='[k_idx, l_idx, q_idx, local_inv_ds, &
++                                            & local_k_term_val, local_flux1, local_flux2]')
+                         do q_idx = 0, p; do l_idx = 0, n; do k_idx = 0, m
+                             local_inv_ds = 1._wp/dx(k_idx)
+                             local_k_term_val = Kterm_arg(k_idx, l_idx, q_idx)
+@@ -1512,8 +1515,8 @@ contains
+             case (2)  ! y-direction
+                 if (adv_src_mode == adv_src_mode_alpha_iface) then
+                     ! Alpha-interface: flux_src(j_adv) supplies interface alpha_k. RHS applies velocity * d(alpha_k)/dy.
+-                    $:GPU_PARALLEL_LOOP(collapse=4, private='[j_adv, k_idx, l_idx, q_idx, local_inv_ds, local_term_coeff, &
+-                                        & local_flux1, local_flux2]')
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4, private='[j_adv, k_idx, l_idx, q_idx, local_inv_ds, &
++                                        & local_term_coeff, local_flux1, local_flux2]')
+                     do j_adv = eqn_idx%adv%beg, eqn_idx%adv%end
+                         do l_idx = 0, p  ! z_extent
+                             do k_idx = 0, n  ! y_extent
+@@ -1530,8 +1533,8 @@ contains
+                     end do
+                     $:END_GPU_PARALLEL_LOOP()
+                     if (alt_soundspeed) then  ! K*div(u) correction
+-                        $:GPU_PARALLEL_LOOP(collapse=3, private='[k_idx, l_idx, q_idx, local_inv_ds, local_k_term_val, &
+-                                            & local_flux1, local_flux2]')
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3, private='[k_idx, l_idx, q_idx, local_inv_ds, &
++                                            & local_k_term_val, local_flux1, local_flux2]')
+                         do l_idx = 0, p; do k_idx = 0, n; do q_idx = 0, m
+                             local_inv_ds = 1._wp/dy(k_idx)
+                             local_k_term_val = Kterm_arg(q_idx, k_idx, l_idx)
+@@ -1544,7 +1547,8 @@ contains
+                         end do; end do; end do
+                         $:END_GPU_PARALLEL_LOOP()
+                         if (cyl_coord) then
+-                            $:GPU_PARALLEL_LOOP(collapse=3, private='[k_idx, l_idx, q_idx, local_k_term_val]')
++                            $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3, &
++                                                & private='[k_idx, l_idx, q_idx, local_k_term_val]')
+                             do l_idx = 0, p; do k_idx = 0, n; do q_idx = 0, m
+                                 local_k_term_val = Kterm_arg(q_idx, k_idx, l_idx)
+                                 rhs_vf_arg(eqn_idx%adv%beg)%sf(q_idx, k_idx, l_idx) = rhs_vf_arg(eqn_idx%adv%beg)%sf(q_idx, &
+@@ -1559,8 +1563,8 @@ contains
+                     end if
+                 else if (adv_src_mode == adv_src_mode_vel_iface) then
+                     ! u-interface: flux_src(adv%beg) supplies one shared face-normal velocity. RHS applies alpha_k * du/dy.
+-                    $:GPU_PARALLEL_LOOP(collapse=4, private='[j_adv, k_idx, l_idx, q_idx, local_inv_ds, local_term_coeff, &
+-                                        & local_flux1, local_flux2]')
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4, private='[j_adv, k_idx, l_idx, q_idx, local_inv_ds, &
++                                        & local_term_coeff, local_flux1, local_flux2]')
+                     do j_adv = eqn_idx%adv%beg, eqn_idx%adv%end
+                         do l_idx = 0, p; do k_idx = 0, n; do q_idx = 0, m
+                             local_inv_ds = 1._wp/dy(k_idx)
+@@ -1573,8 +1577,8 @@ contains
+                     end do
+                     $:END_GPU_PARALLEL_LOOP()
+                     if (alt_soundspeed) then  ! K*div(u) correction
+-                        $:GPU_PARALLEL_LOOP(collapse=3, private='[k_idx, l_idx, q_idx, local_inv_ds, local_k_term_val, &
+-                                            & local_flux1, local_flux2]')
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3, private='[k_idx, l_idx, q_idx, local_inv_ds, &
++                                            & local_k_term_val, local_flux1, local_flux2]')
+                         do l_idx = 0, p; do k_idx = 0, n; do q_idx = 0, m
+                             local_inv_ds = 1._wp/dy(k_idx)
+                             local_k_term_val = Kterm_arg(q_idx, k_idx, l_idx)
+@@ -1587,8 +1591,8 @@ contains
+                         end do; end do; end do
+                         $:END_GPU_PARALLEL_LOOP()
+                         if (cyl_coord) then
+-                            $:GPU_PARALLEL_LOOP(collapse=3, &
+-                                                & private='[k_idx, l_idx, q_idx, local_k_term_val, local_flux1, local_flux2]')
++                            $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3, private='[k_idx, l_idx, q_idx, &
++                                                & local_k_term_val, local_flux1, local_flux2]')
+                             do l_idx = 0, p; do k_idx = 0, n; do q_idx = 0, m
+                                 local_k_term_val = Kterm_arg(q_idx, k_idx, l_idx)
+                                 local_flux1 = flux_src_n_vf_arg%vf(eqn_idx%adv%beg)%sf(q_idx, k_idx, l_idx)
+@@ -1605,8 +1609,8 @@ contains
+             case (3)  ! z-direction
+                 if (grid_geometry == 3) then
+                     if (adv_src_mode == adv_src_mode_alpha_iface) then
+-                        $:GPU_PARALLEL_LOOP(collapse=4, private='[j_adv, k_idx, l_idx, q_idx, local_inv_ds, local_term_coeff, &
+-                                            & local_flux1, local_flux2]')
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4, private='[j_adv, k_idx, l_idx, q_idx, &
++                                            & local_inv_ds, local_term_coeff, local_flux1, local_flux2]')
+                         do j_adv = eqn_idx%adv%beg, eqn_idx%adv%end
+                             do k_idx = 0, p  ! z_extent
+                                 do q_idx = 0, n  ! y_extent
+@@ -1623,8 +1627,8 @@ contains
+                         end do
+                         $:END_GPU_PARALLEL_LOOP()
+                         if (alt_soundspeed) then  ! K*div(u) correction
+-                            $:GPU_PARALLEL_LOOP(collapse=3, private='[k_idx, l_idx, q_idx, local_inv_ds, local_k_term_val, &
+-                                                & local_flux1, local_flux2]')
++                            $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3, private='[k_idx, l_idx, q_idx, local_inv_ds, &
++                                                & local_k_term_val, local_flux1, local_flux2]')
+                             do k_idx = 0, p; do q_idx = 0, n; do l_idx = 0, m
+                                 local_inv_ds = 1._wp/dz(k_idx)
+                                 local_k_term_val = Kterm_arg(l_idx, q_idx, k_idx)
+@@ -1639,8 +1643,8 @@ contains
+                         end if
+                     else if (adv_src_mode == adv_src_mode_vel_iface) then
+                         ! u-interface: flux_src(adv%beg) supplies one shared face-normal velocity. RHS applies alpha_k * du/dz.
+-                        $:GPU_PARALLEL_LOOP(collapse=4, private='[j_adv, k_idx, l_idx, q_idx, local_inv_ds, local_term_coeff, &
+-                                            & local_flux1, local_flux2]')
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4, private='[j_adv, k_idx, l_idx, q_idx, &
++                                            & local_inv_ds, local_term_coeff, local_flux1, local_flux2]')
+                         do j_adv = eqn_idx%adv%beg, eqn_idx%adv%end
+                             do k_idx = 0, p; do q_idx = 0, n; do l_idx = 0, m
+                                 local_inv_ds = 1._wp/dz(k_idx)
+@@ -1653,8 +1657,8 @@ contains
+                         end do
+                         $:END_GPU_PARALLEL_LOOP()
+                         if (alt_soundspeed) then  ! K*div(u) correction
+-                            $:GPU_PARALLEL_LOOP(collapse=3, private='[k_idx, l_idx, q_idx, local_inv_ds, local_k_term_val, &
+-                                                & local_flux1, local_flux2]')
++                            $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3, private='[k_idx, l_idx, q_idx, local_inv_ds, &
++                                                & local_k_term_val, local_flux1, local_flux2]')
+                             do k_idx = 0, p; do q_idx = 0, n; do l_idx = 0, m
+                                 local_inv_ds = 1._wp/dz(k_idx)
+                                 local_k_term_val = Kterm_arg(l_idx, q_idx, k_idx)
+@@ -1671,8 +1675,8 @@ contains
+                 else  ! non-cylindrical z-direction
+                     if (adv_src_mode == adv_src_mode_alpha_iface) then
+                         ! Alpha-interface: flux_src(j_adv) supplies interface alpha_k. RHS applies velocity * d(alpha_k)/dz.
+-                        $:GPU_PARALLEL_LOOP(collapse=4, private='[j_adv, k_idx, l_idx, q_idx, local_inv_ds, local_term_coeff, &
+-                                            & local_flux1, local_flux2]')
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4, private='[j_adv, k_idx, l_idx, q_idx, &
++                                            & local_inv_ds, local_term_coeff, local_flux1, local_flux2]')
+                         do j_adv = eqn_idx%adv%beg, eqn_idx%adv%end
+                             do k_idx = 0, p  ! z_extent
+                                 do q_idx = 0, n  ! y_extent
+@@ -1689,8 +1693,8 @@ contains
+                         end do
+                         $:END_GPU_PARALLEL_LOOP()
+                         if (alt_soundspeed) then  ! K*div(u) correction
+-                            $:GPU_PARALLEL_LOOP(collapse=3, private='[k_idx, l_idx, q_idx, local_inv_ds, local_k_term_val, &
+-                                                & local_flux1, local_flux2]')
++                            $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3, private='[k_idx, l_idx, q_idx, local_inv_ds, &
++                                                & local_k_term_val, local_flux1, local_flux2]')
+                             do k_idx = 0, p; do q_idx = 0, n; do l_idx = 0, m
+                                 local_inv_ds = 1._wp/dz(k_idx)
+                                 local_k_term_val = Kterm_arg(l_idx, q_idx, k_idx)
+@@ -1705,8 +1709,8 @@ contains
+                         end if
+                     else if (adv_src_mode == adv_src_mode_vel_iface) then
+                         ! u-interface: flux_src(adv%beg) supplies one shared face-normal velocity. RHS applies alpha_k * du/dz.
+-                        $:GPU_PARALLEL_LOOP(collapse=4, private='[j_adv, k_idx, l_idx, q_idx, local_inv_ds, local_term_coeff, &
+-                                            & local_flux1, local_flux2]')
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4, private='[j_adv, k_idx, l_idx, q_idx, &
++                                            & local_inv_ds, local_term_coeff, local_flux1, local_flux2]')
+                         do j_adv = eqn_idx%adv%beg, eqn_idx%adv%end
+                             do k_idx = 0, p; do q_idx = 0, n; do l_idx = 0, m
+                                 local_inv_ds = 1._wp/dz(k_idx)
+@@ -1719,8 +1723,8 @@ contains
+                         end do
+                         $:END_GPU_PARALLEL_LOOP()
+                         if (alt_soundspeed) then  ! K*div(u) correction
+-                            $:GPU_PARALLEL_LOOP(collapse=3, private='[k_idx, l_idx, q_idx, local_inv_ds, local_k_term_val, &
+-                                                & local_flux1, local_flux2]')
++                            $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3, private='[k_idx, l_idx, q_idx, local_inv_ds, &
++                                                & local_k_term_val, local_flux1, local_flux2]')
+                             do k_idx = 0, p; do q_idx = 0, n; do l_idx = 0, m
+                                 local_inv_ds = 1._wp/dz(k_idx)
+                                 local_k_term_val = Kterm_arg(l_idx, q_idx, k_idx)
+diff --git a/src/simulation/m_riemann_solver_hllc.fpp b/src/simulation/m_riemann_solver_hllc.fpp
+index 621f00f..0ac0f53 100644
+--- a/src/simulation/m_riemann_solver_hllc.fpp
++++ b/src/simulation/m_riemann_solver_hllc.fpp
+@@ -176,15 +176,15 @@ contains
+                 ! 6-EQUATION MODEL WITH HLLC HLLC star-state flux with contact wave speed s_S
+                 if (model_eqns == model_eqns_6eq) then
+                     ! 6-equation model (model_eqns=3): separate phasic internal energies
+-                    $:GPU_PARALLEL_LOOP(collapse=3, private='[i, j, k, l, vel_L, vel_R, Re_L, Re_R, alpha_L, alpha_R, &
+-                                        & alpha_rho_L, alpha_rho_R, Ys_L, Ys_R, Xs_L, Xs_R, Gamma_iL, Gamma_iR, Cp_iL, Cp_iR, &
+-                                        & R_species, pcorr, rho_L, rho_R, pres_L, pres_R, E_L, E_R, H_L, H_R, c_sum_Yi_Phi, T_L, &
+-                                        & T_R, Y_L, Y_R, MW_L, MW_R, R_gas_L, R_gas_R, Cp_L, Cp_R, Cv_L, Cv_R, Gamm_L, Gamm_R, &
+-                                        & gamma_L, gamma_R, pi_inf_L, pi_inf_R, qv_L, qv_R, qv_avg, c_L, c_R, rho_avg, H_avg, &
+-                                        & c_avg, gamma_avg, ptilde_L, ptilde_R, vel_L_rms, vel_R_rms, vel_avg_rms, Ms_L, Ms_R, &
+-                                        & pres_SL, pres_SR, alpha_L_sum, alpha_R_sum, rho_Star, E_Star, p_Star, p_K_Star, &
+-                                        & vel_K_star, s_L, s_R, s_M, s_P, s_S, xi_M, xi_P, xi_L, xi_R, xi_L_m1, xi_R_m1, xi_MP, &
+-                                        & xi_PP, alpha_K_star, alpha_rho_K_star, p_isen_L, p_isen_R, e_K_star]', &
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3, private='[i, j, k, l, vel_L, vel_R, Re_L, Re_R, &
++                                        & alpha_L, alpha_R, alpha_rho_L, alpha_rho_R, Ys_L, Ys_R, Xs_L, Xs_R, Gamma_iL, Gamma_iR, &
++                                        & Cp_iL, Cp_iR, R_species, pcorr, rho_L, rho_R, pres_L, pres_R, E_L, E_R, H_L, H_R, &
++                                        & c_sum_Yi_Phi, T_L, T_R, Y_L, Y_R, MW_L, MW_R, R_gas_L, R_gas_R, Cp_L, Cp_R, Cv_L, Cv_R, &
++                                        & Gamm_L, Gamm_R, gamma_L, gamma_R, pi_inf_L, pi_inf_R, qv_L, qv_R, qv_avg, c_L, c_R, &
++                                        & rho_avg, H_avg, c_avg, gamma_avg, ptilde_L, ptilde_R, vel_L_rms, vel_R_rms, &
++                                        & vel_avg_rms, Ms_L, Ms_R, pres_SL, pres_SR, alpha_L_sum, alpha_R_sum, rho_Star, E_Star, &
++                                        & p_Star, p_K_Star, vel_K_star, s_L, s_R, s_M, s_P, s_S, xi_M, xi_P, xi_L, xi_R, xi_L_m1, &
++                                        & xi_R_m1, xi_MP, xi_PP, alpha_K_star, alpha_rho_K_star, p_isen_L, p_isen_R, e_K_star]', &
+                                         & firstprivate='[Re_size_loc1, Re_size_loc2]')
+                     do l = ${Z_BND}$%beg, ${Z_BND}$%end
+                         do k = ${Y_BND}$%beg, ${Y_BND}$%end
+@@ -482,14 +482,14 @@ contains
+                     $:END_GPU_PARALLEL_LOOP()
+                 else if (model_eqns == model_eqns_5eq .and. bubbles_euler) then
+                     ! 5-equation model with Euler-Euler bubble dynamics
+-                    $:GPU_PARALLEL_LOOP(collapse=3, private='[i, q, R0_L, R0_R, V0_L, V0_R, P0_L, P0_R, pbw_L, pbw_R, vel_L, &
+-                                        & vel_R, rho_avg, alpha_L, alpha_R, alpha_rho_L, alpha_rho_R, h_avg, gamma_avg, Re_L, &
+-                                        & Re_R, pcorr, rho_L, rho_R, pres_L, pres_R, E_L, E_R, H_L, H_R, gamma_L, gamma_R, &
+-                                        & pi_inf_L, pi_inf_R, qv_L, qv_R, qv_avg, c_L, c_R, c_avg, vel_L_rms, vel_R_rms, &
+-                                        & vel_avg_rms, Ms_L, Ms_R, pres_SL, pres_SR, alpha_L_sum, alpha_R_sum, s_L, s_R, s_M, &
+-                                        & s_P, s_S, xi_M, xi_P, xi_L, xi_R, xi_L_m1, xi_R_m1, xi_MP, xi_PP, nbub_L, nbub_R, &
+-                                        & PbwR3Lbar, PbwR3Rbar, R3Lbar, R3Rbar, R3V2Lbar, R3V2Rbar, Ys_L, Ys_R, Cp_iL, Cp_iR, &
+-                                        & Xs_L, Xs_R, Gamma_iL, Gamma_iR]', firstprivate='[Re_size_loc1, Re_size_loc2]')
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3, private='[i, q, R0_L, R0_R, V0_L, V0_R, P0_L, P0_R, &
++                                        & pbw_L, pbw_R, vel_L, vel_R, rho_avg, alpha_L, alpha_R, alpha_rho_L, alpha_rho_R, h_avg, &
++                                        & gamma_avg, Re_L, Re_R, pcorr, rho_L, rho_R, pres_L, pres_R, E_L, E_R, H_L, H_R, &
++                                        & gamma_L, gamma_R, pi_inf_L, pi_inf_R, qv_L, qv_R, qv_avg, c_L, c_R, c_avg, vel_L_rms, &
++                                        & vel_R_rms, vel_avg_rms, Ms_L, Ms_R, pres_SL, pres_SR, alpha_L_sum, alpha_R_sum, s_L, &
++                                        & s_R, s_M, s_P, s_S, xi_M, xi_P, xi_L, xi_R, xi_L_m1, xi_R_m1, xi_MP, xi_PP, nbub_L, &
++                                        & nbub_R, PbwR3Lbar, PbwR3Rbar, R3Lbar, R3Rbar, R3V2Lbar, R3V2Rbar, Ys_L, Ys_R, Cp_iL, &
++                                        & Cp_iR, Xs_L, Xs_R, Gamma_iL, Gamma_iR]', firstprivate='[Re_size_loc1, Re_size_loc2]')
+                     do l = ${Z_BND}$%beg, ${Z_BND}$%end
+                         do k = ${Y_BND}$%beg, ${Y_BND}$%end
+                             do j = ${X_BND}$%beg, ${X_BND}$%end
+@@ -892,10 +892,10 @@ contains
+                         ! hypoelastic run faults inside the pure-fluid kernel. Two call sites are what
+                         ! give two line numbers. Do not merge them back into one.
+                         #:if HYPO
+-                            $:GPU_PARALLEL_LOOP(collapse=3, private=_hllc_priv, copyin='[is1, is2, is3]', &
++                            $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3, private=_hllc_priv, copyin='[is1, is2, is3]', &
+                                                 & firstprivate='[Re_size_loc1, Re_size_loc2]')
+                         #:else
+-                            $:GPU_PARALLEL_LOOP(collapse=3, private=_hllc_priv, copyin='[is1, is2, is3]', &
++                            $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3, private=_hllc_priv, copyin='[is1, is2, is3]', &
+                                                 & firstprivate='[Re_size_loc1, Re_size_loc2]')
+                         #:endif
+                         do l = ${Z_BND}$%beg, ${Z_BND}$%end
+diff --git a/src/simulation/m_riemann_state.fpp b/src/simulation/m_riemann_state.fpp
+index ceca823..2353f31 100644
+--- a/src/simulation/m_riemann_state.fpp
++++ b/src/simulation/m_riemann_state.fpp
+@@ -312,7 +312,7 @@ contains
+             dir_idx = (/3, 1, 2/); dir_flg = (/0._wp, 0._wp, 1._wp/)
+         end if
+ 
+-        $:GPU_UPDATE(device='[is1, is2, is3]')
++        $:GPU_UPDATE(device='[is1, is2, is3]', extraAccArgs=GPU_ASYNC)
+ 
+         if (hypoelasticity) then
+             ! dir_idx_tau(1:3) = (nn, nt, nt2): face-normal stress row for wave speeds and momentum flux. stress_perm(1:n_stress) =
+@@ -332,14 +332,14 @@ contains
+ 
+         isx = ix; isy = iy; isz = iz
+         ! for stuff in the same module
+-        $:GPU_UPDATE(device='[isx, isy, isz]')
++        $:GPU_UPDATE(device='[isx, isy, isz]', extraAccArgs=GPU_ASYNC)
+         ! for stuff in different modules
+-        $:GPU_UPDATE(device='[dir_idx, dir_flg, dir_idx_tau, stress_perm]')
++        $:GPU_UPDATE(device='[dir_idx, dir_flg, dir_idx_tau, stress_perm]', extraAccArgs=GPU_ASYNC)
+ 
+         ! Population of Buffers in x-direction
+         if (norm_dir == 1) then
+             if (bc_x%beg == BC_RIEMANN_EXTRAP) then  ! Riemann state extrap. BC at beginning
+-                $:GPU_PARALLEL_LOOP(collapse=3)
++                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
+                 do i = 1, sys_size
+                     do l = is3%beg, is3%end
+                         do k = is2%beg, is2%end
+@@ -350,7 +350,7 @@ contains
+                 $:END_GPU_PARALLEL_LOOP()
+ 
+                 if (viscous) then
+-                    $:GPU_PARALLEL_LOOP(collapse=3)
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
+                     do i = eqn_idx%mom%beg, eqn_idx%mom%end
+                         do l = isz%beg, isz%end
+                             do k = isy%beg, isy%end
+@@ -361,7 +361,7 @@ contains
+                     $:END_GPU_PARALLEL_LOOP()
+ 
+                     if (n > 0) then
+-                        $:GPU_PARALLEL_LOOP(collapse=3)
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
+                         do i = eqn_idx%mom%beg, eqn_idx%mom%end
+                             do l = isz%beg, isz%end
+                                 do k = isy%beg, isy%end
+@@ -372,7 +372,7 @@ contains
+                         $:END_GPU_PARALLEL_LOOP()
+ 
+                         if (p > 0) then
+-                            $:GPU_PARALLEL_LOOP(collapse=3)
++                            $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
+                             do i = eqn_idx%mom%beg, eqn_idx%mom%end
+                                 do l = isz%beg, isz%end
+                                     do k = isy%beg, isy%end
+@@ -387,7 +387,7 @@ contains
+             end if
+ 
+             if (bc_x%end == BC_RIEMANN_EXTRAP) then  ! Riemann state extrap. BC at end
+-                $:GPU_PARALLEL_LOOP(collapse=3)
++                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
+                 do i = 1, sys_size
+                     do l = is3%beg, is3%end
+                         do k = is2%beg, is2%end
+@@ -398,7 +398,7 @@ contains
+                 $:END_GPU_PARALLEL_LOOP()
+ 
+                 if (viscous) then
+-                    $:GPU_PARALLEL_LOOP(collapse=3)
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
+                     do i = eqn_idx%mom%beg, eqn_idx%mom%end
+                         do l = isz%beg, isz%end
+                             do k = isy%beg, isy%end
+@@ -409,7 +409,7 @@ contains
+                     $:END_GPU_PARALLEL_LOOP()
+ 
+                     if (n > 0) then
+-                        $:GPU_PARALLEL_LOOP(collapse=3)
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
+                         do i = eqn_idx%mom%beg, eqn_idx%mom%end
+                             do l = isz%beg, isz%end
+                                 do k = isy%beg, isy%end
+@@ -420,7 +420,7 @@ contains
+                         $:END_GPU_PARALLEL_LOOP()
+ 
+                         if (p > 0) then
+-                            $:GPU_PARALLEL_LOOP(collapse=3)
++                            $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
+                             do i = eqn_idx%mom%beg, eqn_idx%mom%end
+                                 do l = isz%beg, isz%end
+                                     do k = isy%beg, isy%end
+@@ -438,7 +438,7 @@ contains
+             ! Population of Buffers in y-direction
+         else if (norm_dir == 2) then
+             if (bc_y%beg == BC_RIEMANN_EXTRAP) then  ! Riemann state extrap. BC at beginning
+-                $:GPU_PARALLEL_LOOP(collapse=3)
++                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
+                 do i = 1, sys_size
+                     do l = is3%beg, is3%end
+                         do k = is2%beg, is2%end
+@@ -449,7 +449,7 @@ contains
+                 $:END_GPU_PARALLEL_LOOP()
+ 
+                 if (viscous) then
+-                    $:GPU_PARALLEL_LOOP(collapse=3)
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
+                     do i = eqn_idx%mom%beg, eqn_idx%mom%end
+                         do l = isz%beg, isz%end
+                             do j = isx%beg, isx%end
+@@ -459,7 +459,7 @@ contains
+                     end do
+                     $:END_GPU_PARALLEL_LOOP()
+ 
+-                    $:GPU_PARALLEL_LOOP(collapse=3)
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
+                     do i = eqn_idx%mom%beg, eqn_idx%mom%end
+                         do l = isz%beg, isz%end
+                             do j = isx%beg, isx%end
+@@ -470,7 +470,7 @@ contains
+                     $:END_GPU_PARALLEL_LOOP()
+ 
+                     if (p > 0) then
+-                        $:GPU_PARALLEL_LOOP(collapse=3)
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
+                         do i = eqn_idx%mom%beg, eqn_idx%mom%end
+                             do l = isz%beg, isz%end
+                                 do j = isx%beg, isx%end
+@@ -484,7 +484,7 @@ contains
+             end if
+ 
+             if (bc_y%end == BC_RIEMANN_EXTRAP) then  ! Riemann state extrap. BC at end
+-                $:GPU_PARALLEL_LOOP(collapse=3)
++                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
+                 do i = 1, sys_size
+                     do l = is3%beg, is3%end
+                         do k = is2%beg, is2%end
+@@ -495,7 +495,7 @@ contains
+                 $:END_GPU_PARALLEL_LOOP()
+ 
+                 if (viscous) then
+-                    $:GPU_PARALLEL_LOOP(collapse=3)
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
+                     do i = eqn_idx%mom%beg, eqn_idx%mom%end
+                         do l = isz%beg, isz%end
+                             do j = isx%beg, isx%end
+@@ -505,7 +505,7 @@ contains
+                     end do
+                     $:END_GPU_PARALLEL_LOOP()
+ 
+-                    $:GPU_PARALLEL_LOOP(collapse=3)
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
+                     do i = eqn_idx%mom%beg, eqn_idx%mom%end
+                         do l = isz%beg, isz%end
+                             do j = isx%beg, isx%end
+@@ -516,7 +516,7 @@ contains
+                     $:END_GPU_PARALLEL_LOOP()
+ 
+                     if (p > 0) then
+-                        $:GPU_PARALLEL_LOOP(collapse=3)
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
+                         do i = eqn_idx%mom%beg, eqn_idx%mom%end
+                             do l = isz%beg, isz%end
+                                 do j = isx%beg, isx%end
+@@ -533,7 +533,7 @@ contains
+             ! Population of Buffers in z-direction
+         else
+             if (bc_z%beg == BC_RIEMANN_EXTRAP) then  ! Riemann state extrap. BC at beginning
+-                $:GPU_PARALLEL_LOOP(collapse=3)
++                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
+                 do i = 1, sys_size
+                     do k = is2%beg, is2%end
+                         do l = is3%beg, is3%end
+@@ -544,7 +544,7 @@ contains
+                 $:END_GPU_PARALLEL_LOOP()
+ 
+                 if (viscous) then
+-                    $:GPU_PARALLEL_LOOP(collapse=3)
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
+                     do i = eqn_idx%mom%beg, eqn_idx%mom%end
+                         do k = isy%beg, isy%end
+                             do j = isx%beg, isx%end
+@@ -553,7 +553,7 @@ contains
+                         end do
+                     end do
+                     $:END_GPU_PARALLEL_LOOP()
+-                    $:GPU_PARALLEL_LOOP(collapse=3)
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
+                     do i = eqn_idx%mom%beg, eqn_idx%mom%end
+                         do k = isy%beg, isy%end
+                             do j = isx%beg, isx%end
+@@ -562,7 +562,7 @@ contains
+                         end do
+                     end do
+                     $:END_GPU_PARALLEL_LOOP()
+-                    $:GPU_PARALLEL_LOOP(collapse=3)
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
+                     do i = eqn_idx%mom%beg, eqn_idx%mom%end
+                         do k = isy%beg, isy%end
+                             do j = isx%beg, isx%end
+@@ -575,7 +575,7 @@ contains
+             end if
+ 
+             if (bc_z%end == BC_RIEMANN_EXTRAP) then  ! Riemann state extrap. BC at end
+-                $:GPU_PARALLEL_LOOP(collapse=3)
++                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
+                 do i = 1, sys_size
+                     do k = is2%beg, is2%end
+                         do l = is3%beg, is3%end
+@@ -586,7 +586,7 @@ contains
+                 $:END_GPU_PARALLEL_LOOP()
+ 
+                 if (viscous) then
+-                    $:GPU_PARALLEL_LOOP(collapse=3)
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
+                     do i = eqn_idx%mom%beg, eqn_idx%mom%end
+                         do k = isy%beg, isy%end
+                             do j = isx%beg, isx%end
+@@ -596,7 +596,7 @@ contains
+                     end do
+                     $:END_GPU_PARALLEL_LOOP()
+ 
+-                    $:GPU_PARALLEL_LOOP(collapse=3)
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
+                     do i = eqn_idx%mom%beg, eqn_idx%mom%end
+                         do k = isy%beg, isy%end
+                             do j = isx%beg, isx%end
+@@ -606,7 +606,7 @@ contains
+                     end do
+                     $:END_GPU_PARALLEL_LOOP()
+ 
+-                    $:GPU_PARALLEL_LOOP(collapse=3)
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
+                     do i = eqn_idx%mom%beg, eqn_idx%mom%end
+                         do k = isy%beg, isy%end
+                             do j = isx%beg, isx%end
+@@ -1352,7 +1352,7 @@ contains
+                 ! Reshaping Outputted Data in y-direction
+ 
+                 if (norm_dir == 2) then
+-                    $:GPU_PARALLEL_LOOP(collapse=4)
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4)
+                     do i = 1, sys_size
+                         do l = is3%beg, is3%end
+                             do j = is1%beg, is1%end
+@@ -1365,7 +1365,7 @@ contains
+                     $:END_GPU_PARALLEL_LOOP()
+ 
+                     if (cyl_coord) then
+-                        $:GPU_PARALLEL_LOOP(collapse=4)
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4)
+                         do i = 1, sys_size
+                             do l = is3%beg, is3%end
+                                 do j = is1%beg, is1%end
+@@ -1379,7 +1379,7 @@ contains
+                     end if
+ 
+                     #:if SUFFIX == ''
+-                        $:GPU_PARALLEL_LOOP(collapse=3)
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
+                         do l = is3%beg, is3%end
+                             do j = is1%beg, is1%end
+                                 do k = is2%beg, is2%end
+@@ -1393,7 +1393,7 @@ contains
+                         ! (adv_src_mode_none) writes only the adv%beg row, so its per-fluid entries are never
+                         ! initialized and must not be copied out; nothing consumes them in that mode.
+                         if (adv_src_mode == adv_src_mode_alpha_iface) then
+-                            $:GPU_PARALLEL_LOOP(collapse=4)
++                            $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4)
+                             do i = eqn_idx%adv%beg + 1, eqn_idx%adv%end
+                                 do l = is3%beg, is3%end
+                                     do j = is1%beg, is1%end
+@@ -1408,7 +1408,7 @@ contains
+                     #:endif
+                     ! Reshaping Outputted Data in z-direction
+                 else if (norm_dir == 3) then
+-                    $:GPU_PARALLEL_LOOP(collapse=4)
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4)
+                     do i = 1, sys_size
+                         do j = is1%beg, is1%end
+                             do k = is2%beg, is2%end
+@@ -1421,7 +1421,7 @@ contains
+                     $:END_GPU_PARALLEL_LOOP()
+                     #:if SUFFIX == ''
+                         if (grid_geometry == 3) then
+-                            $:GPU_PARALLEL_LOOP(collapse=4)
++                            $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4)
+                             do i = 1, sys_size
+                                 do j = is1%beg, is1%end
+                                     do k = is2%beg, is2%end
+@@ -1434,7 +1434,7 @@ contains
+                             $:END_GPU_PARALLEL_LOOP()
+                         end if
+ 
+-                        $:GPU_PARALLEL_LOOP(collapse=3)
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
+                         do j = is1%beg, is1%end
+                             do k = is2%beg, is2%end
+                                 do l = is3%beg, is3%end
+@@ -1448,7 +1448,7 @@ contains
+                         ! (adv_src_mode_none) writes only the adv%beg row, so its per-fluid entries are never
+                         ! initialized and must not be copied out; nothing consumes them in that mode.
+                         if (adv_src_mode == adv_src_mode_alpha_iface) then
+-                            $:GPU_PARALLEL_LOOP(collapse=4)
++                            $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4)
+                             do i = eqn_idx%adv%beg + 1, eqn_idx%adv%end
+                                 do j = is1%beg, is1%end
+                                     do k = is2%beg, is2%end
+@@ -1462,7 +1462,7 @@ contains
+                         end if
+                     #:endif
+                 else if (norm_dir == 1) then
+-                    $:GPU_PARALLEL_LOOP(collapse=4)
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4)
+                     do i = 1, sys_size
+                         do l = is3%beg, is3%end
+                             do k = is2%beg, is2%end
+@@ -1475,7 +1475,7 @@ contains
+                     $:END_GPU_PARALLEL_LOOP()
+ 
+                     #:if SUFFIX == ''
+-                        $:GPU_PARALLEL_LOOP(collapse=3)
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
+                         do l = is3%beg, is3%end
+                             do k = is2%beg, is2%end
+                                 do j = is1%beg, is1%end
+@@ -1489,7 +1489,7 @@ contains
+                         ! (adv_src_mode_none) writes only the adv%beg row, so its per-fluid entries are never
+                         ! initialized and must not be copied out; nothing consumes them in that mode.
+                         if (adv_src_mode == adv_src_mode_alpha_iface) then
+-                            $:GPU_PARALLEL_LOOP(collapse=4)
++                            $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4)
+                             do i = eqn_idx%adv%beg + 1, eqn_idx%adv%end
+                                 do l = is3%beg, is3%end
+                                     do k = is2%beg, is2%end
+diff --git a/src/simulation/m_start_up.fpp b/src/simulation/m_start_up.fpp
+index 6a5434f..4004b40 100644
+--- a/src/simulation/m_start_up.fpp
++++ b/src/simulation/m_start_up.fpp
+@@ -1003,6 +1003,11 @@ contains
+         dev = mod(local_rank, devNum)
+ 
+         call acc_set_device_num(dev, devtype)
++#if defined(__PGI)
++        ! Run the default async queue on the synchronous stream: kernels launched with GPU_ASYNC then need no host wait
++        ! before later synchronous GPU work, only before device data is handed to MPI.
++        call acc_set_cuda_stream(acc_async_noval, acc_get_cuda_stream(acc_async_sync))
++#endif
+ #elif defined(MFC_OpenMP)
+         devNum = omp_get_num_devices()
+         dev = mod(local_rank, devNum)
+diff --git a/src/simulation/m_time_steppers.fpp b/src/simulation/m_time_steppers.fpp
+index 8e13a68..fafdaca 100644
+--- a/src/simulation/m_time_steppers.fpp
++++ b/src/simulation/m_time_steppers.fpp
+@@ -486,7 +486,7 @@ contains
+             end if
+ 
+             if (bubbles_lagrange .and. .not. adap_dt) call s_update_lagrange_tdv_rk(q_prim_vf, bc_type, stage=s)
+-            $:GPU_PARALLEL_LOOP(collapse=4)
++            $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4)
+             do i = 1, sys_size
+                 do l = 0, p
+                     do k = 0, n
+diff --git a/src/simulation/m_weno.fpp b/src/simulation/m_weno.fpp
+index 65c7368..6be5ec0 100644
+--- a/src/simulation/m_weno.fpp
++++ b/src/simulation/m_weno.fpp
+@@ -894,7 +894,7 @@ contains
+         type(scalar_field), dimension(1:), intent(in) :: v_vf
+         integer                                       :: i, j, k, l, n_vars
+ 
+-        $:GPU_PARALLEL_LOOP(collapse=4)
++        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4)
+         do i = 1, v_size
+             do l = idwbuff(3)%beg, idwbuff(3)%end
+                 do k = idwbuff(2)%beg, idwbuff(2)%end
+@@ -941,14 +941,14 @@ contains
+         is2_weno = is2_weno_d
+         is3_weno = is3_weno_d
+ 
+-        $:GPU_UPDATE(device='[is1_weno, is2_weno, is3_weno]')
++        $:GPU_UPDATE(device='[is1_weno, is2_weno, is3_weno]', extraAccArgs=GPU_ASYNC)
+ 
+         v_size = ubound(v_vf, 1)
+-        $:GPU_UPDATE(device='[v_size]')
++        $:GPU_UPDATE(device='[v_size]', extraAccArgs=GPU_ASYNC)
+ 
+         if (weno_order == 1) then
+             if (weno_dir == 1) then
+-                $:GPU_PARALLEL_LOOP(collapse=4)
++                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4)
+                 do i = 1, v_size
+                     do l = is3_weno%beg, is3_weno%end
+                         do k = is2_weno%beg, is2_weno%end
+@@ -961,7 +961,7 @@ contains
+                 end do
+                 $:END_GPU_PARALLEL_LOOP()
+             else if (weno_dir == 2) then
+-                $:GPU_PARALLEL_LOOP(collapse=4)
++                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4)
+                 do i = 1, v_size
+                     do l = is3_weno%beg, is3_weno%end
+                         do j = is1_weno%beg, is1_weno%end
+@@ -974,7 +974,7 @@ contains
+                 end do
+                 $:END_GPU_PARALLEL_LOOP()
+             else if (weno_dir == 3) then
+-                $:GPU_PARALLEL_LOOP(collapse=4)
++                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4)
+                 do i = 1, v_size
+                     do j = is1_weno%beg, is1_weno%end
+                         do k = is2_weno%beg, is2_weno%end
+@@ -1001,7 +1001,8 @@ contains
+                 #:set SV = STENCIL_VAR
+                 #:set SF = lambda offs: COORDS.format(STENCIL_IDX = SV + offs)
+                 if (weno_dir == ${WENO_DIR}$) then
+-                    $:GPU_PARALLEL_LOOP(collapse=4,private='[beta, dvd, poly, omega, alpha, tau, q, vp0, vp1, vm1]')
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4,private='[beta, dvd, poly, omega, alpha, tau, q, vp0, &
++                                        & vp1, vm1]')
+                     do l = ${Z_BND}$%beg, ${Z_BND}$%end
+                         do k = ${Y_BND}$%beg, ${Y_BND}$%end
+                             do j = ${X_BND}$%beg, ${X_BND}$%end
+@@ -1092,8 +1093,8 @@ contains
+                     #:set SV = STENCIL_VAR
+                     #:set SF = lambda offs: COORDS.format(STENCIL_IDX = SV + offs)
+                     if (weno_dir == ${WENO_DIR}$) then
+-                        $:GPU_PARALLEL_LOOP(collapse=3,private='[dvd, poly, beta, alpha, omega, tau, delta, q, vp0, vm1, vm2, &
+-                                            & vp1, vp2]')
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3,private='[dvd, poly, beta, alpha, omega, tau, &
++                                            & delta, q, vp0, vm1, vm2, vp1, vp2]')
+                         do l = ${Z_BND}$%beg, ${Z_BND}$%end
+                             do k = ${Y_BND}$%beg, ${Y_BND}$%end
+                                 do j = ${X_BND}$%beg, ${X_BND}$%end
+diff --git a/tests/.harness.lock b/tests/.harness.lock
+new file mode 100644
+index 0000000..e69de29
+-- 
+2.47.3
+

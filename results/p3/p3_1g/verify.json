@@ -1,0 +1,11 @@
+{
+ "label": "p3/p3_1g",
+ "ref": "ref/perf3d_201_30",
+ "checks": {
+  "state": {
+   "status": "FAIL",
+   "reason": "no restart_data/lustre_<step>.dat in /work/u1131128/coding-adv1/runs/p3/p3_1g"
+  }
+ },
+ "status": "FAIL"
+}

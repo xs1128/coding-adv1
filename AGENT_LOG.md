@@ -28,3 +28,7 @@
   overwrite. When rep 1 died in `MPI_Init`, the warm-up's file stayed and `verify.py` reported bitwise PASS.
 - Fix: delete `lustre_[1-9]*.dat` before the timed reps, so a failed rep leaves no final state and verify FAILs.
   Earlier verdicts stand: every one had a grind number for every rep, so the last rep wrote the file.
+
+## 13. Trailing comment on a fypp `$:` line (2026-10-23, P3 build)
+- Wrote `$:GPU_WAIT()  ! buff_send is packed asynchronously`. Fypp evaluates everything after `$:` as Python, so the
+  build failed with a SyntaxError. Comments go on their own line above fypp directives.
