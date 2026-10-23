@@ -16,6 +16,8 @@ ranks; grind = MFC's ns / grid point / equation / RHS.
 | 4 (both `rdma_mpi`) | 23.10 ms | **17.72 ms** | **1.30×** | 0.1184 | 0.0913 | 606018 |
 | 8 (v5.7.0 default vs final) | 21.94 ms | **10.22 ms** | **2.15×** | 0.1129 | 0.0527 | 605963 / 606019 |
 
+![Same-node step times](docs/fig/scaling.png)
+
 Strong-scaling efficiency of the final build (step time): 87 % at 4 GPUs and 76 % at 8 GPUs. v5.7.0 at its default
 settings reaches 44 % at 8 GPUs.
 
@@ -64,6 +66,8 @@ Ladder on 1 GPU (rungs measured in sequence; each bitwise):
 | K4b Riemann unity build | 70.42 ms | 0.3632 | 602474 |
 | K2 WENO register cap | 62.99 ms | 0.3255 | 602559 |
 | P3 async per-stage kernels (A/B 62.87 → 61.79) | 61.79 ms | 0.3200 | 604561 |
+
+![Ladder at 1 GPU](docs/fig/ladder_1g.png)
 
 **P1 — CBC without host round trips** (`0001`, `m_cbc.fpp`, +50/−44). Each characteristic-boundary call issued ~12
 small kernels and 5 scalar updates, each followed by a host sync (~230 µs per call). Queue them async, wait once.
@@ -135,6 +139,8 @@ inflated but ratios hold; 4 steps, kernels 140–210):
 | HLLC | 2.13–2.48 ms; FP64 pipe 9–10 % | **1.57–1.62 ms**; FP64 pipe 13 % | K4b: helpers inlined, no local-memory traffic |
 | Copy-like (pack, finalize, flux difference, RK update, conversion) | 0.72–1.19 ms; 1.2–1.8 TB/s (25–37 % of HBM peak); SM 64–74 % busy | unchanged | not touched: instruction-bound index arithmetic |
 | All listed kernels | 35.10 ms | **28.20 ms (−19.7 %)** | |
+
+![Kernel time by role](docs/fig/kernels_1g.png)
 
 WENO5 is still latency-bound below the FP64 roof, and the copy-like kernels reach a third of HBM bandwidth because the
 SMs are busy with index arithmetic, not memory. Both are the next single-GPU targets.
