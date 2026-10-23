@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # tools/kcheck.sh SRC.fpp KERNEL_REGEX [STAGING]  (nano4 login node, no GPU)
+# EXTRA="<flags>" appends compiler flags (e.g. -gpu=maxregcount:168).
 # Compiles one simulation source with the exact flags of the case-optimized build in STAGING and prints, per matching
 # kernel, registers/stack and the SASS memory-instruction mix. Lets a kernel variant be screened in ~1 min.
 set -euo pipefail
@@ -21,7 +22,7 @@ else:  # file compiled inside m_riemann_unity.f90: all simulation files share th
         if '/fypp/simulation/' in c['file'] and 'Minline=lib' in c['command']: print(c['command']); break")
 cmd=${cmd% -c *}
 cmd=${cmd//-Minline=lib:simulation_lib/-Minline=lib:$B/simulation_lib}
-$cmd -I"$B" -module "$out" -c "$out/$name.fpp.f90" -o "$out/$name.o" > compile.log 2>&1 || { tail -20 compile.log; exit 1; }
+$cmd ${EXTRA:-} -I"$B" -module "$out" -c "$out/$name.fpp.f90" -o "$out/$name.o" > compile.log 2>&1 || { tail -20 compile.log; exit 1; }
 cub=$(ls "$out"/*.n001.cubin | head -1)
 for k in $(cuobjdump --dump-resource-usage "$cub" | grep -oE "Function [A-Za-z0-9_]+" | awk '{print $2}' | grep -E "$kre"); do
   ru=$(cuobjdump --dump-resource-usage -fun "$k" "$cub" 2>/dev/null | grep -oE "REG:[0-9]+|STACK:[0-9]+" | tr '\n' ' ')
