@@ -57,7 +57,7 @@ def finish(ax, path):
 # 1. Ladder at 1 GPU
 ladder = [("v5.7.0", "base/official_1g", "600407"), ("+ P1 CBC async", "p1/cbc_async_1g", "601152"),
           ("+ K4b Riemann unity", "k4/unity_1g", "602474"), ("+ K2 WENO reg. cap", "k2/cap128_1g", "602559"),
-          ("+ P3 async kernels", "p3/ab_1g/b1", "604561")]
+          ("+ P3 async kernels", "p3/ab_1g/b1", "604561"), ("+ P4 interior reconstruction", "p4/ab_1g/b1", "621788")]
 vals = [step(p) for _, p, _ in ladder]
 fig, ax = plt.subplots(figsize=(6.4, 2.8))
 y = range(len(ladder))[::-1]
@@ -77,7 +77,7 @@ fig, ax = plt.subplots(figsize=(6.4, 2.6))
 y = range(len(keys))[::-1]
 h = 0.36
 ax.barh([v + h / 2 for v in y], [before[k] for k in keys], height=h, color=INK2, label="v5.7.0 (600146)")
-ax.barh([v - h / 2 for v in y], [after[k] for k in keys], height=h, color=BLUE, label="final (606033)")
+ax.barh([v - h / 2 for v in y], [after[k] for k in keys], height=h, color=BLUE, label="P3 (606033)")
 for v, k in zip(y, keys):
     ax.text(before[k] + 0.2, v + h / 2, f"{before[k]:.1f}", va="center", fontsize=8, color=INK2)
     ax.text(after[k] + 0.2, v - h / 2, f"{after[k]:.1f}", va="center", fontsize=8, color=INK)
@@ -88,21 +88,26 @@ ax.set_title(f"Kernel time by role: {sum(before.values()):.1f} → {sum(after.va
 ax.legend(frameon=False, fontsize=8, loc="lower right")
 finish(ax, f"{OUT}/kernels_1g.png")
 
-# 3. Step time at 1/4/8 GPUs, same node per pair
-pairs = [("1 GPU", "final/s1g/base", "final/s1g/final", "606017"),
-         ("4 GPUs\n(both rdma_mpi)", "final/s4g/base_rdma", "final/s4g/final_rdma", "606018"),
-         ("8 GPUs\n(v5.7.0 default\nvs final rdma_mpi)", "final/s8g/base_host", "final/s8g/final_rdma", "605963/606019")]
-fig, ax = plt.subplots(figsize=(6.4, 3.0))
-y = range(len(pairs))[::-1]
-for v, (name, a, b, job) in zip(y, pairs):
-    sa, sb = step(a), step(b)
-    ax.barh(v + h / 2, sa, height=h, color=INK2, label="v5.7.0" if v == len(pairs) - 1 else None)
-    ax.barh(v - h / 2, sb, height=h, color=BLUE, label="final" if v == len(pairs) - 1 else None)
-    ax.text(sa + 0.8, v + h / 2, f"{sa:.1f} ms", va="center", fontsize=8, color=INK2)
-    ax.text(sb + 0.8, v - h / 2, f"{sb:.1f} ms  ({sa / sb:.2f}×, {job})", va="center", fontsize=8, color=INK)
-ax.set_yticks(list(y), [p[0] for p in pairs])
+# 3. Step time at 1/4/8 GPUs: v5.7.0 vs P3 on one node, P3 vs final (P4) on another; speedup = product of the ratios
+sets = [("1 GPU", "final/s1g/base", "final/s1g/final", "p4/ab_1g/a1", "p4/ab_1g/b1"),
+        ("4 GPUs\n(all rdma_mpi)", "final/s4g/base_rdma", "final/s4g/final_rdma", "p4/ab_4g_rdma/a1", "p4/ab_4g_rdma/b1"),
+        ("8 GPUs\n(v5.7.0 default,\nthen rdma_mpi)", "final/s8g/base_host", "final/s8g/final_rdma", "p4/ab_8g_rdma/a1",
+         "p4/ab_8g_rdma/b1")]
+fig, ax = plt.subplots(figsize=(6.4, 3.6))
+y = range(len(sets))[::-1]
+h3 = 0.26
+for v, (name, base, p3, p3b, fin) in zip(y, sets):
+    sb, s3, sf = step(base), step(p3), step(fin)
+    first = v == len(sets) - 1
+    ax.barh(v + h3, sb, height=h3, color=INK2, label="v5.7.0" if first else None)
+    ax.barh(v, s3, height=h3, color=ORANGE, label="P3" if first else None)
+    ax.barh(v - h3, sf, height=h3, color=BLUE, label="final (P4)" if first else None)
+    ax.text(sb + 0.8, v + h3, f"{sb:.1f} ms", va="center", fontsize=8, color=INK2)
+    ax.text(s3 + 0.8, v, f"{s3:.1f} ms", va="center", fontsize=8, color=INK2)
+    ax.text(sf + 0.8, v - h3, f"{sf:.1f} ms  ({sb / s3 * step(p3b) / sf:.2f}×)", va="center", fontsize=8, color=INK)
+ax.set_yticks(list(y), [s[0] for s in sets])
 ax.set_xlim(0, 100)
 ax.set_xlabel("median step time over all ranks (ms)")
-ax.set_title("Same-node comparison, 201³ strong scaling", loc="left", fontsize=10)
+ax.set_title("Same-node comparisons, 201³ strong scaling", loc="left", fontsize=10)
 ax.legend(frameon=False, fontsize=8, loc="lower right")
 finish(ax, f"{OUT}/scaling.png")

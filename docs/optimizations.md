@@ -1,15 +1,17 @@
 # MFC on H200: optimizations so far
 
 Case: `examples/3D_performance_test` (201³, 5-equation 2-fluid, WENO5 + HLLC, RK3, 30 steps), case-optimized build,
-NVHPC 26.3, 1× H200 unless noted. Code: branch `p3` on nano4 (`mfc-p3` = `sc26` + P3), exported as `patches/opt/0001…0005`.
+NVHPC 26.3, 1× H200 unless noted. Code: branch `p4` on nano4 (`mfc-p4` = `p3` + P4), exported as `patches/opt/0001…0006`.
 Every number below cites a job; details and rejected variants are in `docs/ladder.md`.
 
-## Final, same node per row (the report's headline; `report.md` §1)
-| GPUs | v5.7.0 step | Final step | Speedup | Jobs |
-|---|---|---|---|---|
-| 1 | 76.74 ms | 61.88 ms | 1.24× | 606017 |
-| 4, both `rdma_mpi` | 23.10 ms | 17.72 ms | 1.30× | 606018 |
-| 8, v5.7.0 default vs final `rdma_mpi` | 21.94 ms | 10.22 ms | 2.15× | 605963/606019 |
+## Final (the report's headline; `report.md` §1)
+v5.7.0 vs P3 on one node, P3 vs P4 (final) on another; speedup = product of the two same-node ratios.
+
+| GPUs | v5.7.0 step | P3 step | Final step | Speedup | Jobs |
+|---|---|---|---|---|---|
+| 1 | 76.74 ms | 61.88 ms | 60.38 ms | 1.27× | 606017; 621788 |
+| 4, all `rdma_mpi` | 23.10 ms | 17.72 ms | 17.03 ms | 1.35× | 606018; 622305 |
+| 8, v5.7.0 default, then `rdma_mpi` | 21.94 ms | 10.22 ms | 9.75 ms | 2.23× | 605963/606019; 622306 |
 
 ## Result (1 GPU, rung by rung)
 | Rung | Step, median | Grind (ns/gp/eq/rhs) | Wall | Final state | Job |
@@ -20,8 +22,9 @@ Every number below cites a job; details and rejected variants are in `docs/ladde
 | + K2 WENO register cap 128 | **62.99 ms** | **0.3255** | 6.9 s | bitwise | 602559 |
 | = clean series `sc26` (canonical) | 62.91 ms | 0.3248 | 7.13 s | bitwise | 602728 |
 | + T0.4 UCX on the GPU's own HCA (env, 1 GPU) | 63.00 ms | 0.3249 | **6.62 s** | bitwise | 602727 |
-| + P3 async per-stage kernels (same-node A/B vs sc26: 62.87 → 61.79 ms) | **61.79 ms** | **0.3200** | — | bitwise | 604561 |
-| **total** | **−19.8 % (1.25×)** | **−19.6 %** | **−18 %** | | |
+| + P3 async per-stage kernels (same-node A/B vs sc26: 62.87 → 61.79 ms) | 61.79 ms | 0.3200 | — | bitwise | 604561 |
+| + P4 transverse-interior reconstruction (same-node A/B vs P3: 61.90 → 60.38 ms) | **60.38 ms** | **0.3123** | — | bitwise | 621788 |
+| **total (rungs in sequence, different nodes)** | **−21.6 % (1.28×)** | **−21.6 %** | | | |
 
 The official MFC table lists 0.38 ns for H100 SXM. That number uses a different metric (v4.9.3, `s_compute_rhs` only,
 `cpu_time`, ghost cells counted), see `baseline/README.md`. Same-metric comparisons are within this table only.
@@ -85,7 +88,8 @@ The official MFC table lists 0.38 ns for H100 SXM. That number uses a different 
   monotonicity and THINC kernels read. The viscous, capillary and viscous-derivative reconstructions keep their ranges.
 - *Effect (same node, A/B vs P3, `rdma_mpi` on multi-GPU).* 1 GPU −2.5 % (621788), 4 GPUs −3.5 % (622305), 8 GPUs
   −4.0 % (622306). Skipped work grows as boxes shrink: 7.5 % of each sweep at 201³ per GPU, 14 % at 101³.
-- *Correctness.* Bitwise in all 8 runs; full `./mfc.sh test` pending (622349–622356).
+- *Correctness.* Bitwise in all 8 runs; full `./mfc.sh test` 690 pass / 23 fail, the same 23 as P3 and v5.7.0
+  (622349–622356).
 
 **Rejected, with evidence.**
 - NVHPC 25.9: no gain, not bitwise.
@@ -128,12 +132,13 @@ The official MFC table lists 0.38 ns for H100 SXM. That number uses a different 
 | v5.7.0 baseline | host-staged | — (2 reps, no per-step data) | 0.1534 / 0.1626 | 600173 |
 | sc26 | host-staged | 25.72 ms | 0.1377 | 602770 |
 | sc26 | `rdma_mpi=T` | 18.81 ms | 0.0969 | 604560 a1 |
-| sc26 + P3 | `rdma_mpi=T` | **17.71 ms** | **0.0914** | 604560 b1 |
+| sc26 + P3 | `rdma_mpi=T` | 17.71 ms | 0.0914 | 604560 b1 |
+| + P4 | `rdma_mpi=T` | **17.03 ms** | **0.0876** | 622305 b1 (A/B vs P3 17.65 ms) |
 
 - `rdma_mpi=T` is an MFC input parameter: halos go GPU to GPU over NVLink instead of through host memory. Same
   numerics, bitwise output, −27 % per step at 4 GPUs. It is our multi-GPU configuration (disclosed).
-- Strong-scaling efficiency 1 → 4 GPUs with P3 and `rdma_mpi`: 61.8 / (4 × 17.7) = **87 %**
-  (host-staged sc26: 61 %).
+- Strong-scaling efficiency 1 → 4 GPUs with P3 and `rdma_mpi`: 61.8 / (4 × 17.7) = 87 %; with P4
+  60.4 / (4 × 17.0) = **89 %** (host-staged sc26: 61 %).
 - In a 30-step run, MPI start-up and finalize (~7.5 s) dominate the 12 s wall at 4 GPUs.
 - A 4-GPU trace on node hgpn012 (604667) showed one GPU uniformly 20 % slower in every kernel. The A/B runs on hgpn020
   show balanced ranks (RHS 5.35–5.37 ms) at equal clocks, so this is a node anomaly, not load imbalance.

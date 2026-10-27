@@ -3,7 +3,7 @@
 #   harness/reproduce.sh build    (login node: clone/patch/compile, ~1 h at -j 8, no GPU)
 #   harness/reproduce.sh run      (submit the 1/4/8-GPU sets: ~1, ~16 and ~48 GPU-min)
 #   harness/reproduce.sh verify   (bitwise gate + summary of every run)
-# Baseline = pinned v5.7.0 in $ROOT/mfc; final = $ROOT/mfc-repro (v5.7.0 + patches/opt/000[1-5]).
+# Baseline = pinned v5.7.0 in $ROOT/mfc; final = $ROOT/mfc-repro (v5.7.0 + patches/opt/000[1-6]).
 set -euo pipefail
 ROOT=/work/u1131128/coding-adv1
 PIN=0b3d56c8e1c9a3aa8d112681b72c87ab69fe5f13
@@ -13,7 +13,7 @@ case "${1:?build|run|verify}" in
     [[ -d mfc/.git || -f mfc/.git ]] || git clone https://github.com/MFlowCode/MFC mfc
     git -C mfc checkout -q "$PIN"
     [[ -d mfc-repro ]] || git -C mfc worktree add --detach ../mfc-repro "$PIN"
-    git -C mfc-repro -c user.name=repro -c user.email=repro@localhost am --keep-cr "$ROOT"/patches/opt/000[1-5]-*.patch
+    git -C mfc-repro -c user.name=repro -c user.email=repro@localhost am --keep-cr "$ROOT"/patches/opt/000[1-6]-*.patch
     for d in mfc mfc-repro; do
       MFC_DIR=$ROOT/$d bash scripts/build.sh caseopt harness/cases/perf3d.py
       MFC_DIR=$ROOT/$d bash scripts/build.sh generic

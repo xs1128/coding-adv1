@@ -2,32 +2,34 @@
 
 Coding-Adv-HW-1. Application: **MFC v5.7.0** (`0b3d56c`), the SC26 SCC application, on nano4 (H200).
 Every number in this report cites a Slurm job and a path under `results/`. Changes to MFC are the patch series
-`patches/opt/0001…0005` (branch `p3` on nano4). The per-rung detail, including all rejected variants, is in
+`patches/opt/0001…0006` (branch `p4` on nano4). The per-rung detail, including all rejected variants, is in
 `docs/ladder.md`, and agent mistakes are in `AGENT_LOG.md`.
 
 ## 1. Result
 
-Same node per row, outputs bitwise identical to unmodified v5.7.0. Step = median NVTX step time (steps 2–30) of the
-slowest rank, from one NVTX-profiled rep after the timed ones; grind = MFC's ns / grid point / equation / RHS, median
-of the 5 timed reps.
+Outputs bitwise identical to unmodified v5.7.0. Step = median NVTX step time (steps 2–30) of the slowest rank, from
+one NVTX-profiled rep after the timed ones; grind = MFC's ns / grid point / equation / RHS, median of the timed reps.
+Every comparison is made on one node: v5.7.0 vs P3 (patches 0001–0005) in one job, P3 vs final (P4, + 0006) in a
+second same-node A/B. The speedup is the product of the two same-node ratios. P3 reproduced across the two jobs within
+0.7 % (61.88 / 61.90, 17.72 / 17.65, 10.22 / 10.15 ms).
 
-| GPUs | v5.7.0 step | Final step | Speedup | v5.7.0 grind | Final grind | Jobs |
-|---|---|---|---|---|---|---|
-| 1 | 76.74 ms | **61.88 ms** | **1.24×** | 0.3973 | 0.3201 | 606017 |
-| 4 (both `rdma_mpi`) | 23.10 ms | **17.72 ms** | **1.30×** | 0.1184 | 0.0913 | 606018 |
-| 8 (v5.7.0 default vs final) | 21.94 ms | **10.22 ms** | **2.15×** | 0.1129 | 0.0527 | 605963 / 606019 |
+| GPUs | v5.7.0 step | P3 step | Final step | Speedup | v5.7.0 grind | Final grind | Jobs |
+|---|---|---|---|---|---|---|---|
+| 1 | 76.74 ms | 61.88 ms | **60.38 ms** | **1.27×** | 0.3973 | 0.3123 | 606017; 621788 |
+| 4 (all `rdma_mpi`) | 23.10 ms | 17.72 ms | **17.03 ms** | **1.35×** | 0.1184 | 0.0876 | 606018; 622305 |
+| 8 (v5.7.0 default, then `rdma_mpi`) | 21.94 ms | 10.22 ms | **9.75 ms** | **2.23×** | 0.1129 | 0.0502 | 605963 / 606019; 622306 |
 
 ![Same-node step times](docs/fig/scaling.png)
 
-Strong-scaling efficiency of the final build (step time): 87 % at 4 GPUs and 76 % at 8 GPUs. v5.7.0 at its default
+Strong-scaling efficiency of the final build (step time): 89 % at 4 GPUs and 77 % at 8 GPUs. v5.7.0 at its default
 settings reaches 44 % at 8 GPUs.
 
-The 4-GPU row isolates the source changes. The 1-GPU final run was also launched with the start-up fix (T0.4,
-`nicbind.sh`), which changes wall time, not step time. The 8-GPU row compares v5.7.0 at its defaults with the final
+The 4-GPU row isolates the source changes. The 1-GPU P3 run was also launched with the start-up fix (T0.4,
+`nicbind.sh`), which changes wall time, not step time; the P3-vs-P4 A/B runs used default UCX in both arms. The 8-GPU row compares v5.7.0 at its defaults with the final
 configuration (`rdma_mpi=T`); the like-for-like 8-GPU v5.7.0 `rdma_mpi` arm of the plan was not run (an agent bug,
 AGENT_LOG #14, used the budget). As a cross-job reference only, v5.7.0 with `rdma_mpi` measured 16.5 ms per step at
-8 GPUs in the profiling phase (nsys, 10 steps; `docs/profiling-baseline.md`). The 4- and 8-GPU final runs used default
-UCX, not `nicbind.sh`. Nothing changes the physics, the numerics, the grid, the step count or FP64.
+8 GPUs in the profiling phase (nsys, 10 steps; `docs/profiling-baseline.md`). The 4- and 8-GPU runs used default UCX, not
+`nicbind.sh`. Nothing changes the physics, the numerics, the grid, the step count or FP64.
 
 ## 2. Rules we held ourselves to
 - SC26 spirit: same equations, schemes, grid, step count and precision. No loosened tolerances, no changed outputs.
@@ -71,6 +73,7 @@ Ladder on 1 GPU (rungs measured in sequence; each bitwise):
 | K4b Riemann unity build (13-module slice; the final 10-module slice: 70.00 ms, 602531) | 70.42 ms | 0.3632 | 602474 |
 | K2 WENO register cap | 62.99 ms | 0.3255 | 602559 |
 | P3 async per-stage kernels (same-node A/B 62.87 → 61.79) | 61.79 ms | 0.3201 | 604561 |
+| P4 transverse-interior reconstruction (same-node A/B 61.90 → 60.38) | 60.38 ms | 0.3123 | 621788 |
 
 ![Ladder at 1 GPU](docs/fig/ladder_1g.png)
 
@@ -105,6 +108,21 @@ registers to 206 / 192 (`results/k2/kcheck_vector_length.txt`), so it could not 
   compilers and the OpenMP path generate exactly the old code.
 - Same-node A/B: 4 GPUs `rdma_mpi` 18.81 → 17.71 ms (−5.8 %, every rank); 1 GPU −1.7 %.
 
+**P4 — reconstruct only what the Riemann solver reads** (`0006`, `m_rhs.fpp` + `m_weno.fpp`, +29/−14). After P3,
+WENO5 and its input pack were 45 % of kernel time (ncu 606033). Each sweep reconstructed the full transverse ghost range
+(4 cells on each side), but the only reader of the reconstructed states is the Riemann solver, and it reads them at
+transverse-interior cells only.
+
+- An audit of every consumer in `simulation/*.fpp` found no other reader. The viscous, capillary and
+  viscous-derivative reconstructions have their own ranges and are untouched.
+- Change: the transverse ranges become the interior (`idwint`), and the pack copies only what the WENO, monotonicity
+  and THINC kernels read (their range ± `weno_polyn` along the sweep). Every value that is read is computed by the same
+  code from the same inputs.
+- The skipped share grows as boxes shrink: 7.5 % of each sweep at 201³ per GPU, 14 % at 101³. This is why the gain
+  grows with GPU count.
+- Same-node A/B against P3: 1 GPU 61.90 → 60.38 ms (**−2.5 %**, 621788, 2 rounds); 4 GPUs 17.65 → 17.03 ms
+  (**−3.5 %**, 622305); 8 GPUs 10.15 → 9.75 ms (**−4.0 %**, 622306). Bitwise in all 8 runs.
+
 **`rdma_mpi=T`** (MFC input parameter, disclosed): halos go GPU→GPU over NVLink (UCX `cuda_ipc`, 292 GB/s measured)
 instead of through host memory. Bitwise; −27 % per step at 4 GPUs (sc26 build, 602770 host-staged vs 604560
 `rdma_mpi`, different nodes).
@@ -131,8 +149,10 @@ configuration together with `rdma_mpi`.
 
 ## 7. Correctness
 - Every benchmark run: final state bitwise identical to pinned v5.7.0 (`verify.json` per run).
-- **Full `./mfc.sh test` on the final series** (all 752 tests that `./mfc.sh test -l` lists, 8 shards, jobs 606006
-  and 606008–606014; generic build plus the 6 chemistry variants; 713 ran, MFC skips the rest for this build): **690 pass, 23 fail, 0 new failures** (`verify.py --test-summary`: PASS).
+- **Full `./mfc.sh test` on the final series (P4)** (all 752 tests that `./mfc.sh test -l` lists, 8 shards, jobs
+  622349–622356; generic build plus the 6 chemistry variants; 713 ran, MFC skips the rest for this build): **690 pass,
+  23 fail, 0 new failures** (`verify.py --test-summary`: PASS). The P3 series gave the same result with the same 23
+  failures (606006, 606008–606014).
 - All 23 failures fail **identically on unmodified v5.7.0** in this environment: each was re-run on the pinned build
   (606331 for the 14 found by the full suite; earlier rechecks for the other 9). The 14 were re-run on the final
   build too (606332), with identical errors. They are 17 `model_eqns=3` / viscous IBM cases (errors from just above
@@ -147,10 +167,11 @@ configuration together with `rdma_mpi`.
   this also removed a wrongly "known" failure).
 
 ## 8. Why it runs at this speed now
-Per-kernel ncu, same settings before and after (600146 vs 606033; clocks locked at 1.48 GHz, so durations are
-inflated but ratios hold; 4 steps, kernels 140–210):
+Per-kernel ncu, same settings before and after (600146 vs 606033, the P3 series; clocks locked at 1.48 GHz, so
+durations are inflated but ratios hold; 4 steps, kernels 140–210). P4 was not profiled with ncu: it changes the
+amount of WENO work, not how a kernel runs.
 
-| Kernel (per call) | v5.7.0 | Final | Why |
+| Kernel (per call) | v5.7.0 | P3 | Why |
 |---|---|---|---|
 | WENO5 reconstruction | 3.39–3.49 ms; 188–196 regs; 12 % warps active; FP64 pipe 31 % | **2.34–2.56 ms**; 128 regs; 24 %; FP64 pipe 42–46 % | K2: occupancy doubled; the spills (3.4–4.8·10⁷ local ops) hit L1 |
 | HLLC | 2.13–2.48 ms; FP64 pipe 9–10 % | **1.57–1.62 ms**; FP64 pipe 13 % | K4b: helpers inlined; local-load instructions in SASS 178 → 76 |
@@ -160,13 +181,15 @@ inflated but ratios hold; 4 steps, kernels 140–210):
 ![Kernel time by role](docs/fig/kernels_1g.png)
 
 WENO5 is still latency-bound below the FP64 roof, and the copy-like kernels reach a third of HBM bandwidth because the
-SMs are busy with index arithmetic, not memory. Both are the next single-GPU targets.
+SMs are busy with index arithmetic, not memory. Both are the next single-GPU targets. P4 then removed the WENO
+work at transverse ghost cells (§5).
 
 - After P3 the host gaps inside the reconstruction and Riemann ranges are 0.002–0.012 ms per stage (4-GPU trace
   604667, rank 0), so on the compute side kernel time is the step time. Kernel time (sc26 profile 602705) is in WENO5 (29 %), HLLC (21 %), the
   WENO input pack (10 %; removed by NTHU's open PR #2092, not ours to claim) and bandwidth-bound copies (40 %).
-- 8 GPUs: 10.2 ms per step, 76 % strong-scaling efficiency; the halo exchange takes 0.36–0.72 ms per stage depending on the
-  rank (606019), as 6 sequential, blocking `MPI_Sendrecv`s with no compute overlap.
+- 8 GPUs (P3): 10.2 ms per step, 76 % strong-scaling efficiency; the halo exchange takes 0.36–0.72 ms per stage
+  depending on the rank (606019), as 6 sequential, blocking `MPI_Sendrecv`s with no compute overlap. P4: 9.75 ms, 77 %
+  (622306).
 - Wall time of a 30-step run is mostly fixed cost, which no per-step optimization touches: at 4 GPUs 15.9 s of wall
   for 0.6 s of stepping (606018), of which `MPI_Init` + `MPI_Finalize` are ≈7.2 s (bare timer 602722); at 8 GPUs
   19.6 s of wall for 0.3 s of stepping (606019). `nicbind.sh` removes 3.8 s at 4 GPUs (606032); at 8 GPUs it is
@@ -174,16 +197,17 @@ SMs are busy with index arithmetic, not memory. Both are the next single-GPU tar
 
 ## 9. What we would do next
 1. Overlap the halo exchange with interior compute (now possible: P3 removed the host syncs that would have eaten
-   the overlap).
+   the overlap). After P4 the reconstruction no longer reads corner ghosts on the inviscid path, so the exchange could post all faces at
+   once and wait per sweep direction.
 2. Fuse or skip the bandwidth-bound copies (40 % of kernel time), e.g. extend the #2087 pattern.
-3. Submit P1/K4b/P3 upstream as three small PRs (K2 is a flag; K4b a CMake change).
+3. Submit P1/K4b/P3/P4 upstream as small PRs (K2 is a flag; K4b a CMake change).
 
 ## 10. Reproduce
 On nano4, from a clone of this repository mirrored to `/work/u1131128/coding-adv1`:
 ```
-bash harness/reproduce.sh build    # v5.7.0 + patches/opt/0001-0005, case-opt + generic builds
+bash harness/reproduce.sh build    # v5.7.0 + patches/opt/0001-0006, case-opt + generic builds
 bash harness/reproduce.sh run      # the final 1/4/8-GPU same-node sets (harness/specs/final_*g.tsv)
 bash harness/reproduce.sh verify   # bitwise gate + median step per run
 ```
-The patch series applied to v5.7.0 gives a tree identical to the one measured here (checked: empty diff against
-branch `p3`). Multi-GPU runs with `rdma_mpi` add `WRAP=$ROOT/harness/nicbind.sh` for the start-up fix (T0.4).
+The patch series applied to v5.7.0 gives a tree identical to the one measured here (checked for 0001–0005: empty
+diff against branch `p3`; 0006 is `git format-patch p3..p4`). Multi-GPU runs with `rdma_mpi` add `WRAP=$ROOT/harness/nicbind.sh` for the start-up fix (T0.4).

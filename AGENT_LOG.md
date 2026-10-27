@@ -38,3 +38,11 @@
   stdin and swallowed the remaining rows, so each final set ran only its first (baseline) row. Cost: ~41 GPU-min, of
   which the baseline rows are still valid. Fix: run the body with `< /dev/null`. Lesson: never let MPI launchers
   inherit a loop's stdin.
+
+## 15. A chained speedup quoted from rounded inputs (2026-10-27)
+- Before computing it from the raw `steps.tsv` files, the agent told the user the 8-GPU speedup after P4 would be
+  2.24×. Products of rounded medians drift: the exact value is 21.939 / 10.222 × 10.150 / 9.747 = 2.2350, so 2.23×.
+  Caught when the figure script (which reads raw files) disagreed with the report table. Lesson: derived numbers come
+  from the raw files in one script, never from rounded table entries.
+- Budget for P4 (all user-approved): 1-GPU A/B 5 GPU-min (621788), 4/8-GPU A/B 77 GPU-min (622305/6, estimate 70),
+  full suite 138 GPU-min (622349–622356, estimate 124).
