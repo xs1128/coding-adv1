@@ -77,6 +77,16 @@ The official MFC table lists 0.38 ns for H100 SXM. That number uses a different 
 - *Effect (same node, A/B).* 4 GPUs with `rdma_mpi`: step 18.81 → 17.71 ms (−5.8 %, every rank). 1 GPU: −1.7 %.
 - *Not covered.* NVHPC unified-memory builds (`--unified`, GH200) are untested with this change.
 
+**P4: reconstruct only the cells the Riemann solver reads** (`patches/opt/0006`, 2 files, +29/−14).
+- *Evidence.* WENO plus its input pack were 45 % of kernel time after P3 (ncu 606033). Every sweep reconstructed the
+  full transverse ghost range, 4 cells on each side, but the only reader of the reconstructed states is the Riemann
+  solver, at transverse-interior cells (`irx/iry/irz`). A consumer audit of `simulation/*.fpp` found no other reader.
+- *Change.* Transverse reconstruction ranges `idwbuff` → `idwint`; the pack copies only the cells the WENO,
+  monotonicity and THINC kernels read. The viscous, capillary and viscous-derivative reconstructions keep their ranges.
+- *Effect (same node, A/B vs P3, `rdma_mpi` on multi-GPU).* 1 GPU −2.5 % (621788), 4 GPUs −3.5 % (622305), 8 GPUs
+  −4.0 % (622306). Skipped work grows as boxes shrink: 7.5 % of each sweep at 201³ per GPU, 14 % at 101³.
+- *Correctness.* Bitwise in all 8 runs; full `./mfc.sh test` pending (622349–622356).
+
 **Rejected, with evidence.**
 - NVHPC 25.9: no gain, not bitwise.
 - Compile-time `dir_idx` in HLLC: the SASS got worse (255 registers).
@@ -132,6 +142,6 @@ The official MFC table lists 0.38 ns for H100 SXM. That number uses a different 
 ## Next
 1. **8 GPUs, code-only arm:** v5.7.0 with `rdma_mpi` on the node of 606019 (≈32 GPU-min, needs the user's OK); the
    8-GPU row above mixes code and configuration. `nicbind.sh` at 8 GPUs is also unmeasured.
-2. **Transverse-interior WENO:** skip the reconstructions at transverse ghost cells that HLLC never reads (−9 % WENO
-   work at 1 GPU, −19 % at 8); `docs/research-halo-overlap.md` option 4b.
+2. **Faces-only, all-dims-at-once halo exchange:** after P4 no reconstruction reads corner ghosts on the inviscid path
+   (`docs/research-halo-overlap.md` option 4b, second half).
 3. **Halo/compute overlap** and fusing the copy-like kernels (`report.md` §9).
