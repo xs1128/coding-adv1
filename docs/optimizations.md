@@ -130,6 +130,8 @@ The official MFC table lists 0.38 ns for H100 SXM. That number uses a different 
 - The baseline has 2 reps and no per-step data; the final comparison needs a same-node baseline with ≥5 reps.
 
 ## Next
-1. **8-GPU confirmation, same node:** baseline vs final, host-staged vs `rdma_mpi`, ≥5 reps. Needs the user's OK.
-2. **Full `./mfc.sh test`** of the final series (SC26 requirement for `src/` changes).
-3. **Report:** scaling plots, roofline and achieved HBM bandwidth per kernel, `harness/run_all.sh` from a clean tree.
+1. **8 GPUs, code-only arm:** v5.7.0 with `rdma_mpi` on the node of 606019 (≈32 GPU-min, needs the user's OK); the
+   8-GPU row above mixes code and configuration. `nicbind.sh` at 8 GPUs is also unmeasured.
+2. **Transverse-interior WENO:** skip the reconstructions at transverse ghost cells that HLLC never reads (−9 % WENO
+   work at 1 GPU, −19 % at 8); `docs/research-halo-overlap.md` option 4b.
+3. **Halo/compute overlap** and fusing the copy-like kernels (`report.md` §9).

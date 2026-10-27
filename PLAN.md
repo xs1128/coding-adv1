@@ -91,9 +91,9 @@ Each rung gets an A/B against the previous rung and must pass verify:
 - [ ] If source changes exist, prepare a clean diff/PR description (SC26 requires public PR + CI)
 
 ## Step 7 — deliverables
-- [ ] `report.md` → PDF (reuse hw2 `build_report.py`/`report_figs.py`): Environment / Method / Baseline / Ladder / Profiling / Scaling / Negative results / Reproduction
-- [ ] `AGENT_LOG.md` (prompts, task split, table of agent mistakes, code to defend)
-- [ ] `harness/run_all.sh` reproduces every number from a clean tree
+- [x] `report.md` → PDF (reuse hw2 `build_report.py`/`report_figs.py`): Environment / Method / Baseline / Ladder / Profiling / Scaling / Negative results / Reproduction
+- [x] `AGENT_LOG.md` (prompts, task split, table of agent mistakes, code to defend)
+- [x] `harness/reproduce.sh` reproduces the final numbers from a clean tree (`run_all.sh` covers the ladder)
 
 ## Rules carried over from hw1–hw3
 - Benchmark only in Slurm jobs, never on the login node; login nodes rotate and have different GPUs
