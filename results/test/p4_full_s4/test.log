@@ -1,0 +1,236 @@
+mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn002 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 2
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | 
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Build | syscheck and pre_process
+
+
+ Build | syscheck and simulation
+
+
+
+ Test pre_process and simulation | from C06849AD to 549393AA (94 tests)
+  
+     Progress      Test Name                                        Time(s)   UUID
+  
+     (  1/ 94)    3D -> 1 Fluid(s) -> riemann_solver=2 -> avg_sta...   19.28    AB0BE4E4
+     (  2/ 94)    3D -> 1 Fluid(s) -> riemann_solver=2 -> mixture...   19.29    C06849AD
+     (  3/ 94)    3D -> 1 Fluid(s) -> riemann_solver=2 -> avg_sta...   24.18    28A7D6F4
+     (  4/ 94)    3D -> 1 Fluid(s) -> riemann_solver=2 -> wave_sp...   24.24    C36F18FB
+  
+     ✗ FAILED: 3D -> 1 Fluid(s) -> riemann_solver=2 -> model_e...
+       UUID: 6241177B
+       Attempts: 1
+       Error: Test tests/6241177B: 3D -> 1 Fluid(s) -> riemann_solver=2 -> model_eqns=3: Variable n°25 (1-indexed) in D/cons.6.00.000050.dat is not within tolerance:
+  - Candidate:   1.00000000000298
+  - Golden:      0.99999999999981
+  - Error:       abs: 3.17E-12, rel: 3.17E-12
+  - Tolerance:   abs: 1.00E-12, rel: 1.00E-12
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.7.00.000050.dat
+ - Variable n°54
+ - Candidate: 0.0
+ - Golden: 1.53296467663035
+ - Absolute Error: 1.53E+00
+ - Relative Error: 1.00E+00
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.7.00.000050.dat
+ - Variable n°10625
+ - Candidate: 1.2499997032963
+ - Golden: 0.25001386378671
+ - Relative Error: 4.00E+00
+ - Absolute Error: 1.00E+00
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+     (  5/ 94)    3D -> 1 Fluid(s) -> riemann_solver=1 -> low_Mach=1   26.74    4D88A48D
+     (  6/ 94)    3D -> 1 Fluid(s) -> riemann_solver=2 -> low_Mach=2   16.52    0853FBD1
+     (  7/ 94)    3D -> 1 Fluid(s) -> riemann_solver=2 -> low_Mach=1   18.51    07C1FECC
+     (  8/ 94)    3D -> 1 Fluid(s) -> eos=ideal_gas                    18.67    385F6582
+     (  9/ 94)    3D -> 1 Fluid(s) -> IBM -> Sphere -> slip            19.34    28D037A7
+     ( 10/ 94)    3D -> 1 Fluid(s) -> IBM -> Cuboid -> slip            20.42    43A1D3C6
+     ( 11/ 94)    3D -> 1 Fluid(s) -> IBM -> Cylinder -> slip          19.44    5173E637
+     ( 12/ 94)    3D -> 1 Fluid(s) -> IBM -> Sphere                    18.28    34A93376
+     ( 13/ 94)    3D -> 1 Fluid(s) -> IBM -> Cuboid                    17.47    07D9EBD1
+     ( 14/ 94)    3D -> 1 Fluid(s) -> IBM -> Cylinder                  24.51    D1C97CD1
+     ( 15/ 94)    3D -> 1 Fluid(s) -> IBM -> Particle Cloud -> He...   23.64    49893269
+     ( 16/ 94)    3D -> 1 Fluid(s) -> IGR -> igr_order=3 -> Jacobi     28.42    CEAF553A
+     ( 17/ 94)    3D -> 1 Fluid(s) -> IGR -> igr_order=5 -> Jacobi     28.38    0045D9F8
+     ( 18/ 94)    3D -> 1 Fluid(s) -> Viscous -> IBM -> Cuboid ->...   18.57    32DD0363
+     ( 19/ 94)    3D -> 1 Fluid(s) -> Viscous -> IBM -> Sphere ->...   21.17    A1B2B963
+     ( 20/ 94)    3D -> 1 Fluid(s) -> Viscous -> IBM -> Cylinder ...   17.12    0387594F
+     ( 21/ 94)    3D -> 1 Fluid(s) -> Viscous -> IBM -> Sphere         19.34    A69D2D28
+     ( 22/ 94)    3D -> 1 Fluid(s) -> Viscous -> IBM -> Cuboid         19.77    4C64244B
+     ( 23/ 94)    3D -> 1 Fluid(s) -> Viscous -> IBM -> Cylinder       19.38    221C9980
+     ( 24/ 94)    3D -> 1 Fluid(s) -> Viscous -> IGR -> igr_order...   19.05    A57E30FE
+     ( 25/ 94)    3D -> 1 Fluid(s) -> Viscous -> IGR -> igr_order...   18.34    106C0BE6
+     ( 26/ 94)    3D -> 1 Fluid(s) -> Viscous                          21.28    0A022883
+     ( 27/ 94)    3D -> 1 Fluid(s) -> Viscous -> weno_Re_flux          20.63    64E032D7
+     ( 28/ 94)    3D -> 1 Fluid(s) -> Viscous -> riemann_solver=5      17.44    6811629E
+     ( 29/ 94)    3D -> 1 Fluid(s) -> Viscous -> weno_Re_flux -> ...   18.56    7DEA8C54
+  
+     ✗ FAILED: 3D -> 2 Fluid(s) -> capillary=T -> model_eqns=3
+       UUID: AA9C637F
+       Attempts: 1
+       Error: Test tests/AA9C637F: 3D -> 2 Fluid(s) -> capillary=T -> model_eqns=3: Variable n°1 (1-indexed) in D/cons.10.00.000050.dat is not within tolerance:
+  - Candidate:   0.04700278934173
+  - Golden:      0.24632973365379
+  - Error:       abs: 1.99E-01, rel: 8.09E-01
+  - Tolerance:   abs: 1.00E-12, rel: 1.00E-12
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.9.00.000050.dat
+ - Variable n°1
+ - Candidate: 0.42302510407556
+ - Golden: 2.21696760288416
+ - Absolute Error: 1.79E+00
+ - Relative Error: 8.09E-01
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.10.00.000050.dat
+ - Variable n°22
+ - Candidate: 0.03755499301456
+ - Golden: 0.5341015460062
+ - Relative Error: 9.30E-01
+ - Absolute Error: 4.97E-01
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+     ( 30/ 94)    3D -> 2 Fluid(s) -> riemann_solver=1 -> mixture...   24.14    C4A2FAA3
+     ( 31/ 94)    3D -> 2 Fluid(s) -> riemann_solver=1 -> avg_sta...   18.00    851F7AE2
+     ( 32/ 94)    3D -> 2 Fluid(s) -> riemann_solver=1 -> wave_sp...   20.36    BD8004FF
+     ( 33/ 94)    3D -> 2 Fluid(s) -> riemann_solver=1 -> mpp_lim      23.32    758D0268
+     ( 34/ 94)    3D -> 2 Fluid(s) -> riemann_solver=5 -> mixture...   21.04    4AADC848
+     ( 35/ 94)    3D -> 2 Fluid(s) -> riemann_solver=2 -> mixture...   20.56    AACF1BC5
+     ( 36/ 94)    3D -> 2 Fluid(s) -> riemann_solver=2 -> avg_sta...   18.51    B33E256A
+     ( 37/ 94)    3D -> 2 Fluid(s) -> riemann_solver=2 -> wave_sp...   17.72    B8F5F1C8
+  
+     ✗ FAILED: 3D -> 2 Fluid(s) -> riemann_solver=2 -> model_e...
+       UUID: F0E6771E
+       Attempts: 1
+       Error: Test tests/F0E6771E: 3D -> 2 Fluid(s) -> riemann_solver=2 -> model_eqns=3: Variable n°1 (1-indexed) in D/cons.10.00.000050.dat is not within tolerance:
+  - Candidate:   0.04742906935491
+  - Golden:      0.24947823675474
+  - Error:       abs: 2.02E-01, rel: 8.10E-01
+  - Tolerance:   abs: 1.00E-12, rel: 1.00E-12
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.9.00.000050.dat
+ - Variable n°1
+ - Candidate: 0.42686162419418
+ - Golden: 2.24530413079269
+ - Absolute Error: 1.82E+00
+ - Relative Error: 8.10E-01
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.9.00.000050.dat
+ - Variable n°1
+ - Candidate: 0.42686162419418
+ - Golden: 2.24530413079269
+ - Relative Error: 8.10E-01
+ - Absolute Error: 1.82E+00
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+     ( 38/ 94)    3D -> 2 Fluid(s) -> riemann_solver=2 -> alt_sou...   18.23    7C8F1BA9
+     ( 39/ 94)    3D -> 2 Fluid(s) -> riemann_solver=2 -> mpp_lim      18.21    A0B82851
+     ( 40/ 94)    3D -> 2 Fluid(s) -> riemann_solver=1 -> u-inter...   19.30    C7B686C0
+     ( 41/ 94)    3D -> 2 Fluid(s) -> riemann_solver=1 -> u-inter...   20.16    A26B7E00
+     ( 42/ 94)    3D -> 2 Fluid(s) -> riemann_solver=1 -> low_Mach=1   19.15    F9E0BE95
+     ( 43/ 94)    3D -> 2 Fluid(s) -> riemann_solver=2 -> low_Mach=1   19.71    F5F06EA3
+     ( 44/ 94)    3D -> 2 Fluid(s) -> riemann_solver=2 -> low_Mach=2   16.87    C462AA3E
+     ( 45/ 94)    3D -> 2 Fluid(s) -> IBM -> Sphere -> slip            17.68    7DCA9229
+     ( 46/ 94)    3D -> 2 Fluid(s) -> IBM -> Cuboid -> slip            18.92    1E62093F
+     ( 47/ 94)    3D -> 2 Fluid(s) -> IBM -> Cylinder -> slip          17.92    6ED50013
+     ( 48/ 94)    3D -> 2 Fluid(s) -> IBM -> Sphere                    19.73    E1199F96
+     ( 49/ 94)    3D -> 2 Fluid(s) -> IBM -> Cuboid                    18.48    4B8105EA
+     ( 50/ 94)    3D -> 2 Fluid(s) -> IBM -> Cylinder                  17.12    4C3164AE
+     ( 51/ 94)    3D -> 2 Fluid(s) -> IBM -> Particle Cloud -> He...   19.99    135F548B
+     ( 52/ 94)    3D -> 2 Fluid(s) -> IGR -> igr_order=3 -> Jacobi     17.84    D7885E17
+     ( 53/ 94)    3D -> 2 Fluid(s) -> IGR -> igr_order=5 -> Jacobi     17.91    9F4E47F1
+     ( 54/ 94)    3D -> 2 Fluid(s) -> weno_order=5 -> int_comp=1       22.31    516A2067
+     ( 55/ 94)    3D -> 2 Fluid(s) -> weno_order=5 -> int_comp=2       23.36    4F3722DB
+     ( 56/ 94)    3D -> 2 Fluid(s) -> weno_order=5 -> surface_ten...   16.88    1ED671BA
+     ( 57/ 94)    3D -> 2 Fluid(s) -> muscl_order=2 -> int_comp=1...   19.77    A089CE54
+     ( 58/ 94)    3D -> 2 Fluid(s) -> muscl_order=2 -> int_comp=2...   19.55    4C4F339C
+     ( 59/ 94)    3D -> 2 Fluid(s) -> Viscous -> IBM -> Sphere ->...   18.81    8339878C
+     ( 60/ 94)    3D -> 2 Fluid(s) -> Viscous -> IBM -> Cuboid ->...   17.15    408BF558
+     ( 61/ 94)    3D -> 2 Fluid(s) -> Viscous -> IBM -> Cylinder ...   18.44    BFAA7587
+     ( 62/ 94)    3D -> 2 Fluid(s) -> Viscous -> IBM -> Sphere         18.95    431554F7
+     ( 63/ 94)    3D -> 2 Fluid(s) -> Viscous -> IBM -> Cuboid         18.74    18B832DD
+     ( 64/ 94)    3D -> 2 Fluid(s) -> Viscous -> IBM -> Cylinder       18.38    0BD42F35
+     ( 65/ 94)    3D -> 2 Fluid(s) -> Viscous -> IGR -> igr_order...   18.51    F655C56A
+     ( 66/ 94)    3D -> 2 Fluid(s) -> Viscous -> IGR -> igr_order...   18.55    BF8FDC2A
+     ( 67/ 94)    3D -> 2 Fluid(s) -> Viscous                          18.00    1C0780C8
+     ( 68/ 94)    3D -> 2 Fluid(s) -> Viscous -> weno_Re_flux          16.57    2060F55A
+     ( 69/ 94)    3D -> 2 Fluid(s) -> Viscous -> riemann_solver=5      17.11    AD1A50B7
+     ( 70/ 94)    3D -> 2 Fluid(s) -> Viscous -> weno_Re_flux -> ...   17.95    B7250A5B
+     ( 71/ 94)    3D -> Cylindrical -> model_eqns=2                    18.41    301B9153
+     ( 72/ 94)    3D -> Cylindrical -> cfl_adap_dt=T                   19.49    128954AD
+     ( 73/ 94)    3D -> Cylindrical -> Viscous                         19.28    07C33719
+     ( 74/ 94)    3D -> Cylindrical -> Viscous -> weno_Re_flux         22.84    939D6718
+     ( 75/ 94)    3D -> Cylindrical -> Viscous -> weno_Re_flux ->...   20.73    09623DE3
+     ( 76/ 94)    3D -> Lagrange Bubbles -> One-way Coupling           18.18    CE7B0BC7
+     ( 77/ 94)    3D -> Lagrange Bubbles -> Two-way Coupling           17.96    016C1B8B
+     ( 78/ 94)    3D -> Lagrange Bubbles -> Two-way Coupling -> T...   17.91    4C751DAF
+     ( 79/ 94)    3D -> Lagrange Bubbles -> Two-way Coupling -> I...   19.44    80CC6F73
+     ( 80/ 94)    3D -> Lagrange Bubbles -> Two-way Coupling -> I...   17.95    A04A396A
+     ( 81/ 94)    3D -> Lagrange Bubbles -> Two-way Coupling -> I...   21.44    4CA9CAC0
+     ( 82/ 94)    3D -> Lagrange Bubbles -> Two-way Coupling -> I...   18.49    98ED56C3
+     ( 83/ 94)    3D -> Lagrange Bubbles -> Two-way Coupling -> I...   17.27    404D1458
+     ( 84/ 94)    3D -> Lagrange Bubbles -> Two-way Coupling -> I...   16.75    F628CCC9
+     ( 85/ 94)    3D -> Lagrange Bubbles -> Two-way Coupling -> I...   18.18    39AB5442
+     ( 86/ 94)    3D -> Lagrange Bubbles -> Two-way Coupling -> I...   19.93    4D831C2F
+     ( 87/ 94)    3D -> Lagrange Bubbles -> Two-way Coupling -> I...   17.90    9A23C212
+     ( 88/ 94)    3D -> Lagrange Bubbles -> One-way Coupling -> a...   16.30    12ECE133
+     ( 89/ 94)    3D -> Lagrange Bubbles -> Two-way Coupling -> a...   16.50    DFF6E349
+     ( 90/ 94)    3D -> Lagrange Bubbles -> Two-way Coupling -> a...   16.52    2F7C33A2
+     ( 91/ 94)    3D -> Lagrange Bubbles -> Two-way Coupling -> a...   20.30    549393AA
+
+  
+
+╭──────────────────────────────── Test Summary ────────────────────────────────╮
+│                                                                              │
+│  ✗ 3 TESTS FAILED                                                            │
+│                                                                              │
+│      91 passed                                                               │
+│       3 failed                                                               │
+│     662 skipped                                                              │
+│    ────────────                                                              │
+│     756 total                                                                │
+│                                                                              │
+│    Time: 15m 29.8s                                                           │
+│                                                                              │
+│    Failed Tests:                                                             │
+│      • 3D -> 1 Fluid(s) -> riemann_solver=2 ...                              │
+│        UUID: 6241177B                                                        │
+│        (tolerance mismatch)                                                  │
+│      • 3D -> 2 Fluid(s) -> capillary=T -> mo...                              │
+│        UUID: AA9C637F                                                        │
+│        (tolerance mismatch)                                                  │
+│      • 3D -> 2 Fluid(s) -> riemann_solver=2 ...                              │
+│        UUID: F0E6771E                                                        │
+│        (tolerance mismatch)                                                  │
+│                                                                              │
+│    Next Steps:                                                               │
+│      • Run with --generate to update golden files (if changes are            │
+│  intentional)                                                                │
+│      • Check individual test output in tests/<UUID>/                         │
+│      • Run specific test: ./mfc.sh test --only <UUID>                        │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+
+mfc: ERROR > main.py finished with a 3 exit code.
+mfc: (venv) Exiting the Python virtual environment.

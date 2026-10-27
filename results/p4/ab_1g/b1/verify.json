@@ -10,6 +10,48 @@
    "nonfinite": 0,
    "step": 30,
    "reason": null
+  },
+  "suite": {
+   "status": "PASS",
+   "summaries": [
+    "results/test/p4_full_s0/test_summary.json",
+    "results/test/p4_full_s1/test_summary.json",
+    "results/test/p4_full_s2/test_summary.json",
+    "results/test/p4_full_s3/test_summary.json",
+    "results/test/p4_full_s4/test_summary.json",
+    "results/test/p4_full_s5/test_summary.json",
+    "results/test/p4_full_s6/test_summary.json",
+    "results/test/p4_full_s7/test_summary.json"
+   ],
+   "passed": 690,
+   "failed": 23,
+   "new_failures": [],
+   "known_failures_ignored": [
+    "043B535A",
+    "0E240AD7",
+    "1843DA80",
+    "2BA0324F",
+    "2F35A1FE",
+    "3859AF63",
+    "4F2F4ACE",
+    "5F3BB2E0",
+    "61AF4509",
+    "6241177B",
+    "6AE3FB4E",
+    "7DCE34B4",
+    "7F70E665",
+    "8D8F6424",
+    "9A00542C",
+    "9E2CA336",
+    "AA9C637F",
+    "B0CE19C5",
+    "B89B8C70",
+    "BA473AFF",
+    "E8C7E354",
+    "F0E6771E",
+    "FD891191"
+   ],
+   "problems": []
   }
  },
  "status": "PASS"
