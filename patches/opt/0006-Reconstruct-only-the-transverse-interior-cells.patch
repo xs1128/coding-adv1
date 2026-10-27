@@ -1,0 +1,133 @@
+From 6a2aebd41ce02ddd51322b63da665fcd8a3bd85f Mon Sep 17 00:00:00 2001
+From: u1131128 <ultimatecrusher28@gmail.com>
+Date: Tue, 27 Oct 2026 19:10:57 +0800
+Subject: [PATCH] Reconstruct only the transverse-interior cells the Riemann
+ solver reads
+
+s_reconstruct_cell_boundary_values reconstructed every sweep over the full
+transverse ghost range (idwbuff), but the only reader of qL/qR_rs*_vf is the
+Riemann solver, which reads them at transverse-interior cells (irx, iry, irz:
+0..m/n/p across the sweep). The transverse ranges are now idwint; the range
+along the sweep is unchanged. s_pack_weno_input_arr packs only the cells the
+WENO, monotonicity and THINC kernels read: their range, widened by weno_polyn
+along the sweep.
+
+Cells reconstructed per sweep drop by 1 - ((n+1)(p+1))/((n+2b+1)(p+2b+1)),
+b = buff_size: 7.5 % at 201^3 per GPU and 14 % at 101^3. Values at every
+cell that is read are computed by the same code from the same inputs, so
+results are bitwise identical. The viscous, capillary and viscous-derivative
+reconstructions keep their own ranges.
+
+Precheck: formatting, spelling, source lint pass; the toolchain lint fails
+only on test_format_tar_zst (no zstd on this host), as before this change.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ src/simulation/m_rhs.fpp  | 17 +++++++++--------
+ src/simulation/m_weno.fpp | 26 ++++++++++++++++++++------
+ 2 files changed, 29 insertions(+), 14 deletions(-)
+
+diff --git a/src/simulation/m_rhs.fpp b/src/simulation/m_rhs.fpp
+index 3ce385a..081cdb6 100644
+--- a/src/simulation/m_rhs.fpp
++++ b/src/simulation/m_rhs.fpp
+@@ -2011,17 +2011,18 @@ contains
+ 
+         #:for SCHEME, TYPE in [('weno','recon_type_weno'), ('muscl','recon_type_muscl')]
+             if (recon_type == ${TYPE}$) then
+-                ! Reconstruction in s1-direction
++                ! Reconstruction in s1-direction. Only the Riemann solver reads these states, at transverse-interior cells
++                ! (irx, iry, irz), so the transverse ranges are the interior.
+                 if (norm_dir == 1) then
+-                    is1 = idwbuff(1); is2 = idwbuff(2); is3 = idwbuff(3)
++                    is1 = idwbuff(1); is2 = idwint(2); is3 = idwint(3)
+                     recon_dir = 1; is1%beg = is1%beg + ${SCHEME}$_polyn
+                     is1%end = is1%end - ${SCHEME}$_polyn
+                 else if (norm_dir == 2) then
+-                    is1 = idwbuff(2); is2 = idwbuff(1); is3 = idwbuff(3)
++                    is1 = idwbuff(2); is2 = idwint(1); is3 = idwint(3)
+                     recon_dir = 2; is1%beg = is1%beg + ${SCHEME}$_polyn
+                     is1%end = is1%end - ${SCHEME}$_polyn
+                 else
+-                    is1 = idwbuff(3); is2 = idwbuff(2); is3 = idwbuff(1)
++                    is1 = idwbuff(3); is2 = idwint(2); is3 = idwint(1)
+                     recon_dir = 3; is1%beg = is1%beg + ${SCHEME}$_polyn
+                     is1%end = is1%end - ${SCHEME}$_polyn
+                 end if
+@@ -2042,20 +2043,20 @@ contains
+         integer, intent(in) :: norm_dir
+         integer :: recon_dir  !< Coordinate direction of the reconstruction
+         integer :: i, j, k, l
+-        ! Reconstruction in s1-direction
++        ! Reconstruction in s1-direction; transverse ranges are the interior (see s_reconstruct_cell_boundary_values)
+ 
+         #:for SCHEME, TYPE in [('weno','recon_type_weno'), ('muscl', 'recon_type_muscl')]
+             if (recon_type == ${TYPE}$) then
+                 if (norm_dir == 1) then
+-                    is1 = idwbuff(1); is2 = idwbuff(2); is3 = idwbuff(3)
++                    is1 = idwbuff(1); is2 = idwint(2); is3 = idwint(3)
+                     recon_dir = 1; is1%beg = is1%beg + ${SCHEME}$_polyn
+                     is1%end = is1%end - ${SCHEME}$_polyn
+                 else if (norm_dir == 2) then
+-                    is1 = idwbuff(2); is2 = idwbuff(1); is3 = idwbuff(3)
++                    is1 = idwbuff(2); is2 = idwint(1); is3 = idwint(3)
+                     recon_dir = 2; is1%beg = is1%beg + ${SCHEME}$_polyn
+                     is1%end = is1%end - ${SCHEME}$_polyn
+                 else
+-                    is1 = idwbuff(3); is2 = idwbuff(2); is3 = idwbuff(1)
++                    is1 = idwbuff(3); is2 = idwint(2); is3 = idwint(1)
+                     recon_dir = 3; is1%beg = is1%beg + ${SCHEME}$_polyn
+                     is1%end = is1%end - ${SCHEME}$_polyn
+                 end if
+diff --git a/src/simulation/m_weno.fpp b/src/simulation/m_weno.fpp
+index 6be5ec0..7e985a5 100644
+--- a/src/simulation/m_weno.fpp
++++ b/src/simulation/m_weno.fpp
+@@ -889,16 +889,30 @@ contains
+ 
+     end subroutine s_compute_weno_coefficients
+ 
+-    subroutine s_pack_weno_input_arr(v_vf)
++    !> Copy the cells the reconstruction reads into v_rs_weno: its range (is*_weno), widened by the stencil along weno_dir
++    subroutine s_pack_weno_input_arr(v_vf, weno_dir)
+ 
+         type(scalar_field), dimension(1:), intent(in) :: v_vf
+-        integer                                       :: i, j, k, l, n_vars
++        integer, intent(in)                           :: weno_dir
++        integer                                       :: i, j, k, l
++        integer                                       :: jb, je, kb, ke, lb, le  !< packed box, (x, y, z) order
++
++        if (weno_dir == 1) then
++            jb = is1_weno%beg - weno_polyn; je = is1_weno%end + weno_polyn
++            kb = is2_weno%beg; ke = is2_weno%end; lb = is3_weno%beg; le = is3_weno%end
++        else if (weno_dir == 2) then
++            jb = is2_weno%beg; je = is2_weno%end
++            kb = is1_weno%beg - weno_polyn; ke = is1_weno%end + weno_polyn; lb = is3_weno%beg; le = is3_weno%end
++        else
++            jb = is3_weno%beg; je = is3_weno%end; kb = is2_weno%beg; ke = is2_weno%end
++            lb = is1_weno%beg - weno_polyn; le = is1_weno%end + weno_polyn
++        end if
+ 
+         $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4)
+         do i = 1, v_size
+-            do l = idwbuff(3)%beg, idwbuff(3)%end
+-                do k = idwbuff(2)%beg, idwbuff(2)%end
+-                    do j = idwbuff(1)%beg, idwbuff(1)%end
++            do l = lb, le
++                do k = kb, ke
++                    do j = jb, je
+                         v_rs_weno(j, k, l, i) = v_vf(i)%sf(j, k, l)
+                     end do
+                 end do
+@@ -990,7 +1004,7 @@ contains
+         end if
+ 
+         if (weno_order /= 1) then
+-            call s_pack_weno_input_arr(v_vf)
++            call s_pack_weno_input_arr(v_vf, weno_dir)
+         end if
+ 
+         if (weno_order == 3) then
+-- 
+2.47.3
+
