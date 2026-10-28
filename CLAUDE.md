@@ -2,7 +2,7 @@
 
 Coding-Adv-HW-1: optimize an SC26 Student Cluster Competition application. The coding part picks one of
 WRF (F1) / MFC (nano4); **we do MFC on nano4 (H200)**. Grading criteria not yet published. Deadline: end of Oct 2026.
-Plan: `PLAN.md`. Private notes: `JOURNEY.md` (gitignored). Agent mistakes: `AGENT_LOG.md`.
+AP Research briefs (WRF + MFC): `ap-research/`. Plan: `PLAN.md`. Private notes: `JOURNEY.md` (gitignored). Agent mistakes: `AGENT_LOG.md`.
 
 ## App
 **MFC** v5.7.0 — https://github.com/MFlowCode/MFC, commit `0b3d56c8e1c9a3aa8d112681b72c87ab69fe5f13`.
