@@ -1,0 +1,23 @@
+{
+  "name": "mfc-nano4-slides",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "figs": "mkdir -p public/fig && cp ../docs/fig/*.png public/fig/",
+    "dev": "pnpm figs && slidev slides.md --open",
+    "build": "pnpm figs && slidev build slides.md",
+    "export": "pnpm figs && slidev export slides.md --output mfc-nano4-slides.pdf"
+  },
+  "dependencies": {
+    "@slidev/cli": "^53.0.0",
+    "@slidev/theme-default": "latest"
+  },
+  "devDependencies": {
+    "playwright-chromium": "latest"
+  },
+  "pnpm": {
+    "overrides": {
+      "markdown-it": "^14.1.0"
+    }
+  }
+}

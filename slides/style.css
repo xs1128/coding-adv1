@@ -1,0 +1,108 @@
+/* Clean look: Times New Roman for all text, Inconsolata for code, no bold, white background. */
+@font-face {
+  font-family: 'Inconsolata';
+  src: url('/fonts/Inconsolata-Regular.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+:root {
+  --slidev-theme-primary: #2a7ad6;
+  --slidev-code-font-family: 'Inconsolata', monospace;
+}
+
+.slidev-layout {
+  font-family: 'Times New Roman', Times, serif;
+  color: #222;
+  background: #fff;
+  padding: 2.2rem 3.2rem;
+  font-size: 1.15rem;
+  line-height: 1.4;
+}
+
+.slidev-layout h1,
+.slidev-layout h2,
+.slidev-layout h3,
+.slidev-layout strong,
+.slidev-layout th {
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: normal;
+}
+
+.slidev-layout h1 {
+  font-size: 2rem;
+  line-height: 1.2;
+  margin-bottom: 0.4rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid #ccc;
+}
+
+.slidev-layout h1 + p {
+  opacity: 1;
+}
+
+.slidev-layout.cover h1,
+.slidev-layout.center h1 {
+  border-bottom: none;
+}
+
+.slidev-layout ul {
+  margin-top: 0.6rem;
+}
+
+.slidev-layout li {
+  margin: 0.3rem 0;
+}
+
+.slidev-layout code,
+.slidev-layout pre {
+  font-family: 'Inconsolata', monospace;
+}
+
+.slidev-layout :not(pre) > code {
+  font-size: 0.95em;
+  background: #f3f3f3;
+  color: #222;
+  padding: 0.05em 0.25em;
+  border-radius: 2px;
+}
+
+.slidev-layout table {
+  margin: 0.8rem auto;
+  font-size: 0.95rem;
+  border-collapse: collapse;
+}
+
+.slidev-layout th {
+  border-bottom: 1px solid #888;
+}
+
+.slidev-layout td,
+.slidev-layout th {
+  padding: 0.25rem 0.7rem;
+  border-color: #ddd;
+}
+
+.slidev-layout figure {
+  margin: 0.6rem auto 0;
+  text-align: center;
+}
+
+.slidev-layout figure img {
+  margin: 0 auto;
+}
+
+.slidev-layout figcaption {
+  font-size: 0.85rem;
+  color: #555;
+  margin-top: 0.25rem;
+}
+
+.note {
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.slidev-page-num {
+  font-family: 'Times New Roman', Times, serif;
+}
