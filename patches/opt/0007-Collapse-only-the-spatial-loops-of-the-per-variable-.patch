@@ -1,0 +1,624 @@
+From bd9b5397f5d8ea494b4f2f66278a65033c9af594 Mon Sep 17 00:00:00 2001
+From: u1131128 <hipac1@lsalab.cs.nthu.edu.tw>
+Date: Sun, 1 Nov 2026 02:06:00 +0800
+Subject: [PATCH 7/9] Collapse only the spatial loops of the per-variable copy
+ and difference kernels
+
+Every hot copy/difference kernel collapsed (variable, z, y, x) into one index space, so each element paid
+for a 64-bit div/mod index recovery and a derived-type descriptor walk. Collapse the three spatial loops and
+run the variable loop sequentially inside the thread; per-element arithmetic is unchanged (bit-identical).
+
+Backport of upstream #2087 (AppleChen17, merged 2026-10-24): the q_cons copy, the x/y/z flux differences,
+the finalize copies and the WENO input pack. Same pattern extended here to the dual-pass and cylindrical
+flux differences, the cylindrical finalize copies, the WENO1 copies, the RK update and the u-interface
+alpha*div(u) source term (its face velocities are loaded once per cell).
+---
+ src/simulation/m_rhs.fpp           | 253 ++++++++++++++++-------------
+ src/simulation/m_riemann_state.fpp |  55 ++++---
+ src/simulation/m_time_steppers.fpp |  11 +-
+ src/simulation/m_weno.fpp          |  44 ++---
+ 4 files changed, 196 insertions(+), 167 deletions(-)
+
+diff --git a/src/simulation/m_rhs.fpp b/src/simulation/m_rhs.fpp
+index 081cdb6..ddcd912 100644
+--- a/src/simulation/m_rhs.fpp
++++ b/src/simulation/m_rhs.fpp
+@@ -593,11 +593,12 @@ contains
+ 
+         if (.not. igr) then
+             ! Association/Population of Working Variables
+-            $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, private='[i, j, k, l]', collapse=4)
+-            do i = 1, sys_size
+-                do l = idwbuff(3)%beg, idwbuff(3)%end
+-                    do k = idwbuff(2)%beg, idwbuff(2)%end
+-                        do j = idwbuff(1)%beg, idwbuff(1)%end
++            $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, private='[i, j, k, l]', collapse=3)
++            do l = idwbuff(3)%beg, idwbuff(3)%end
++                do k = idwbuff(2)%beg, idwbuff(2)%end
++                    do j = idwbuff(1)%beg, idwbuff(1)%end
++                        $:GPU_LOOP(parallelism='[seq]')
++                        do i = 1, sys_size
+                             q_cons_qp%vf(i)%sf(j, k, l) = q_cons_vf(i)%sf(j, k, l)
+                         end do
+                     end do
+@@ -1112,13 +1113,14 @@ contains
+             end if
+ 
+             if (hypo_nc_mode /= hypo_nc_mode_dual_pass) then
+-                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4, &
++                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3, &
+                                     & private='[j, k_loop, l_loop, q_loop, inv_ds, flux_face1, flux_face2]')
+-                do j = 1, sys_size
+-                    do q_loop = 0, p
+-                        do l_loop = 0, n
+-                            do k_loop = 0, m
+-                                inv_ds = 1._wp/dx(k_loop)
++                do q_loop = 0, p
++                    do l_loop = 0, n
++                        do k_loop = 0, m
++                            inv_ds = 1._wp/dx(k_loop)
++                            $:GPU_LOOP(parallelism='[seq]')
++                            do j = 1, sys_size
+                                 flux_face1 = flux_n(1)%vf(j)%sf(k_loop - 1, l_loop, q_loop)
+                                 flux_face2 = flux_n(1)%vf(j)%sf(k_loop, l_loop, q_loop)
+                                 rhs_vf(j)%sf(k_loop, l_loop, q_loop) = inv_ds*(flux_face1 - flux_face2)
+@@ -1128,12 +1130,13 @@ contains
+                 end do
+                 $:END_GPU_PARALLEL_LOOP()
+             else if (is_hat_L) then
+-                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4,private='[j, k_loop, l_loop, q_loop, inv_ds, flux_face2]')
+-                do j = 1, sys_size
+-                    do q_loop = 0, p
+-                        do l_loop = 0, n
+-                            do k_loop = 0, m
+-                                inv_ds = 1._wp/dx(k_loop)
++                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3,private='[j, k_loop, l_loop, q_loop, inv_ds, flux_face2]')
++                do q_loop = 0, p
++                    do l_loop = 0, n
++                        do k_loop = 0, m
++                            inv_ds = 1._wp/dx(k_loop)
++                            $:GPU_LOOP(parallelism='[seq]')
++                            do j = 1, sys_size
+                                 flux_face2 = flux_n(1)%vf(j)%sf(k_loop, l_loop, q_loop)
+                                 rhs_vf(j)%sf(k_loop, l_loop, q_loop) = -inv_ds*flux_face2
+                             end do
+@@ -1142,12 +1145,13 @@ contains
+                 end do
+                 $:END_GPU_PARALLEL_LOOP()
+             else  ! is_hat_R
+-                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4,private='[j, k_loop, l_loop, q_loop, inv_ds, flux_face1]')
+-                do j = 1, sys_size
+-                    do q_loop = 0, p
+-                        do l_loop = 0, n
+-                            do k_loop = 0, m
+-                                inv_ds = 1._wp/dx(k_loop)
++                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3,private='[j, k_loop, l_loop, q_loop, inv_ds, flux_face1]')
++                do q_loop = 0, p
++                    do l_loop = 0, n
++                        do k_loop = 0, m
++                            inv_ds = 1._wp/dx(k_loop)
++                            $:GPU_LOOP(parallelism='[seq]')
++                            do j = 1, sys_size
+                                 flux_face1 = flux_n(1)%vf(j)%sf(k_loop - 1, l_loop, q_loop)
+                                 rhs_vf(j)%sf(k_loop, l_loop, q_loop) = inv_ds*flux_face1
+                             end do
+@@ -1189,12 +1193,13 @@ contains
+             end if
+ 
+             if (hypo_nc_mode /= hypo_nc_mode_dual_pass) then
+-                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4,private='[j, k, l, q, inv_ds, flux_face1, flux_face2]')
+-                do j = 1, sys_size
+-                    do l = 0, p
+-                        do k = 0, n
+-                            do q = 0, m
+-                                inv_ds = 1._wp/dy(k)
++                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3,private='[j, k, l, q, inv_ds, flux_face1, flux_face2]')
++                do l = 0, p
++                    do k = 0, n
++                        do q = 0, m
++                            inv_ds = 1._wp/dy(k)
++                            $:GPU_LOOP(parallelism='[seq]')
++                            do j = 1, sys_size
+                                 flux_face1 = flux_n(2)%vf(j)%sf(q, k - 1, l)
+                                 flux_face2 = flux_n(2)%vf(j)%sf(q, k, l)
+                                 rhs_vf(j)%sf(q, k, l) = rhs_vf(j)%sf(q, k, l) + inv_ds*(flux_face1 - flux_face2)
+@@ -1204,12 +1209,13 @@ contains
+                 end do
+                 $:END_GPU_PARALLEL_LOOP()
+             else if (is_hat_L) then
+-                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4,private='[j, k, l, q, inv_ds, flux_face2]')
+-                do j = 1, sys_size
+-                    do l = 0, p
+-                        do k = 0, n
+-                            do q = 0, m
+-                                inv_ds = 1._wp/dy(k)
++                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3,private='[j, k, l, q, inv_ds, flux_face2]')
++                do l = 0, p
++                    do k = 0, n
++                        do q = 0, m
++                            inv_ds = 1._wp/dy(k)
++                            $:GPU_LOOP(parallelism='[seq]')
++                            do j = 1, sys_size
+                                 flux_face2 = flux_n(2)%vf(j)%sf(q, k, l)
+                                 rhs_vf(j)%sf(q, k, l) = rhs_vf(j)%sf(q, k, l) - inv_ds*flux_face2
+                             end do
+@@ -1218,12 +1224,13 @@ contains
+                 end do
+                 $:END_GPU_PARALLEL_LOOP()
+             else  ! is_hat_R
+-                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4,private='[j, k, l, q, inv_ds, flux_face1]')
+-                do j = 1, sys_size
+-                    do l = 0, p
+-                        do k = 0, n
+-                            do q = 0, m
+-                                inv_ds = 1._wp/dy(k)
++                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3,private='[j, k, l, q, inv_ds, flux_face1]')
++                do l = 0, p
++                    do k = 0, n
++                        do q = 0, m
++                            inv_ds = 1._wp/dy(k)
++                            $:GPU_LOOP(parallelism='[seq]')
++                            do j = 1, sys_size
+                                 flux_face1 = flux_n(2)%vf(j)%sf(q, k - 1, l)
+                                 rhs_vf(j)%sf(q, k, l) = rhs_vf(j)%sf(q, k, l) + inv_ds*flux_face1
+                             end do
+@@ -1268,11 +1275,12 @@ contains
+                     ! centers this equals the annular finite-volume divergence (r_+ F_+ - r_- F_-)/(y_cc*dy) for the rows
+                     ! whose geometric flux is the full radial flux.
+                     if (is_hat_L) then
+-                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4,private='[j, k, l, q, flux_face2]')
+-                        do j = 1, sys_size
+-                            do l = 0, p
+-                                do k = 0, n
+-                                    do q = 0, m
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3,private='[j, k, l, q, flux_face2]')
++                        do l = 0, p
++                            do k = 0, n
++                                do q = 0, m
++                                    $:GPU_LOOP(parallelism='[seq]')
++                                    do j = 1, sys_size
+                                         flux_face2 = flux_gsrc_n(2)%vf(j)%sf(q, k, l)
+                                         rhs_vf(j)%sf(q, k, l) = rhs_vf(j)%sf(q, k, l) - 5.e-1_wp/y_cc(k)*flux_face2
+                                     end do
+@@ -1281,11 +1289,12 @@ contains
+                         end do
+                         $:END_GPU_PARALLEL_LOOP()
+                     else  ! is_hat_R
+-                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4,private='[j, k, l, q, flux_face1]')
+-                        do j = 1, sys_size
+-                            do l = 0, p
+-                                do k = 0, n
+-                                    do q = 0, m
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3,private='[j, k, l, q, flux_face1]')
++                        do l = 0, p
++                            do k = 0, n
++                                do q = 0, m
++                                    $:GPU_LOOP(parallelism='[seq]')
++                                    do j = 1, sys_size
+                                         flux_face1 = flux_gsrc_n(2)%vf(j)%sf(q, k - 1, l)
+                                         rhs_vf(j)%sf(q, k, l) = rhs_vf(j)%sf(q, k, l) - 5.e-1_wp/y_cc(k)*flux_face1
+                                     end do
+@@ -1295,11 +1304,12 @@ contains
+                         $:END_GPU_PARALLEL_LOOP()
+                     end if
+                 else
+-                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4,private='[j, k, l, q, flux_face1, flux_face2]')
+-                    do j = 1, sys_size
+-                        do l = 0, p
+-                            do k = 0, n
+-                                do q = 0, m
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3,private='[j, k, l, q, flux_face1, flux_face2]')
++                    do l = 0, p
++                        do k = 0, n
++                            do q = 0, m
++                                $:GPU_LOOP(parallelism='[seq]')
++                                do j = 1, sys_size
+                                     flux_face1 = flux_gsrc_n(2)%vf(j)%sf(q, k - 1, l)
+                                     flux_face2 = flux_gsrc_n(2)%vf(j)%sf(q, k, l)
+                                     rhs_vf(j)%sf(q, k, l) = rhs_vf(j)%sf(q, k, l) - 5.e-1_wp/y_cc(k)*(flux_face1 + flux_face2)
+@@ -1321,13 +1331,14 @@ contains
+             end if
+ 
+             if (grid_geometry == 3) then  ! Cylindrical Coordinates
+-                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4, &
++                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3, &
+                                     & private='[j, k, l, q, inv_ds, velocity_val, flux_face1, flux_face2]')
+-                do j = 1, sys_size
+-                    do k = 0, p
+-                        do q = 0, n
+-                            do l = 0, m
+-                                inv_ds = 1._wp/(dz(k)*y_cc(q))
++                do k = 0, p
++                    do q = 0, n
++                        do l = 0, m
++                            inv_ds = 1._wp/(dz(k)*y_cc(q))
++                            $:GPU_LOOP(parallelism='[seq]')
++                            do j = 1, sys_size
+                                 velocity_val = q_prim_vf%vf(eqn_idx%cont%end + idir)%sf(l, q, k)
+                                 flux_face1 = flux_n(3)%vf(j)%sf(l, q, k - 1)
+                                 flux_face2 = flux_n(3)%vf(j)%sf(l, q, k)
+@@ -1337,11 +1348,12 @@ contains
+                     end do
+                 end do
+                 $:END_GPU_PARALLEL_LOOP()
+-                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4,private='[j, k, l, q, flux_face1, flux_face2]')
+-                do j = 1, sys_size
+-                    do k = 0, p
+-                        do q = 0, n
+-                            do l = 0, m
++                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3,private='[j, k, l, q, flux_face1, flux_face2]')
++                do k = 0, p
++                    do q = 0, n
++                        do l = 0, m
++                            $:GPU_LOOP(parallelism='[seq]')
++                            do j = 1, sys_size
+                                 flux_face1 = flux_gsrc_n(3)%vf(j)%sf(l, q, k - 1)
+                                 flux_face2 = flux_gsrc_n(3)%vf(j)%sf(l, q, k)
+                                 rhs_vf(j)%sf(l, q, k) = rhs_vf(j)%sf(l, q, k) - 5.e-1_wp/y_cc(q)*(flux_face1 + flux_face2)
+@@ -1352,12 +1364,13 @@ contains
+                 $:END_GPU_PARALLEL_LOOP()
+             else  ! Cartesian Coordinates
+                 if (hypo_nc_mode /= hypo_nc_mode_dual_pass) then
+-                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4,private='[j, k, l, q, inv_ds, flux_face1, flux_face2]')
+-                    do j = 1, sys_size
+-                        do k = 0, p
+-                            do q = 0, n
+-                                do l = 0, m
+-                                    inv_ds = 1._wp/dz(k)
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3,private='[j, k, l, q, inv_ds, flux_face1, flux_face2]')
++                    do k = 0, p
++                        do q = 0, n
++                            do l = 0, m
++                                inv_ds = 1._wp/dz(k)
++                                $:GPU_LOOP(parallelism='[seq]')
++                                do j = 1, sys_size
+                                     flux_face1 = flux_n(3)%vf(j)%sf(l, q, k - 1)
+                                     flux_face2 = flux_n(3)%vf(j)%sf(l, q, k)
+                                     rhs_vf(j)%sf(l, q, k) = rhs_vf(j)%sf(l, q, k) + inv_ds*(flux_face1 - flux_face2)
+@@ -1367,12 +1380,13 @@ contains
+                     end do
+                     $:END_GPU_PARALLEL_LOOP()
+                 else if (is_hat_L) then
+-                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4,private='[j, k, l, q, inv_ds, flux_face2]')
+-                    do j = 1, sys_size
+-                        do k = 0, p
+-                            do q = 0, n
+-                                do l = 0, m
+-                                    inv_ds = 1._wp/dz(k)
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3,private='[j, k, l, q, inv_ds, flux_face2]')
++                    do k = 0, p
++                        do q = 0, n
++                            do l = 0, m
++                                inv_ds = 1._wp/dz(k)
++                                $:GPU_LOOP(parallelism='[seq]')
++                                do j = 1, sys_size
+                                     flux_face2 = flux_n(3)%vf(j)%sf(l, q, k)
+                                     rhs_vf(j)%sf(l, q, k) = rhs_vf(j)%sf(l, q, k) - inv_ds*flux_face2
+                                 end do
+@@ -1381,12 +1395,13 @@ contains
+                     end do
+                     $:END_GPU_PARALLEL_LOOP()
+                 else  ! is_hat_R
+-                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4,private='[j, k, l, q, inv_ds, flux_face1]')
+-                    do j = 1, sys_size
+-                        do k = 0, p
+-                            do q = 0, n
+-                                do l = 0, m
+-                                    inv_ds = 1._wp/dz(k)
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3,private='[j, k, l, q, inv_ds, flux_face1]')
++                    do k = 0, p
++                        do q = 0, n
++                            do l = 0, m
++                                inv_ds = 1._wp/dz(k)
++                                $:GPU_LOOP(parallelism='[seq]')
++                                do j = 1, sys_size
+                                     flux_face1 = flux_n(3)%vf(j)%sf(l, q, k - 1)
+                                     rhs_vf(j)%sf(l, q, k) = rhs_vf(j)%sf(l, q, k) + inv_ds*flux_face1
+                                 end do
+@@ -1483,18 +1498,19 @@ contains
+                     end if
+                 else if (adv_src_mode == adv_src_mode_vel_iface) then
+                     ! u-interface: flux_src(adv%beg) supplies one shared face-normal velocity. RHS applies alpha_k * du/dx.
+-                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4, private='[j_adv, k_idx, l_idx, q_idx, local_inv_ds, &
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3, private='[j_adv, k_idx, l_idx, q_idx, local_inv_ds, &
+                                         & local_term_coeff, local_flux1, local_flux2]')
+-                    do j_adv = eqn_idx%adv%beg, eqn_idx%adv%end
+-                        do q_idx = 0, p; do l_idx = 0, n; do k_idx = 0, m
+-                            local_inv_ds = 1._wp/dx(k_idx)
++                    do q_idx = 0, p; do l_idx = 0, n; do k_idx = 0, m
++                        local_inv_ds = 1._wp/dx(k_idx)
++                        local_flux1 = flux_src_n_vf_arg%vf(eqn_idx%adv%beg)%sf(k_idx, l_idx, q_idx)
++                        local_flux2 = flux_src_n_vf_arg%vf(eqn_idx%adv%beg)%sf(k_idx - 1, l_idx, q_idx)
++                        $:GPU_LOOP(parallelism='[seq]')
++                        do j_adv = eqn_idx%adv%beg, eqn_idx%adv%end
+                             local_term_coeff = q_cons_vf_arg%vf(j_adv)%sf(k_idx, l_idx, q_idx)
+-                            local_flux1 = flux_src_n_vf_arg%vf(eqn_idx%adv%beg)%sf(k_idx, l_idx, q_idx)
+-                            local_flux2 = flux_src_n_vf_arg%vf(eqn_idx%adv%beg)%sf(k_idx - 1, l_idx, q_idx)
+                             rhs_vf_arg(j_adv)%sf(k_idx, l_idx, q_idx) = rhs_vf_arg(j_adv)%sf(k_idx, l_idx, &
+                                        & q_idx) + local_inv_ds*local_term_coeff*(local_flux1 - local_flux2)
+-                        end do; end do; end do
+-                    end do
++                        end do
++                    end do; end do; end do
+                     $:END_GPU_PARALLEL_LOOP()
+                     if (alt_soundspeed) then  ! K*div(u) correction
+                         $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3, private='[k_idx, l_idx, q_idx, local_inv_ds, &
+@@ -1563,18 +1579,19 @@ contains
+                     end if
+                 else if (adv_src_mode == adv_src_mode_vel_iface) then
+                     ! u-interface: flux_src(adv%beg) supplies one shared face-normal velocity. RHS applies alpha_k * du/dy.
+-                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4, private='[j_adv, k_idx, l_idx, q_idx, local_inv_ds, &
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3, private='[j_adv, k_idx, l_idx, q_idx, local_inv_ds, &
+                                         & local_term_coeff, local_flux1, local_flux2]')
+-                    do j_adv = eqn_idx%adv%beg, eqn_idx%adv%end
+-                        do l_idx = 0, p; do k_idx = 0, n; do q_idx = 0, m
+-                            local_inv_ds = 1._wp/dy(k_idx)
++                    do l_idx = 0, p; do k_idx = 0, n; do q_idx = 0, m
++                        local_inv_ds = 1._wp/dy(k_idx)
++                        local_flux1 = flux_src_n_vf_arg%vf(eqn_idx%adv%beg)%sf(q_idx, k_idx, l_idx)
++                        local_flux2 = flux_src_n_vf_arg%vf(eqn_idx%adv%beg)%sf(q_idx, k_idx - 1, l_idx)
++                        $:GPU_LOOP(parallelism='[seq]')
++                        do j_adv = eqn_idx%adv%beg, eqn_idx%adv%end
+                             local_term_coeff = q_cons_vf_arg%vf(j_adv)%sf(q_idx, k_idx, l_idx)
+-                            local_flux1 = flux_src_n_vf_arg%vf(eqn_idx%adv%beg)%sf(q_idx, k_idx, l_idx)
+-                            local_flux2 = flux_src_n_vf_arg%vf(eqn_idx%adv%beg)%sf(q_idx, k_idx - 1, l_idx)
+                             rhs_vf_arg(j_adv)%sf(q_idx, k_idx, l_idx) = rhs_vf_arg(j_adv)%sf(q_idx, k_idx, &
+                                        & l_idx) + local_inv_ds*local_term_coeff*(local_flux1 - local_flux2)
+-                        end do; end do; end do
+-                    end do
++                        end do
++                    end do; end do; end do
+                     $:END_GPU_PARALLEL_LOOP()
+                     if (alt_soundspeed) then  ! K*div(u) correction
+                         $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3, private='[k_idx, l_idx, q_idx, local_inv_ds, &
+@@ -1643,18 +1660,19 @@ contains
+                         end if
+                     else if (adv_src_mode == adv_src_mode_vel_iface) then
+                         ! u-interface: flux_src(adv%beg) supplies one shared face-normal velocity. RHS applies alpha_k * du/dz.
+-                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4, private='[j_adv, k_idx, l_idx, q_idx, &
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3, private='[j_adv, k_idx, l_idx, q_idx, &
+                                             & local_inv_ds, local_term_coeff, local_flux1, local_flux2]')
+-                        do j_adv = eqn_idx%adv%beg, eqn_idx%adv%end
+-                            do k_idx = 0, p; do q_idx = 0, n; do l_idx = 0, m
+-                                local_inv_ds = 1._wp/dz(k_idx)
++                        do k_idx = 0, p; do q_idx = 0, n; do l_idx = 0, m
++                            local_inv_ds = 1._wp/dz(k_idx)
++                            local_flux1 = flux_src_n_vf_arg%vf(eqn_idx%adv%beg)%sf(l_idx, q_idx, k_idx)
++                            local_flux2 = flux_src_n_vf_arg%vf(eqn_idx%adv%beg)%sf(l_idx, q_idx, k_idx - 1)
++                            $:GPU_LOOP(parallelism='[seq]')
++                            do j_adv = eqn_idx%adv%beg, eqn_idx%adv%end
+                                 local_term_coeff = q_cons_vf_arg%vf(j_adv)%sf(l_idx, q_idx, k_idx)
+-                                local_flux1 = flux_src_n_vf_arg%vf(eqn_idx%adv%beg)%sf(l_idx, q_idx, k_idx)
+-                                local_flux2 = flux_src_n_vf_arg%vf(eqn_idx%adv%beg)%sf(l_idx, q_idx, k_idx - 1)
+                                 rhs_vf_arg(j_adv)%sf(l_idx, q_idx, k_idx) = rhs_vf_arg(j_adv)%sf(l_idx, q_idx, &
+                                            & k_idx) + local_inv_ds*local_term_coeff*(local_flux1 - local_flux2)
+-                            end do; end do; end do
+-                        end do
++                            end do
++                        end do; end do; end do
+                         $:END_GPU_PARALLEL_LOOP()
+                         if (alt_soundspeed) then  ! K*div(u) correction
+                             $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3, private='[k_idx, l_idx, q_idx, local_inv_ds, &
+@@ -1709,18 +1727,19 @@ contains
+                         end if
+                     else if (adv_src_mode == adv_src_mode_vel_iface) then
+                         ! u-interface: flux_src(adv%beg) supplies one shared face-normal velocity. RHS applies alpha_k * du/dz.
+-                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4, private='[j_adv, k_idx, l_idx, q_idx, &
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3, private='[j_adv, k_idx, l_idx, q_idx, &
+                                             & local_inv_ds, local_term_coeff, local_flux1, local_flux2]')
+-                        do j_adv = eqn_idx%adv%beg, eqn_idx%adv%end
+-                            do k_idx = 0, p; do q_idx = 0, n; do l_idx = 0, m
+-                                local_inv_ds = 1._wp/dz(k_idx)
++                        do k_idx = 0, p; do q_idx = 0, n; do l_idx = 0, m
++                            local_inv_ds = 1._wp/dz(k_idx)
++                            local_flux1 = flux_src_n_vf_arg%vf(eqn_idx%adv%beg)%sf(l_idx, q_idx, k_idx)
++                            local_flux2 = flux_src_n_vf_arg%vf(eqn_idx%adv%beg)%sf(l_idx, q_idx, k_idx - 1)
++                            $:GPU_LOOP(parallelism='[seq]')
++                            do j_adv = eqn_idx%adv%beg, eqn_idx%adv%end
+                                 local_term_coeff = q_cons_vf_arg%vf(j_adv)%sf(l_idx, q_idx, k_idx)
+-                                local_flux1 = flux_src_n_vf_arg%vf(eqn_idx%adv%beg)%sf(l_idx, q_idx, k_idx)
+-                                local_flux2 = flux_src_n_vf_arg%vf(eqn_idx%adv%beg)%sf(l_idx, q_idx, k_idx - 1)
+                                 rhs_vf_arg(j_adv)%sf(l_idx, q_idx, k_idx) = rhs_vf_arg(j_adv)%sf(l_idx, q_idx, &
+                                            & k_idx) + local_inv_ds*local_term_coeff*(local_flux1 - local_flux2)
+-                            end do; end do; end do
+-                        end do
++                            end do
++                        end do; end do; end do
+                         $:END_GPU_PARALLEL_LOOP()
+                         if (alt_soundspeed) then  ! K*div(u) correction
+                             $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3, private='[k_idx, l_idx, q_idx, local_inv_ds, &
+diff --git a/src/simulation/m_riemann_state.fpp b/src/simulation/m_riemann_state.fpp
+index 2353f31..969ea36 100644
+--- a/src/simulation/m_riemann_state.fpp
++++ b/src/simulation/m_riemann_state.fpp
+@@ -1352,11 +1352,12 @@ contains
+                 ! Reshaping Outputted Data in y-direction
+ 
+                 if (norm_dir == 2) then
+-                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4)
+-                    do i = 1, sys_size
+-                        do l = is3%beg, is3%end
+-                            do j = is1%beg, is1%end
+-                                do k = is2%beg, is2%end
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
++                    do l = is3%beg, is3%end
++                        do j = is1%beg, is1%end
++                            do k = is2%beg, is2%end
++                                $:GPU_LOOP(parallelism='[seq]')
++                                do i = 1, sys_size
+                                     flux_vf(i)%sf(k, j, l) = flux_${INFIX}$rsx_vf(k, j, l, i)
+                                 end do
+                             end do
+@@ -1365,11 +1366,12 @@ contains
+                     $:END_GPU_PARALLEL_LOOP()
+ 
+                     if (cyl_coord) then
+-                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4)
+-                        do i = 1, sys_size
+-                            do l = is3%beg, is3%end
+-                                do j = is1%beg, is1%end
+-                                    do k = is2%beg, is2%end
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
++                        do l = is3%beg, is3%end
++                            do j = is1%beg, is1%end
++                                do k = is2%beg, is2%end
++                                    $:GPU_LOOP(parallelism='[seq]')
++                                    do i = 1, sys_size
+                                         flux_gsrc_vf(i)%sf(k, j, l) = flux_gsrc_${INFIX}$rsx_vf(k, j, l, i)
+                                     end do
+                                 end do
+@@ -1408,11 +1410,12 @@ contains
+                     #:endif
+                     ! Reshaping Outputted Data in z-direction
+                 else if (norm_dir == 3) then
+-                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4)
+-                    do i = 1, sys_size
+-                        do j = is1%beg, is1%end
+-                            do k = is2%beg, is2%end
+-                                do l = is3%beg, is3%end
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
++                    do j = is1%beg, is1%end
++                        do k = is2%beg, is2%end
++                            do l = is3%beg, is3%end
++                                $:GPU_LOOP(parallelism='[seq]')
++                                do i = 1, sys_size
+                                     flux_vf(i)%sf(l, k, j) = flux_${INFIX}$rsx_vf(l, k, j, i)
+                                 end do
+                             end do
+@@ -1421,11 +1424,12 @@ contains
+                     $:END_GPU_PARALLEL_LOOP()
+                     #:if SUFFIX == ''
+                         if (grid_geometry == 3) then
+-                            $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4)
+-                            do i = 1, sys_size
+-                                do j = is1%beg, is1%end
+-                                    do k = is2%beg, is2%end
+-                                        do l = is3%beg, is3%end
++                            $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
++                            do j = is1%beg, is1%end
++                                do k = is2%beg, is2%end
++                                    do l = is3%beg, is3%end
++                                        $:GPU_LOOP(parallelism='[seq]')
++                                        do i = 1, sys_size
+                                             flux_gsrc_vf(i)%sf(l, k, j) = flux_gsrc_rsx_vf(l, k, j, i)
+                                         end do
+                                     end do
+@@ -1462,11 +1466,12 @@ contains
+                         end if
+                     #:endif
+                 else if (norm_dir == 1) then
+-                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4)
+-                    do i = 1, sys_size
+-                        do l = is3%beg, is3%end
+-                            do k = is2%beg, is2%end
+-                                do j = is1%beg, is1%end
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
++                    do l = is3%beg, is3%end
++                        do k = is2%beg, is2%end
++                            do j = is1%beg, is1%end
++                                $:GPU_LOOP(parallelism='[seq]')
++                                do i = 1, sys_size
+                                     flux_vf(i)%sf(j, k, l) = flux_${INFIX}$rsx_vf(j, k, l, i)
+                                 end do
+                             end do
+diff --git a/src/simulation/m_time_steppers.fpp b/src/simulation/m_time_steppers.fpp
+index fafdaca..eff85c1 100644
+--- a/src/simulation/m_time_steppers.fpp
++++ b/src/simulation/m_time_steppers.fpp
+@@ -486,11 +486,12 @@ contains
+             end if
+ 
+             if (bubbles_lagrange .and. .not. adap_dt) call s_update_lagrange_tdv_rk(q_prim_vf, bc_type, stage=s)
+-            $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4)
+-            do i = 1, sys_size
+-                do l = 0, p
+-                    do k = 0, n
+-                        do j = 0, m
++            $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
++            do l = 0, p
++                do k = 0, n
++                    do j = 0, m
++                        $:GPU_LOOP(parallelism='[seq]')
++                        do i = 1, sys_size
+                             if (s == 1 .and. nstage > 1) then
+                                 q_cons_ts(stor)%vf(i)%sf(j, k, l) = q_cons_ts(1)%vf(i)%sf(j, k, l)
+                             end if
+diff --git a/src/simulation/m_weno.fpp b/src/simulation/m_weno.fpp
+index 7e985a5..d1e6266 100644
+--- a/src/simulation/m_weno.fpp
++++ b/src/simulation/m_weno.fpp
+@@ -908,11 +908,12 @@ contains
+             lb = is1_weno%beg - weno_polyn; le = is1_weno%end + weno_polyn
+         end if
+ 
+-        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4)
+-        do i = 1, v_size
+-            do l = lb, le
+-                do k = kb, ke
+-                    do j = jb, je
++        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
++        do l = lb, le
++            do k = kb, ke
++                do j = jb, je
++                    $:GPU_LOOP(parallelism='[seq]')
++                    do i = 1, v_size
+                         v_rs_weno(j, k, l, i) = v_vf(i)%sf(j, k, l)
+                     end do
+                 end do
+@@ -962,11 +963,12 @@ contains
+ 
+         if (weno_order == 1) then
+             if (weno_dir == 1) then
+-                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4)
+-                do i = 1, v_size
+-                    do l = is3_weno%beg, is3_weno%end
+-                        do k = is2_weno%beg, is2_weno%end
+-                            do j = is1_weno%beg, is1_weno%end
++                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
++                do l = is3_weno%beg, is3_weno%end
++                    do k = is2_weno%beg, is2_weno%end
++                        do j = is1_weno%beg, is1_weno%end
++                            $:GPU_LOOP(parallelism='[seq]')
++                            do i = 1, v_size
+                                 vL_rs_vf_x(j, k, l, i) = v_vf(i)%sf(j, k, l)
+                                 vR_rs_vf_x(j, k, l, i) = v_vf(i)%sf(j, k, l)
+                             end do
+@@ -975,11 +977,12 @@ contains
+                 end do
+                 $:END_GPU_PARALLEL_LOOP()
+             else if (weno_dir == 2) then
+-                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4)
+-                do i = 1, v_size
+-                    do l = is3_weno%beg, is3_weno%end
+-                        do j = is1_weno%beg, is1_weno%end
+-                            do k = is2_weno%beg, is2_weno%end
++                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
++                do l = is3_weno%beg, is3_weno%end
++                    do j = is1_weno%beg, is1_weno%end
++                        do k = is2_weno%beg, is2_weno%end
++                            $:GPU_LOOP(parallelism='[seq]')
++                            do i = 1, v_size
+                                 vL_rs_vf_x(k, j, l, i) = v_vf(i)%sf(k, j, l)
+                                 vR_rs_vf_x(k, j, l, i) = v_vf(i)%sf(k, j, l)
+                             end do
+@@ -988,11 +991,12 @@ contains
+                 end do
+                 $:END_GPU_PARALLEL_LOOP()
+             else if (weno_dir == 3) then
+-                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4)
+-                do i = 1, v_size
+-                    do j = is1_weno%beg, is1_weno%end
+-                        do k = is2_weno%beg, is2_weno%end
+-                            do l = is3_weno%beg, is3_weno%end
++                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
++                do j = is1_weno%beg, is1_weno%end
++                    do k = is2_weno%beg, is2_weno%end
++                        do l = is3_weno%beg, is3_weno%end
++                            $:GPU_LOOP(parallelism='[seq]')
++                            do i = 1, v_size
+                                 vL_rs_vf_x(l, k, j, i) = v_vf(i)%sf(l, k, j)
+                                 vR_rs_vf_x(l, k, j, i) = v_vf(i)%sf(l, k, j)
+                             end do
+-- 
+2.34.1
+

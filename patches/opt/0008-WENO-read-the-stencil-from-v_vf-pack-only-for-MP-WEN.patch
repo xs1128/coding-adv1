@@ -1,0 +1,105 @@
+From 3e670d94609b1162d8dab754f1a55f2d1720d6eb Mon Sep 17 00:00:00 2001
+From: u1131128 <hipac1@lsalab.cs.nthu.edu.tw>
+Date: Sun, 1 Nov 2026 02:06:37 +0800
+Subject: [PATCH 8/9] WENO: read the stencil from v_vf; pack only for MP-WENO
+ and THINC
+
+The pack copied v_vf(i)%sf(j,k,l) into v_rs_weno(j,k,l,i), the same layout for every direction, and the
+WENO3/5/7 kernels then read the copy. Read v_vf directly instead; MP-WENO and THINC still take the
+packed array. Bit-identical. Backport of upstream #2092 (AppleChen17, merged 2026-10-25), on top of the
+transverse-interior pack range.
+---
+ src/simulation/m_weno.fpp | 42 ++++++++++++++++++++++-----------------
+ 1 file changed, 24 insertions(+), 18 deletions(-)
+
+diff --git a/src/simulation/m_weno.fpp b/src/simulation/m_weno.fpp
+index d1e6266..a346bc6 100644
+--- a/src/simulation/m_weno.fpp
++++ b/src/simulation/m_weno.fpp
+@@ -116,7 +116,10 @@ contains
+ 
+         call s_compute_weno_coefficients(1, is1_weno)
+ 
+-        @:ALLOCATE(v_rs_weno(is1_weno%beg:is1_weno%end, is2_weno%beg:is2_weno%end, is3_weno%beg:is3_weno%end, 1:sys_size))
++        ! Only MP-WENO and THINC read the packed copy; the reconstruction kernels read v_vf directly
++        if (mp_weno .or. int_comp > 0) then
++            @:ALLOCATE(v_rs_weno(is1_weno%beg:is1_weno%end, is2_weno%beg:is2_weno%end, is3_weno%beg:is3_weno%end, 1:sys_size))
++        end if
+ 
+         ! Allocating/Computing WENO Coefficients in y-direction
+         if (n == 0) return
+@@ -1007,7 +1010,8 @@ contains
+             end if
+         end if
+ 
+-        if (weno_order /= 1) then
++        ! The reconstruction kernels read the stencil straight from v_vf; only MP-WENO and THINC still read the packed copy
++        if (weno_order /= 1 .and. (mp_weno .or. int_comp > 0)) then
+             call s_pack_weno_input_arr(v_vf, weno_dir)
+         end if
+ 
+@@ -1029,9 +1033,9 @@ contains
+ 
+                                     alpha(:) = 0._wp
+ 
+-                                    vp0 = v_rs_weno(${SF('')}$, i)
+-                                    vm1 = v_rs_weno(${SF(' - 1')}$, i)
+-                                    vp1 = v_rs_weno(${SF(' + 1')}$, i)
++                                    vp0 = v_vf(i)%sf(${SF('')}$)
++                                    vm1 = v_vf(i)%sf(${SF(' - 1')}$)
++                                    vp1 = v_vf(i)%sf(${SF(' + 1')}$)
+ 
+                                     dvd(0) = vp1 - vp0
+                                     dvd(-1) = vp0 - vm1
+@@ -1122,11 +1126,11 @@ contains
+ 
+                                         alpha(:) = 0._wp
+ 
+-                                        vp0 = v_rs_weno(${SF('')}$, i)
+-                                        vm1 = v_rs_weno(${SF(' - 1')}$, i)
+-                                        vm2 = v_rs_weno(${SF(' - 2')}$, i)
+-                                        vp1 = v_rs_weno(${SF(' + 1')}$, i)
+-                                        vp2 = v_rs_weno(${SF(' + 2')}$, i)
++                                        vp0 = v_vf(i)%sf(${SF('')}$)
++                                        vm1 = v_vf(i)%sf(${SF(' - 1')}$)
++                                        vm2 = v_vf(i)%sf(${SF(' - 2')}$)
++                                        vp1 = v_vf(i)%sf(${SF(' + 1')}$)
++                                        vp2 = v_vf(i)%sf(${SF(' + 2')}$)
+ 
+                                         dvd(1) = vp2 - vp1
+                                         dvd(0) = vp1 - vp0
+@@ -1279,13 +1283,13 @@ contains
+                                     do i = 1, v_size
+                                         alpha(:) = 0._wp
+ 
+-                                        vp0 = v_rs_weno(${SF('')}$, i)
+-                                        vm1 = v_rs_weno(${SF(' - 1')}$, i)
+-                                        vm2 = v_rs_weno(${SF(' - 2')}$, i)
+-                                        vm3 = v_rs_weno(${SF(' - 3')}$, i)
+-                                        vp1 = v_rs_weno(${SF(' + 1')}$, i)
+-                                        vp2 = v_rs_weno(${SF(' + 2')}$, i)
+-                                        vp3 = v_rs_weno(${SF(' + 3')}$, i)
++                                        vp0 = v_vf(i)%sf(${SF('')}$)
++                                        vm1 = v_vf(i)%sf(${SF(' - 1')}$)
++                                        vm2 = v_vf(i)%sf(${SF(' - 2')}$)
++                                        vm3 = v_vf(i)%sf(${SF(' - 3')}$)
++                                        vp1 = v_vf(i)%sf(${SF(' + 1')}$)
++                                        vp2 = v_vf(i)%sf(${SF(' + 2')}$)
++                                        vp3 = v_vf(i)%sf(${SF(' + 3')}$)
+ 
+                                         if (teno) then
+                                             v(-3) = vm3
+@@ -1623,7 +1627,9 @@ contains
+ 
+         ! Deallocating the WENO-stencil of the WENO-reconstructed variables
+ 
+-        @:DEALLOCATE(v_rs_weno)
++        if (mp_weno .or. int_comp > 0) then
++            @:DEALLOCATE(v_rs_weno)
++        end if
+ 
+         ! Deallocating WENO coefficients in x-direction
+         @:DEALLOCATE(poly_coef_cbL_x, poly_coef_cbR_x)
+-- 
+2.34.1
+

@@ -1,0 +1,318 @@
+From 0a8db5b43f94da1d98b34dc95dbc6e749e5d1a79 Mon Sep 17 00:00:00 2001
+From: u1131128 <hipac1@lsalab.cs.nthu.edu.tw>
+Date: Sun, 1 Nov 2026 02:11:34 +0800
+Subject: [PATCH 9/9] Let the RHS fluxes be the Riemann solver's output buffers
+ on the inviscid path
+
+s_finalize_riemann_solver copied flux_rsx_vf into flux_n and flux_src_rsx_vf(adv%beg) into flux_src_n element
+for element, every sweep: both are (x, y, z) ordered in every direction. When the only readers are the flux
+differences and CBC, which stay inside (-1:m, -1:n, -1:p), allocate the solver buffers in m_rhs and point
+flux_n(1)%vf(l)%sf and flux_src_n(1)%vf(adv%beg)%sf at them (bounds remapped to -1), before anything is
+attached on the device; finalize then skips those copies. Viscous, surface tension, chemistry, hypoelastic,
+QBMM, bubbles, IBM, relativity, cylindrical, alpha-interface and dual-pass runs keep their own arrays.
+Bit-identical (same values, no copy). Frees sys_size+1 halo-sized fields.
+---
+ src/simulation/m_rhs.fpp             |  43 ++++++++--
+ src/simulation/m_riemann_solvers.fpp |   6 +-
+ src/simulation/m_riemann_state.fpp   | 119 ++++++++++++++++-----------
+ 3 files changed, 112 insertions(+), 56 deletions(-)
+
+diff --git a/src/simulation/m_rhs.fpp b/src/simulation/m_rhs.fpp
+index ddcd912..21ba5c2 100644
+--- a/src/simulation/m_rhs.fpp
++++ b/src/simulation/m_rhs.fpp
+@@ -18,6 +18,7 @@ module m_rhs
+         & recon_type_muscl
+     use m_muscl
+     use m_riemann_solvers
++    use m_riemann_state, only: flux_rsx_vf, flux_src_rsx_vf, flux_aliased
+     use m_cbc
+     use m_bubbles_EE
+     use m_bubbles_EL
+@@ -204,6 +205,18 @@ contains
+         end if
+ 
+         if (.not. igr) then
++            ! On the plain inviscid path the fluxes are read only by the flux differences and CBC, inside (-1:m, -1:n, -1:p).
++            ! There flux_n and flux_src_n(adv%beg) point straight at the Riemann solver's output buffers, which are (x, y, z)
++            ! ordered for every sweep direction, so s_finalize_riemann_solver has nothing to copy. Other physics read further
++            ! or write more and keep their own arrays.
++            flux_aliased = .not. (qbmm .or. viscous .or. surface_tension .or. chemistry .or. hypoelasticity .or. cyl_coord &
++                                  & .or. ib .or. bubbles_euler .or. bubbles_lagrange .or. relativity) .and. &
++                                  & adv_src_mode == adv_src_mode_vel_iface .and. hypo_nc_mode /= hypo_nc_mode_dual_pass
++            if (flux_aliased) then
++                @:ALLOCATE(flux_rsx_vf(-1:m, -1:n, -1:p, 1:sys_size))
++                @:ALLOCATE(flux_src_rsx_vf(-1:m, -1:n, -1:p, eqn_idx%adv%beg:sys_size))
++            end if
++
+             @:ALLOCATE(flux_n(1:num_dims))
+             @:ALLOCATE(flux_src_n(1:num_dims))
+             @:ALLOCATE(flux_gsrc_n(1:num_dims))
+@@ -215,8 +228,13 @@ contains
+ 
+                 if (i == 1) then
+                     do l = 1, sys_size
+-                        @:ALLOCATE(flux_n(i)%vf(l)%sf(idwbuff(1)%beg:idwbuff(1)%end, idwbuff(2)%beg:idwbuff(2)%end, &
+-                                   & idwbuff(3)%beg:idwbuff(3)%end))
++                        if (flux_aliased) then
++                            flux_n(i)%vf(l)%sf(-1:, -1:, -1:) => flux_rsx_vf(:,:,:,l)
++                            $:GPU_ENTER_DATA(attach='[flux_n(i)%vf(l)%sf]')
++                        else
++                            @:ALLOCATE(flux_n(i)%vf(l)%sf(idwbuff(1)%beg:idwbuff(1)%end, idwbuff(2)%beg:idwbuff(2)%end, &
++                                       & idwbuff(3)%beg:idwbuff(3)%end))
++                        end if
+                         @:ALLOCATE(flux_gsrc_n(i)%vf(l)%sf(idwbuff(1)%beg:idwbuff(1)%end, idwbuff(2)%beg:idwbuff(2)%end, &
+                                    & idwbuff(3)%beg:idwbuff(3)%end))
+                     end do
+@@ -239,8 +257,13 @@ contains
+                     !
+                     ! adv_src_mode_none: flux_src(adv%beg:adv%end) = zeros. No separate NC advection source term. Allocated
+                     ! for structural consistency with s_finalize_riemann_solver.
+-                    @:ALLOCATE(flux_src_n(i)%vf(eqn_idx%adv%beg)%sf(idwbuff(1)%beg:idwbuff(1)%end, idwbuff(2)%beg:idwbuff(2)%end, &
+-                               & idwbuff(3)%beg:idwbuff(3)%end))
++                    if (flux_aliased) then
++                        flux_src_n(i)%vf(eqn_idx%adv%beg)%sf(-1:, -1:, -1:) => flux_src_rsx_vf(:,:,:,eqn_idx%adv%beg)
++                        $:GPU_ENTER_DATA(attach='[flux_src_n(i)%vf(eqn_idx%adv%beg)%sf]')
++                    else
++                        @:ALLOCATE(flux_src_n(i)%vf(eqn_idx%adv%beg)%sf(idwbuff(1)%beg:idwbuff(1)%end, &
++                                   & idwbuff(2)%beg:idwbuff(2)%end, idwbuff(3)%beg:idwbuff(3)%end))
++                    end if
+ 
+                     if (adv_src_mode == adv_src_mode_alpha_iface .or. adv_src_mode == adv_src_mode_none) then
+                         ! Alpha-interface needs separate per-fluid arrays. HLLD (adv_src_mode_none) allocates for structural
+@@ -2235,7 +2258,11 @@ contains
+                     end do
+                 else
+                     do l = 1, sys_size
+-                        @:DEALLOCATE(flux_n(i)%vf(l)%sf)
++                        if (flux_aliased) then
++                            nullify (flux_n(i)%vf(l)%sf)
++                        else
++                            @:DEALLOCATE(flux_n(i)%vf(l)%sf)
++                        end if
+                         @:DEALLOCATE(flux_gsrc_n(i)%vf(l)%sf)
+                     end do
+ 
+@@ -2259,7 +2286,11 @@ contains
+                         end do
+                     end if
+ 
+-                    @:DEALLOCATE(flux_src_n(i)%vf(eqn_idx%adv%beg)%sf)
++                    if (flux_aliased) then
++                        nullify (flux_src_n(i)%vf(eqn_idx%adv%beg)%sf)
++                    else
++                        @:DEALLOCATE(flux_src_n(i)%vf(eqn_idx%adv%beg)%sf)
++                    end if
+                 end if
+ 
+                 @:DEALLOCATE(flux_n(i)%vf, flux_src_n(i)%vf, flux_gsrc_n(i)%vf)
+diff --git a/src/simulation/m_riemann_solvers.fpp b/src/simulation/m_riemann_solvers.fpp
+index 9ee91ec..b68c1ef 100644
+--- a/src/simulation/m_riemann_solvers.fpp
++++ b/src/simulation/m_riemann_solvers.fpp
+@@ -103,9 +103,11 @@ contains
+         is1%beg = -1; is2%beg = 0; is3%beg = 0
+         is1%end = m; is2%end = n; is3%end = p
+ 
+-        @:ALLOCATE(flux_rsx_vf(-1:m, -1:n, -1:p, 1:sys_size))
++        if (.not. flux_aliased) then  ! else m_rhs allocated them as its own flux arrays
++            @:ALLOCATE(flux_rsx_vf(-1:m, -1:n, -1:p, 1:sys_size))
++            @:ALLOCATE(flux_src_rsx_vf(-1:m, -1:n, -1:p, eqn_idx%adv%beg:sys_size))
++        end if
+         @:ALLOCATE(flux_gsrc_rsx_vf(-1:m, -1:n, -1:p, 1:sys_size))
+-        @:ALLOCATE(flux_src_rsx_vf(-1:m, -1:n, -1:p, eqn_idx%adv%beg:sys_size))
+         @:ALLOCATE(vel_src_rsx_vf(-1:m, -1:n, -1:p, 1:num_vels))
+         if (qbmm) then
+             @:ALLOCATE(mom_sp_rsx_vf(-1:m+1, -1:n+1, -1:p+1, 1:4))
+diff --git a/src/simulation/m_riemann_state.fpp b/src/simulation/m_riemann_state.fpp
+index 969ea36..b7e0c02 100644
+--- a/src/simulation/m_riemann_state.fpp
++++ b/src/simulation/m_riemann_state.fpp
+@@ -20,10 +20,14 @@ module m_riemann_state
+     !! direct evaluation of source terms, by using the left and right states given in qK_prim_rs_vf, dqK_prim_ds_vf where ds = dx,
+     !! dy or dz.
+     !> @{
+-    real(wp), allocatable, dimension(:,:,:,:) :: flux_rsx_vf, flux_src_rsx_vf
++    real(wp), allocatable, target, dimension(:,:,:,:) :: flux_rsx_vf, flux_src_rsx_vf
+     $:GPU_DECLARE(create='[flux_rsx_vf, flux_src_rsx_vf]')
+     !> @}
+ 
++    !> True when the RHS fluxes point straight at flux_rsx_vf and flux_src_rsx_vf(:,:,:,adv%beg) (set by m_rhs), so that
++    !! s_finalize_riemann_solver has nothing to copy for them
++    logical :: flux_aliased = .false.
++
+     !> The cell-boundary values of the geometrical source flux that are computed through the chosen Riemann problem solver by using
+     !! the left and right states given in qK_prim_rs_vf. Currently 2D axisymmetric for inviscid only.
+     !> @{
+@@ -1349,21 +1353,30 @@ contains
+                 #:endif
+                 integer, intent(in) :: norm_dir
+                 integer             :: i, j, k, l  !< Generic loop iterators
++                logical             :: copy_flux   !< false when flux_vf already is the solver's buffer
++
++                #:if SUFFIX == ''
++                    copy_flux = .not. flux_aliased
++                #:else
++                    copy_flux = .true.
++                #:endif
+                 ! Reshaping Outputted Data in y-direction
+ 
+                 if (norm_dir == 2) then
+-                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
+-                    do l = is3%beg, is3%end
+-                        do j = is1%beg, is1%end
+-                            do k = is2%beg, is2%end
+-                                $:GPU_LOOP(parallelism='[seq]')
+-                                do i = 1, sys_size
+-                                    flux_vf(i)%sf(k, j, l) = flux_${INFIX}$rsx_vf(k, j, l, i)
++                    if (copy_flux) then
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
++                        do l = is3%beg, is3%end
++                            do j = is1%beg, is1%end
++                                do k = is2%beg, is2%end
++                                    $:GPU_LOOP(parallelism='[seq]')
++                                    do i = 1, sys_size
++                                        flux_vf(i)%sf(k, j, l) = flux_${INFIX}$rsx_vf(k, j, l, i)
++                                    end do
+                                 end do
+                             end do
+                         end do
+-                    end do
+-                    $:END_GPU_PARALLEL_LOOP()
++                        $:END_GPU_PARALLEL_LOOP()
++                    end if
+ 
+                     if (cyl_coord) then
+                         $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
+@@ -1381,15 +1394,17 @@ contains
+                     end if
+ 
+                     #:if SUFFIX == ''
+-                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
+-                        do l = is3%beg, is3%end
+-                            do j = is1%beg, is1%end
+-                                do k = is2%beg, is2%end
+-                                    flux_src_vf(eqn_idx%adv%beg)%sf(k, j, l) = flux_src_rsx_vf(k, j, l, eqn_idx%adv%beg)
++                        if (.not. flux_aliased) then
++                            $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
++                            do l = is3%beg, is3%end
++                                do j = is1%beg, is1%end
++                                    do k = is2%beg, is2%end
++                                        flux_src_vf(eqn_idx%adv%beg)%sf(k, j, l) = flux_src_rsx_vf(k, j, l, eqn_idx%adv%beg)
++                                    end do
+                                 end do
+                             end do
+-                        end do
+-                        $:END_GPU_PARALLEL_LOOP()
++                            $:END_GPU_PARALLEL_LOOP()
++                        end if
+ 
+                         ! Copy the per-fluid flux_src entries only for the alpha-interface representation. HLLD
+                         ! (adv_src_mode_none) writes only the adv%beg row, so its per-fluid entries are never
+@@ -1410,18 +1425,20 @@ contains
+                     #:endif
+                     ! Reshaping Outputted Data in z-direction
+                 else if (norm_dir == 3) then
+-                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
+-                    do j = is1%beg, is1%end
+-                        do k = is2%beg, is2%end
+-                            do l = is3%beg, is3%end
+-                                $:GPU_LOOP(parallelism='[seq]')
+-                                do i = 1, sys_size
+-                                    flux_vf(i)%sf(l, k, j) = flux_${INFIX}$rsx_vf(l, k, j, i)
++                    if (copy_flux) then
++                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
++                        do j = is1%beg, is1%end
++                            do k = is2%beg, is2%end
++                                do l = is3%beg, is3%end
++                                    $:GPU_LOOP(parallelism='[seq]')
++                                    do i = 1, sys_size
++                                        flux_vf(i)%sf(l, k, j) = flux_${INFIX}$rsx_vf(l, k, j, i)
++                                    end do
+                                 end do
+                             end do
+                         end do
+-                    end do
+-                    $:END_GPU_PARALLEL_LOOP()
++                        $:END_GPU_PARALLEL_LOOP()
++                    end if
+                     #:if SUFFIX == ''
+                         if (grid_geometry == 3) then
+                             $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
+@@ -1438,15 +1455,17 @@ contains
+                             $:END_GPU_PARALLEL_LOOP()
+                         end if
+ 
+-                        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
+-                        do j = is1%beg, is1%end
+-                            do k = is2%beg, is2%end
+-                                do l = is3%beg, is3%end
+-                                    flux_src_vf(eqn_idx%adv%beg)%sf(l, k, j) = flux_src_rsx_vf(l, k, j, eqn_idx%adv%beg)
++                        if (.not. flux_aliased) then
++                            $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
++                            do j = is1%beg, is1%end
++                                do k = is2%beg, is2%end
++                                    do l = is3%beg, is3%end
++                                        flux_src_vf(eqn_idx%adv%beg)%sf(l, k, j) = flux_src_rsx_vf(l, k, j, eqn_idx%adv%beg)
++                                    end do
+                                 end do
+                             end do
+-                        end do
+-                        $:END_GPU_PARALLEL_LOOP()
++                            $:END_GPU_PARALLEL_LOOP()
++                        end if
+ 
+                         ! Copy the per-fluid flux_src entries only for the alpha-interface representation. HLLD
+                         ! (adv_src_mode_none) writes only the adv%beg row, so its per-fluid entries are never
+@@ -1466,29 +1485,33 @@ contains
+                         end if
+                     #:endif
+                 else if (norm_dir == 1) then
+-                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
+-                    do l = is3%beg, is3%end
+-                        do k = is2%beg, is2%end
+-                            do j = is1%beg, is1%end
+-                                $:GPU_LOOP(parallelism='[seq]')
+-                                do i = 1, sys_size
+-                                    flux_vf(i)%sf(j, k, l) = flux_${INFIX}$rsx_vf(j, k, l, i)
+-                                end do
+-                            end do
+-                        end do
+-                    end do
+-                    $:END_GPU_PARALLEL_LOOP()
+-
+-                    #:if SUFFIX == ''
++                    if (copy_flux) then
+                         $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
+                         do l = is3%beg, is3%end
+                             do k = is2%beg, is2%end
+                                 do j = is1%beg, is1%end
+-                                    flux_src_vf(eqn_idx%adv%beg)%sf(j, k, l) = flux_src_rsx_vf(j, k, l, eqn_idx%adv%beg)
++                                    $:GPU_LOOP(parallelism='[seq]')
++                                    do i = 1, sys_size
++                                        flux_vf(i)%sf(j, k, l) = flux_${INFIX}$rsx_vf(j, k, l, i)
++                                    end do
+                                 end do
+                             end do
+                         end do
+                         $:END_GPU_PARALLEL_LOOP()
++                    end if
++
++                    #:if SUFFIX == ''
++                        if (.not. flux_aliased) then
++                            $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
++                            do l = is3%beg, is3%end
++                                do k = is2%beg, is2%end
++                                    do j = is1%beg, is1%end
++                                        flux_src_vf(eqn_idx%adv%beg)%sf(j, k, l) = flux_src_rsx_vf(j, k, l, eqn_idx%adv%beg)
++                                    end do
++                                end do
++                            end do
++                            $:END_GPU_PARALLEL_LOOP()
++                        end if
+ 
+                         ! Copy the per-fluid flux_src entries only for the alpha-interface representation. HLLD
+                         ! (adv_src_mode_none) writes only the adv%beg row, so its per-fluid entries are never
+-- 
+2.34.1
+
