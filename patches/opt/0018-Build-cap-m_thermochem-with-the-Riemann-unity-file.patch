@@ -1,0 +1,35 @@
+From 27ff64e7406a43a3e5638ebc3469f1b5c1a3c79d Mon Sep 17 00:00:00 2001
+From: xs1128 <hipac1@lsalab.cs.nthu.edu.tw>
+Date: Sun, 1 Nov 2026 19:55:17 +0800
+Subject: [PATCH] Build: give the generated m_thermochem the Riemann unity
+ file's register cap
+
+Chemistry GPU builds failed to link since the unity-file cap (0012): nvlink rejects capped kernels
+(s_convert_conservative_to_primitive_variables, the viscous kernels) calling m_thermochem routines compiled with
+148-230 registers. Cap that generated file as well, like m_hb_function and m_bubbles_EL_kernels. Non-chemistry
+builds compile a stub there and are unaffected.
+---
+ CMakeLists.txt | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 7780294..c773ef5 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -175,9 +175,12 @@ if (MFC_SIMULATION)
+         set_source_files_properties("${_unity}" PROPERTIES OBJECT_DEPENDS "${_unity_parts}")
+         list(APPEND simulation_SRCs "${_unity}")
+         # The 5-eq HLLC kernels then use 146-152 registers: 3 blocks of 128 threads per SM. A cap of 128 makes it 4
+-        # (best of 152/128/96 on H200). Device routines that the unity file calls in other files need the same cap (nvlink).
++        # (best of 152/128/96 on H200). Device routines that the unity file calls in other files need the same cap (nvlink):
++        # m_hb_function, m_bubbles_EL_kernels, and the generated m_thermochem (chemistry builds: the conversion kernels
++        # call get_temperature, the viscous ones get_mixture_viscosity_mixavg).
+         set_source_files_properties("${_unity}" "${CMAKE_BINARY_DIR}/fypp/simulation/m_hb_function.fpp.f90"
+                                     "${CMAKE_BINARY_DIR}/fypp/simulation/m_bubbles_EL_kernels.fpp.f90"
++                                    "${CMAKE_BINARY_DIR}/modules/simulation/m_thermochem.f90"
+                                     PROPERTIES COMPILE_OPTIONS "-gpu=maxregcount:128")
+ 
+         # The WENO reconstruction kernels need ~190 registers, which limits them to 8 resident warps per SM. Capping
+-- 
+2.34.1
+

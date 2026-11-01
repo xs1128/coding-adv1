@@ -99,3 +99,7 @@
   `UCX_TLS=self`, valid only for a single rank; commit d671af8 described it as the four-transport list. At 4 ranks
   `self` alone cannot reach peers and MPI_Init failed (669420 b1, ~1 GPU-min). ab.sbatch now maps '+' to ',' in
   ENV_* values.
+- Defect found by the P14 test-variant pre-build: since 0012 (P10) chemistry GPU builds fail to link. nvlink rejects
+  unity-file kernels capped at 128 registers calling the generated m_thermochem (148-230 registers). The fmt (P11)
+  pre-build had not hit it; its chemistry variants were not rebuilt there. Fixed by 0018 (cap m_thermochem as well,
+  like m_hb_function). The P14 suite waits for the rebuilt variants.
