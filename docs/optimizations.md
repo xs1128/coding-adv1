@@ -271,6 +271,13 @@ component (`OMPI_MCA_pml=ob1 OMPI_MCA_btl=self,vader OMPI_MCA_osc=^ucx`) keeps U
 From the default environment (5.556 s, 669785) that is −23 %. Configuration only, for single-rank runs; multi-GPU runs
 need a CUDA-aware transport (UCX, or ob1 with smcuda), not measured here.
 
+**Where the 1-GPU wall goes now (trace 669961, P16 + ob1 environment, 30 steps, under nsys).** INIT 1.35 s: INIT-MPI
+0.71 s (MPI_Init 0.23 s; the rest is mostly CUDA context creation in libcuda), INIT-MODULES 0.58 s (restart read:
+`MPI_File_read_all` 0.12 s plus ~0.12 s of Fortran temporaries and page faults), INIT-GPU-VARS 0.06 s. Time march
+1.71 s: 30 steps 1.11 s, SAVE-DATA 0.59 s (`MPI_File_write_all` 0.30 s for 520 MB, device-to-host copies ~0.1 s,
+temporaries ~0.06 s). Finalize 0.07 s + MPI_Finalize 0.05 s. What remains outside the steps is mostly the file system,
+the CUDA driver and the restart format; the staging buffer that would remove the temporaries was within noise (iobuf).
+
 **Start-up and save on the host (trace 669826, P16, `UCX_TLS=self`, CPU sampling at ~1 kHz).** Outside MPI_Init, the
 largest host costs are Fortran array temporaries in the restart I/O: `MPI_IO_DATA%var(i)%sf` points at the
 (0:m,0:n,0:p) interior of a ghost-padded array, so each `MPI_FILE_READ_ALL` / `WRITE_ALL` goes through a fresh
