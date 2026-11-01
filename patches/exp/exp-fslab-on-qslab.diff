@@ -1,0 +1,92 @@
+diff --git a/src/simulation/m_riemann_solver_hllc.fpp b/src/simulation/m_riemann_solver_hllc.fpp
+index bd7abcd..02f5f04 100644
+--- a/src/simulation/m_riemann_solver_hllc.fpp
++++ b/src/simulation/m_riemann_solver_hllc.fpp
+@@ -32,7 +32,8 @@ contains
+     !> HLLC Riemann solver with contact restoration, Toro et al. Shock Waves (1994)
+     subroutine s_hllc_riemann_solver(qL_prim_rsx_vf, dqL_prim_dx_vf, dqL_prim_dy_vf, dqL_prim_dz_vf, qL_prim_vf, qR_prim_rsx_vf, &
+                                      & dqR_prim_dx_vf, dqR_prim_dy_vf, dqR_prim_dz_vf, qR_prim_vf, q_prim_vf, flux_vf, &
+-                                     & flux_src_vf, flux_gsrc_vf, norm_dir, ix, iy, iz, q_slab, qp_layer)
++                                     & flux_src_vf, flux_gsrc_vf, norm_dir, ix, iy, iz, q_slab, qp_layer, fx_slab, fs_slab, &
++                                     & vs_slab, nfx, nfs, nvs)
+ 
+         real(wp), dimension(idwbuff(1)%beg:,idwbuff(2)%beg:,idwbuff(3)%beg:,1:), intent(inout) :: qL_prim_rsx_vf, qR_prim_rsx_vf
+         type(scalar_field), dimension(sys_size), intent(in) :: q_prim_vf
+@@ -45,9 +46,16 @@ contains
+         integer, intent(in)                                    :: norm_dir
+         type(int_bounds_info), intent(in)                      :: ix, iy, iz
+         !> conservative + primitive layers (m_rhs)
++
+         real(wp), dimension(idwbuff(1)%beg:idwbuff(1)%end,idwbuff(2)%beg:idwbuff(2)%end,idwbuff(3)%beg:idwbuff(3)%end, &
+              & 1:2*sys_size), intent(in) :: q_slab
+         integer, dimension(1:sys_size), intent(in) :: qp_layer  !< layer of each primitive field in q_slab
++        !> flux_rsx_vf, flux_src_rsx_vf and vel_src_rsx_vf (m_riemann_state) as explicit-shape dummies for the fused kernel: their
++        !! bounds are fixed at entry, so its stores do not make it reload a module descriptor
++        integer, intent(in)                                                                          :: nfx, nfs, nvs
++        real(wp), dimension(-1:m,-1:n,-1:p,1:nfx), intent(inout)                                     :: fx_slab
++        real(wp), dimension(-1:m,-1:n,-1:p,eqn_idx%adv%beg:eqn_idx%adv%beg + nfs - 1), intent(inout) :: fs_slab
++        real(wp), dimension(-1:m,-1:n,-1:p,1:nvs), intent(inout)                                     :: vs_slab
+ 
+         #:if not MFC_CASE_OPTIMIZATION and USING_AMD
+             real(wp), dimension(3) :: alpha_rho_L, alpha_rho_R
+@@ -878,13 +886,15 @@ contains
+                             #:if FUSED
+                                 #:set QL = lambda x: 'qLf(' + x + ')'
+                                 #:set QR = lambda x: 'qRf(' + x + ')'
+-                                #:set FLX = lambda x: 'flux_rsx_vf(' + SF('') + ', ' + x + ' + foff)'
+-                                #:set FSRC = lambda x: 'flux_src_rsx_vf(' + SF('') + ', ' + x + ' + fsoff)'
++                                #:set FLX = lambda x: 'fx_slab(' + SF('') + ', ' + x + ' + foff)'
++                                #:set FSRC = lambda x: 'fs_slab(' + SF('') + ', ' + x + ' + fsoff)'
++                                #:set VSRC = lambda x: 'vs_slab(' + SF('') + ', ' + x + ')'
+                             #:else
+                                 #:set QL = lambda x: 'qL_prim_rsx_vf(' + SF('') + ', ' + x + ')'
+                                 #:set QR = lambda x: 'qR_prim_rsx_vf(' + SF(' + 1') + ', ' + x + ')'
+                                 #:set FLX = lambda x: 'flux_rsx_vf(' + SF('') + ', ' + x + ')'
+                                 #:set FSRC = lambda x: 'flux_src_rsx_vf(' + SF('') + ', ' + x + ')'
++                                #:set VSRC = lambda x: 'vel_src_rsx_vf(' + SF('') + ', ' + x + ')'
+                             #:endif
+                             ! 5-equation model (model_eqns=2): mixture total energy, volume fraction advection. Emitted twice --
+                             ! once specialized for hypoelasticity, once pure-fluid. The #:if HYPO guards strip every hypoelastic
+@@ -1419,10 +1429,8 @@ contains
+                                         ! VOLUME FRACTION SOURCE FLUX.
+                                         $:GPU_LOOP(parallelism='[seq]')
+                                         do i = 1, num_dims
+-                                            vel_src_rsx_vf(${SF('')}$, &
+-                                                           & dir_idx(i)) = xi_M*(vel_L(dir_idx(i)) + dir_flg(dir_idx(i)) &
+-                                                           & *s_M*xi_L_m1) + xi_P*(vel_R(dir_idx(i)) + dir_flg(dir_idx(i)) &
+-                                                           & *s_P*xi_R_m1)
++                                            ${VSRC('dir_idx(i)')}$ = xi_M*(vel_L(dir_idx(i)) + dir_flg(dir_idx(i))*s_M*xi_L_m1) &
++                                                   & + xi_P*(vel_R(dir_idx(i)) + dir_flg(dir_idx(i))*s_P*xi_R_m1)
+                                         end do
+ 
+                                         ! COLOR FUNCTION FLUX
+@@ -1431,7 +1439,7 @@ contains
+                                                   & + xi_P*${QR('eqn_idx%c')}$*(vel_R(dir_idx(1)) + s_P*xi_R_m1)
+                                         end if
+ 
+-                                        ${FSRC('eqn_idx%adv%beg')}$ = vel_src_rsx_vf(${SF('')}$, dir_idx(1))
++                                        ${FSRC('eqn_idx%adv%beg')}$ = ${VSRC('dir_idx(1)')}$
+ 
+                                         if (chemistry) then
+                                             $:GPU_LOOP(parallelism='[seq]')
+diff --git a/src/simulation/m_riemann_solvers.fpp b/src/simulation/m_riemann_solvers.fpp
+index 8b491d1..c5e5fbb 100644
+--- a/src/simulation/m_riemann_solvers.fpp
++++ b/src/simulation/m_riemann_solvers.fpp
+@@ -42,6 +42,7 @@ contains
+         integer, intent(in)                                    :: norm_dir
+         type(int_bounds_info), intent(in)                      :: ix, iy, iz
+         !> conservative + primitive layers (m_rhs)
++
+         real(wp), dimension(idwbuff(1)%beg:idwbuff(1)%end,idwbuff(2)%beg:idwbuff(2)%end,idwbuff(3)%beg:idwbuff(3)%end, &
+              & 1:2*sys_size), intent(in) :: q_slab
+         integer, dimension(1:sys_size), intent(in) :: qp_layer  !< layer of each primitive field in q_slab
+@@ -70,7 +71,7 @@ contains
+                 call s_${NAME}$_riemann_solver(qL_prim_rsx_vf, dqL_prim_dx_vf, dqL_prim_dy_vf, dqL_prim_dz_vf, qL_prim_vf, &
+                                                & qR_prim_rsx_vf, dqR_prim_dx_vf, dqR_prim_dy_vf, dqR_prim_dz_vf, qR_prim_vf, &
+                                                & q_prim_vf, flux_vf, flux_src_vf, flux_gsrc_vf, norm_dir, ix, iy, &
+-                                               & iz ${', q_slab, qp_layer' if NAME == 'hllc' else ''}$)
++                                               & iz ${', q_slab, qp_layer, flux_rsx_vf, flux_src_rsx_vf, vel_src_rsx_vf, size(flux_rsx_vf, 4), ' + 'size(flux_src_rsx_vf, 4), size(vel_src_rsx_vf, 4)' if NAME == 'hllc' else ''}$)
+             end if
+         #:endfor
+ 
