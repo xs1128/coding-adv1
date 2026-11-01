@@ -265,7 +265,10 @@ v5.7.0 multi-GPU A/B was not run.
 
 **Correctness.** Full `./mfc.sh test` on the GPU build of P15 (v5.7.0 + 0001–0018, `--mpi --acc-gpu`, jobs
 669500–669511): 712 passed; the failures are exactly the 23 tests in `harness/known_test_failures.txt`, which fail
-identically on pinned v5.7.0. P16–P19 have their bitwise A/B runs; the full suite on P18 is running (p18_full), P19 has none yet.
+identically on pinned v5.7.0. Full suite on P18 (v5.7.0 + 0001–0021, jobs 670591–670598 + make-up 671033): the same 713 tests as for P15, and the
+23 failures are again exactly the known list; no new failure. (The first 8 shards silently skipped 59 tests, because
+`--from/--to` follows the runner's order at run time; the make-up shard ran them, and `run_suite.sh` now passes explicit
+`--only` lists.) P19 and the P20 candidate have bitwise A/B runs but no suite of their own yet.
 
 **Wall time (environment, disclosed; not a source change).** At 1 GPU most of the wall is outside the steps. The
 largest piece was MPI_Init, which on HPC-X opens UCX and the node's InfiniBand adapters even for one rank. Same node,
@@ -310,5 +313,5 @@ fused flux difference + RK update ~1.9 ms after P18 and ~1.5 ms after P19 (estim
 peak), cons→prim 0.63 ms, boundaries 0.25 ms.
 
 **Reproduce.** `harness/reproduce.sh` applies `patches/opt/0001…0022`; the canonical nano4 tree is branch `p19`
-(worktree `mfc-rkb2`, reused from a rejected experiment); `p18` (worktree `mfc-p18`) is the tree under the full suite.
+(worktree `mfc-rkb2`, reused from a rejected experiment); `p18` (worktree `mfc-p18`) passed the full suite (all failures known).
 
