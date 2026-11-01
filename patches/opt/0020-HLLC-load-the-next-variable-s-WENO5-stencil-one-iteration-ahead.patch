@@ -1,0 +1,67 @@
+From 37b34b88a16747c1583ea20755088a83cc4950ef Mon Sep 17 00:00:00 2001
+From: u1131128 <hipac1@lsalab.cs.nthu.edu.tw>
+Date: Sun, 1 Nov 2026 22:51:55 +0800
+Subject: [PATCH] HLLC: load the next variable's WENO5 stencil one iteration
+ ahead
+
+In the fused WENO5+HLLC kernel (recon_riemann_fused) each thread reconstructs
+the face states variable by variable: six loads of q_prim_vf(i), then the
+smoothness indicators and both sides. At the kernel's occupancy the loads are
+not hidden: ncu (668497) puts 12.5 % of the warp-stall samples on the first
+use of the loaded values, with 0.2 % of the instructions.
+
+Load variable i + 1's stencil into w_n before reconstructing variable i, so the
+loads are in flight during the arithmetic. The last iteration reloads its own
+variable. The arithmetic and its order are unchanged.
+
+H200, 201^3, 1 GPU, same-node A/B (2 rounds x 3 reps): 36.66 -> 35.90 ms per
+step (-2.1 %), grind 0.1897 -> 0.1860 ns, bitwise identical to v5.7.0. The
+fused kernel's stack grows from 288 to 368 bytes at 128 registers.
+---
+ src/simulation/m_riemann_solver_hllc.fpp | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
+
+diff --git a/src/simulation/m_riemann_solver_hllc.fpp b/src/simulation/m_riemann_solver_hllc.fpp
+index 88af6df..a250729 100644
+--- a/src/simulation/m_riemann_solver_hllc.fpp
++++ b/src/simulation/m_riemann_solver_hllc.fpp
+@@ -161,6 +161,7 @@ contains
+         ! In-kernel WENO5 reconstruction (recon_riemann_fused)
+         real(wp), dimension(recon_riemann_fused_nmax) :: qLf, qRf
+         real(wp), dimension(-2:3)                     :: w_v
++        real(wp), dimension(-2:3)                     :: w_n          !< next variable's stencil, loaded one iteration ahead
+         real(wp), dimension(-2:1)                     :: w_dvd
+         real(wp), dimension(0:2)                      :: w_poly, w_beta, w_alpha, w_omega, w_delta
+         real(wp)                                      :: w_tau
+@@ -920,7 +921,7 @@ contains
+                                                                & + _hllc_e6) + ']'
+                             #:elif FUSED
+                                 #:set _hllc_priv = '[' + ', '.join(_hllc_s1 + _hllc_s2 + _hllc_s3 + _hllc_s4 + _hllc_s5 + _hllc_s6 &
+-                                                               & + ['qLf', 'qRf', 'w_v', 'w_dvd', 'w_poly', 'w_beta', 'w_alpha', &
++                                                               & + ['qLf', 'qRf', 'w_v', 'w_n', 'w_dvd', 'w_poly', 'w_beta', 'w_alpha', &
+                                                                & 'w_omega', 'w_delta', 'w_tau']) + ']'
+                             #:else
+                                 #:set _hllc_priv = '[' + ', '.join(_hllc_s1 + _hllc_s2 + _hllc_s3 + _hllc_s4 + _hllc_s5 + _hllc_s6) &
+@@ -948,11 +949,18 @@ contains
+                                             ! through memory: the right-boundary (cbR) value of cell ${SV}$ is the left state, the
+                                             ! left-boundary (cbL) value of cell ${SV}$ + 1 the right state. Same macros as s_weno,
+                                             ! so the states are bitwise the ones it would have stored.
++                                            ! Software-pipelined: variable i + 1's stencil is loaded before variable i is
++                                            ! reconstructed, so the loads overlap the arithmetic (the last iteration reloads i).
++                                            #:for o, os in [(-2, ' - 2'), (-1, ' - 1'), (0, ''), (1, ' + 1'), (2, ' + 2'), (3, &
++                                                             & ' + 3')]
++                                                w_n(${o}$) = q_prim_vf(1)%sf(${SF(os)}$)
++                                            #:endfor
+                                             $:GPU_LOOP(parallelism='[seq]')
+                                             do i = 1, sys_size
+                                                 #:for o, os in [(-2, ' - 2'), (-1, ' - 1'), (0, ''), (1, ' + 1'), (2, ' + 2'), &
+                                                                  & (3, ' + 3')]
+-                                                    w_v(${o}$) = q_prim_vf(i)%sf(${SF(os)}$)
++                                                    w_v(${o}$) = w_n(${o}$)
++                                                    w_n(${o}$) = q_prim_vf(min(i + 1, sys_size))%sf(${SF(os)}$)
+                                                 #:endfor
+                                                 #:for OUT, CB, C, o in [('qLf', 'cbR', SV, 0), ('qRf', 'cbL', SV + ' + 1', 1)]
+                                                     w_dvd(1) = w_v(${o + 2}$) - w_v(${o + 1}$)
+-- 
+2.47.3
+
