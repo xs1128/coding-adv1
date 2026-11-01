@@ -233,3 +233,8 @@ The official MFC table lists 0.38 ns for H100 SXM. That number uses a different 
 2. **Faces-only, all-dims-at-once halo exchange:** after P4 no reconstruction reads corner ghosts on the inviscid path
    (`docs/research-halo-overlap.md` option 4b, second half).
 3. **Halo/compute overlap** and fusing the copy-like kernels (`report.md` §9).
+
+**Save time (wall-time FOM).** At 1 GPU a 30-step run is ~6.2 s of wall, of which the steps are ~1.1 s. The one
+restart save (520 MB) takes 1.03–1.27 s and the rest is start-up. The ROMIO hints from `docs/research-env-tuning.md` §4
+(data sieving off with a 64 MB collective buffer; or independent writes) change nothing: save 1.02–1.27 s against
+1.04–1.14 s default, walls equal (669396, bitwise). The save is not bound by ROMIO's write path.
