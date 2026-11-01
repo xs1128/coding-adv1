@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Profiling job (submit via harness/submit.sh ... SCRIPT=profile). Env: MODE=nsys|ncu, TRACE=1 (raw traces), NCU_SKIP NCU_COUNT
-#   NCU_SET NCU_KERNEL, plus the run.sbatch vars. CSV summaries -> results/, reports stay in runs/.
+#   NCU_SET NCU_KERNEL, NSYS_TRACE (default cuda,nvtx,mpi,openacc,ucx) NSYS_SAMPLE (default none; cpu adds host
+#   sampling, exported to runs/<label>/*.sqlite), plus the run.sbatch vars. CSV summaries -> results/, reports stay in runs/.
 #SBATCH -A acd110018
 #SBATCH -p dev
 #SBATCH -N 1
@@ -11,6 +12,7 @@ if nvidia-smi --query-gpu=clocks_event_reasons.hw_power_brake_slowdown --format=
   echo "power brake active on $(hostname); not profiling (AGENT_LOG #16)" >&2; exit 3
 fi
 : "${LABEL:?}" "${CASE:?}" "${NGPU:=1}" "${BUILD:=generic}" "${MODE:=nsys}" "${CASE_ARGS:=}"
+: "${NSYS_TRACE:=cuda,nvtx,mpi,openacc,ucx}" "${NSYS_SAMPLE:=none}"
 : "${MPIRUN_ARGS:=}" "${RUN_ENV:=}" "${NCU_SKIP:=200}" "${NCU_COUNT:=120}" "${NCU_SET:=full}" "${NCU_KERNEL:=.*}"
 out=$ROOT/results/$LABEL
 run=$ROOT/runs/$LABEL
@@ -45,7 +47,7 @@ case "$MODE" in
     cat > "$wrap" <<EOF
 #!/usr/bin/env bash
 r=\${OMPI_COMM_WORLD_RANK:-0}
-exec nsys profile --trace=cuda,nvtx,mpi,openacc,ucx --mpi-impl=openmpi --sample=none --cpuctxsw=none \
+exec nsys profile --trace=$NSYS_TRACE --mpi-impl=openmpi --sample=$NSYS_SAMPLE --cpuctxsw=none \
      --force-overwrite=true -o "$run/nsys_rank\$r" "\$@"
 EOF
     ;;
@@ -78,6 +80,11 @@ case "$MODE" in
         --report nvtx_sum --report mpi_event_sum "$f" > /dev/null 2>&1 || true
       [[ ${TRACE:-0} == 1 ]] && nsys stats --force-export=true --format csv --output "$out/$b" \
         --report cuda_api_trace --report cuda_gpu_trace --report nvtx_pushpop_trace "$f" > /dev/null 2>&1 || true
+      [[ $NSYS_TRACE == *osrt* ]] && nsys stats --force-export=true --format csv --output "$out/$b" \
+        --report osrt_sum "$f" > /dev/null 2>&1 || true
+      # no stats report covers CPU samples: keep an SQLite export next to the report (runs/, not results/)
+      [[ $NSYS_SAMPLE != none ]] && nsys export --type sqlite --force-overwrite true -o "$run/$b.sqlite" "$f" \
+        > /dev/null 2>&1 || true
     done ;;
   ncu)
     ncu --import "$run/ncu_rank0.ncu-rep" --page raw --csv > "$out/ncu_raw.csv" 2>/dev/null || true
