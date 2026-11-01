@@ -29,6 +29,7 @@ One row per experiment, newest last. Baseline: `results/base/official_1g` (job 6
 | 19 | P15 | **Build fix:** the generated `m_thermochem` gets the unity file's register cap; chemistry GPU builds had failed to link since 0012 (`patches/opt/0018`) | P15 test-variant build (all 10 GPU variants), smoke 669487 (3/3, `--acc-gpu`) | no runtime change for perf3d | — | yes |
 | 20 | P16 | **NaN check of the saved state on the device**; host scan only to report (`patches/opt/0019`) | 669490 (1g ×2, hgpn005) | save 1.11–1.25 → 0.60–0.74 s; wall 6.01–6.57 → 5.78–5.91 s; grind unchanged | bitwise ✓ | yes |
 | 21 | rk4 | Fused RK update with one thread per (equation, cell), `collapse(4)` equation outermost (ncu 669515: the kernel ran DRAM at 25 %, latency-bound) | 669544 (1g ×2, hgpn037) | 36.63 → 37.96 ms (+3.6 %) | bitwise ✓ | no |
+| 22 | rk2p | Fused RK update: all loads of a cell into private arrays first, then the stores (no load waits behind a possibly-aliasing store) | 669580 (1g ×2, hgpn017) | 36.18–36.25 → 38.91–38.93 ms (+7.5 %) | bitwise ✓ | no |
 
 ### K4 diagnosis (HLLC, 1.88–2.19 ms/call vs 1.46 in v4.9.3)
 - ncu (job 600146): 18.75 % occupancy (160 regs), long-scoreboard stalls; **local-memory traffic exceeds global**

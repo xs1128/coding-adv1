@@ -46,3 +46,39 @@ mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
      ( 22/ 94)    1D -> Bubbles -> QBMM -> bubble_model=3 -> Non-...   16.45    5576FEEA
      ( 23/ 94)    1D -> Hypoelasticity -> 1 Fluid(s)                   15.46    9EB947DB
      ( 24/ 94)    1D -> Hypoelasticity -> 1 Fluid(s) -> cont_damage    15.31    32A3A936
+     ( 25/ 94)    1D -> Phase Change model 5 -> 2 Fluid(s) -> mod...   15.27    E6DBCBD9
+     ( 26/ 94)    1D -> Hypoelasticity -> 2 Fluid(s)                   15.33    AF0BCEE4
+     ( 27/ 94)    1D -> Phase Change model 5 -> 3 Fluid(s) -> mod...   15.22    F4D00494
+     ( 28/ 94)    1D -> Phase Change model 5 -> 2 Fluid(s) -> mod...   15.27    B2EFB9F7
+     ( 29/ 94)    1D -> Phase Change model 5 -> 3 Fluid(s) -> mod...   16.37    413DD555
+     Still running (>2min) D21F4F38  1D -> Phase Change model 6 -> 2 Fluid(s) -> model equation -> 3
+     Still running (>2min) 76C663B7  1D -> Phase Change model 6 -> 2 Fluid(s) -> model equation -> 2
+     ( 30/ 94)    1D -> Phase Change model 6 -> 2 Fluid(s) -> mod...  211.78    D21F4F38
+     ( 31/ 94)    1D -> Phase Change model 6 -> 2 Fluid(s) -> mod...  212.64    76C663B7
+     Still running (>2min) 8D6E051E  1D -> Phase Change model 6 -> 3 Fluid(s) -> model equation -> 3
+     Still running (>2min) D8136392  1D -> Phase Change model 6 -> 3 Fluid(s) -> model equation -> 2
+     ( 32/ 94)    1D -> Phase Change model 6 -> 3 Fluid(s) -> mod...  287.96    8D6E051E
+     ( 33/ 94)    1D -> Viscosity -> Bubbles -> Polytropic -> bub...   15.90    5E2265C4
+     ( 34/ 94)    1D -> Phase Change model 6 -> 3 Fluid(s) -> mod...  286.72    D8136392
+     ( 35/ 94)    1D -> Viscosity -> Bubbles -> Polytropic -> bub...   16.47    9465D0F5
+     ( 36/ 94)    1D -> Viscosity -> Bubbles -> bubble_model=2         16.43    FE3E35C4
+     ( 37/ 94)    1D -> Viscosity -> Bubbles -> nb=1                   16.40    729A4333
+     ( 38/ 94)    1D -> Viscosity -> Bubbles -> QBMM                   16.37    6784C02E
+     ( 39/ 94)    1D -> Viscosity -> Bubbles -> QBMM -> bubble_mo...   16.54    53E13D19
+     ( 40/ 94)    1D -> Viscosity -> Bubbles -> QBMM -> bubble_mo...   16.49    0501B3DA
+     ( 41/ 94)    1D -> Smoothing                                      15.19    4201674B
+     ( 42/ 94)    1D -> Viscosity -> Bubbles -> QBMM -> bubble_mo...   15.25    37FA2CEF
+     ( 43/ 94)    1D -> Bodyforces -> cfl_adap_dt=T                    15.59    AE02324F
+     ( 44/ 94)    1D -> Bodyforces                                     15.64    DEA0A0D6
+     ( 45/ 94)    2D -> bc=-2                                          15.59    EAA53889
+     ( 46/ 94)    2D -> bc=-1                                          15.64    55533234
+     ( 47/ 94)    2D -> bc=-4                                          15.48    20AE0551
+     ( 48/ 94)    2D -> bc=-5                                          15.43    A6E65782
+     ( 49/ 94)    2D -> bc=-6                                          16.34    4129A23A
+     ( 50/ 94)    2D -> bc=-7                                          16.29    E84967E7
+     ( 51/ 94)    2D -> bc=-8                                          16.06    5F877BC9
+     ( 52/ 94)    2D -> bc=-9                                          16.01    16C03D8E
+     ( 53/ 94)    2D -> bc=-11                                         15.50    8FDEE23A
+     ( 54/ 94)    2D -> bc=-10                                         15.55    B96AC58F
+     ( 55/ 94)    2D -> bc=-12                                         15.35    BF46F657
+     ( 56/ 94)    2D -> bc=-3                                          15.30    D972BA0F
