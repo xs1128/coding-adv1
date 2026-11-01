@@ -80,3 +80,9 @@
   were 94/45/32 s against 12 s for the same shape that morning (664895); grind was unchanged (0.0633). So the cause was
   node-side multi-rank start-up, not the code. Concurrent 1-GPU reps elsewhere were normal. Cost: 28 GPU-min, P11 arm
   only (kept as results/p12/ab_4g_rdma_timeout). Rerun as 668436 excluding hgpn040, with a 10-min limit.
+- Full suite p12_full, first attempt (668868-668875): every shard aborted under the runner's "100 % failure" guard, with
+  `pre_process` exiting 132 (SIGILL). Cause: my build chain ran the caseopt build of the same worktree (mfc-p12) right
+  after launching the suite. `pre_process` is not case-optimized, so both builds install into the same directory
+  (gpu-acc-7d1e32e277), and tests executed a binary that was being rewritten (installed 18:27:16). Cost: ~22 GPU-min.
+  Lesson: never build in a worktree while a suite runs from it; the suite now gets its own worktree, or runs after
+  the builds. Rerun the same day; the failed attempt is kept under results/test/failed_p12_full_concurrent_build.
