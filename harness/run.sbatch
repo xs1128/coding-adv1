@@ -14,7 +14,7 @@ run=$ROOT/runs/$LABEL            # bulky outputs (D/, restart_data/, silo) live 
 mkdir -p "$out" "$run"
 cp "$ROOT/$CASE" "$run/case.py"
 
-smi() { nvidia-smi --query-gpu=index,name,pci.bus_id,clocks.sm,clocks.mem,power.draw,power.limit,temperature.gpu,utilization.gpu,memory.used \
+smi() { nvidia-smi --query-gpu=index,name,pci.bus_id,clocks.sm,clocks.mem,power.draw,power.limit,temperature.gpu,utilization.gpu,memory.used,clocks_event_reasons.hw_power_brake_slowdown,clocks_event_reasons.hw_slowdown \
           --format=csv > "$1"; }
 {
   echo "job=$SLURM_JOB_ID host=$(hostname) date=$(date -Iseconds)"

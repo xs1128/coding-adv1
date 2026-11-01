@@ -46,3 +46,15 @@
   from the raw files in one script, never from rounded table entries.
 - Budget for P4 (all user-approved): 1-GPU A/B 5 GPU-min (621788), 4/8-GPU A/B 77 GPU-min (622305/6, estimate 70),
   full suite 138 GPU-min (622349–622356, estimate 124).
+
+## #16 — P7 (2026-11-01)
+- First design of 0009 re-pointed `flux_n(i>1)` pointers that OpenACC had already attached. Under the OpenACC rules a
+  second `attach` only bumps the attachment counter, so the device copy would have kept pointing at freed memory.
+  Caught in self-review before any build; the alias is now set where the arrays are first allocated, before any attach.
+- The `remap_attach.f90` test put `!$acc` directives after `;` on the same line, where Fortran treats them as comments,
+  so job 664557 failed with "not present". Fixed (directives on their own lines); 664560 PASS.
+- Two 1-GPU A/Bs (664568 on hgpn008, 664583 on hgpn010) ran 5x slow in *both* arms. Before reading anything into the
+  P7/P4 ratio there, the agent checked: identical inputs, harness and modules; `nvidia-smi -q` showed
+  "HW Power Brake Slowdown: Active" (664593). A 30 s probe found a clean node (hgpn028) for the real A/B (664597).
+  Lesson: run.sbatch should record the clock-event reasons, not just clocks; a braked GPU shows 1980 MHz idle.
+- Budget: ~40 GPU-min for the 1-GPU work (~28 of it lost to the power brake), plus the 4-GPU A/B (664612, ≤32).

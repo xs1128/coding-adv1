@@ -9,6 +9,11 @@ set -uo pipefail
 ROOT=/work/u1131128/coding-adv1
 : "${LABEL:?}" "${MFC_A:?}" "${MFC_B:?}" "${ROUNDS:=2}"
 base=$LABEL
+# A power-braked GPU runs every kernel ~5x slower (AGENT_LOG #16): refuse the node instead of timing it
+if nvidia-smi --query-gpu=clocks_event_reasons.hw_power_brake_slowdown --format=csv,noheader | grep -q '^Active'; then
+  echo "power brake active on $(hostname); not timing" >&2; mkdir -p "$ROOT/results/$base"
+  echo "$(hostname)" >> "$ROOT/results/$base/braked_nodes.txt"; exit 3
+fi
 for r in $(seq 1 "$ROUNDS"); do
   for v in a b; do
     dir=MFC_$(tr a-z A-Z <<<"$v")
