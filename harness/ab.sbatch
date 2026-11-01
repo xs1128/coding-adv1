@@ -19,7 +19,9 @@ for r in $(seq 1 "$ROUNDS"); do
   for v in a b c d e f; do
     dir=MFC_$(tr a-z A-Z <<<"$v")
     [[ -n ${!dir:-} ]] || continue
-    envv=ENV_$(tr a-z A-Z <<<"$v")   # optional per-arm environment, appended to RUN_ENV
-    LABEL=$base/$v$r MFC_DIR=${!dir} RUN_ENV="${RUN_ENV:-} ${!envv:-}" bash "$ROOT/harness/run.sbatch" || echo "$v$r failed" >&2
+    # optional per-arm environment, appended to RUN_ENV. sbatch --export splits at commas, so write '+' for ','
+    # (ENV_B="UCX_TLS=self+sm+cuda_copy+cuda_ipc"): a comma-separated value arrives cut at its first comma.
+    envv=ENV_$(tr a-z A-Z <<<"$v"); armenv=${!envv:-}; armenv=${armenv//+/,}
+    LABEL=$base/$v$r MFC_DIR=${!dir} RUN_ENV="${RUN_ENV:-} $armenv" bash "$ROOT/harness/run.sbatch" || echo "$v$r failed" >&2
   done
 done
