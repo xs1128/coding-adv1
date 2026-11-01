@@ -141,7 +141,7 @@ index 02f5f04..4f934b7 100644
                                              end do
                                          #:endif
 diff --git a/src/simulation/m_weno.fpp b/src/simulation/m_weno.fpp
-index 2fac3ba..93276a6 100644
+index 2fac3ba..a018c53 100644
 --- a/src/simulation/m_weno.fpp
 +++ b/src/simulation/m_weno.fpp
 @@ -17,7 +17,7 @@ module m_weno
@@ -202,7 +202,7 @@ index 2fac3ba..93276a6 100644
 +                        wcoef_${XYZ}$(24 + q, j) = d_cbR_${XYZ}$(q, j)
 +                    end do
 +                end do
-+                $:GPU_UPDATE(device='[wcoef_${XYZ}$]')
++                $:GPU_UPDATE(device='[wcoef_' + XYZ + ']')
 +            end if
 +        #:endfor
 +
