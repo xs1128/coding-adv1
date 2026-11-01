@@ -140,3 +140,5 @@ jobid	submitted	label	ngpu	minutes	vars
 664612	2026-11-01T10:14:50+08:00	p7/ab_4g_rdma	4	8	SCRIPT=ab ROUNDS=1 BUILD=caseopt REPS=3 CASE_ARGS=--rdma NODE=25a-hgpn028 MFC_A=/work/u1131128/coding-adv1/mfc-p4 MFC_B=/work/u1131128/coding-adv1/mfc-p7
 664614	2026-11-01T10:17:36+08:00	p7/ab_4g_rdma	4	8	SCRIPT=ab ROUNDS=1 BUILD=caseopt REPS=3 CASE_ARGS=--rdma MFC_A=/work/u1131128/coding-adv1/mfc-p4 MFC_B=/work/u1131128/coding-adv1/mfc-p7
 664617	2026-11-01T10:19:00+08:00	prof/p7_nsys_1g	1	6	runs/prof.sh mfc-p7 (10 steps, kernel summary)
+664752	2026-11-01T11:00:12+08:00	p7/regcap_1g	1	12	SCRIPT=ab ROUNDS=2 BUILD=caseopt REPS=3 MFC_A=/work/u1131128/coding-adv1/mfc-p7 MFC_B=/work/u1131128/coding-adv1/mfc-r128 MFC_C=/work/u1131128/coding-adv1/mfc-r96
+664763	2026-11-01T11:01:59+08:00	p9/arms_1g	1	16	SCRIPT=ab ROUNDS=2 BUILD=caseopt REPS=3 EXCLUDE=25a-hgpn007,25a-hgpn008,25a-hgpn010 MFC_A=/work/u1131128/coding-adv1/mfc-p7 MFC_B=/work/u1131128/coding-adv1/mfc-r128 MFC_C=/work/u1131128/coding-adv1/mfc-r96 MFC_D=/work/u1131128/coding-adv1/mfc-p8 MFC_E=/work/u1131128/coding-adv1/mfc-p9
