@@ -10,6 +10,7 @@ for t in 1 2 3 4 5 6; do
   ex=$( [[ -s $braked ]] && paste -sd, "$braked" )
   j=$(bash harness/submit.sh "$@" ${ex:+EXCLUDE=$ex})
   echo "try $t: job $j${ex:+ excluding $ex}"
+  [[ -n $j ]] || { echo "submit failed (bad arguments?)"; exit 2; }
   while squeue -j "$j" -h 2>/dev/null | grep -q .; do sleep 20; done
   [[ -s results/$label/a1/summary.tsv ]] && { echo "ran: job $j"; exit 0; }
 done
