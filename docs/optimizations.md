@@ -238,3 +238,10 @@ The official MFC table lists 0.38 ns for H100 SXM. That number uses a different 
 restart save (520 MB) takes 1.03–1.27 s and the rest is start-up. The ROMIO hints from `docs/research-env-tuning.md` §4
 (data sieving off with a 64 MB collective buffer; or independent writes) change nothing: save 1.02–1.27 s against
 1.04–1.14 s default, walls equal (669396, bitwise). The save is not bound by ROMIO's write path.
+
+**Single-node MPI transports (configuration, disclosed).** For runs inside one node, UCX needs only shared memory and
+CUDA IPC (`rdma_mpi`). `UCX_TLS=self,sm,cuda_copy,cuda_ipc UCX_POSIX_USE_PROC_LINK=n` (the second is needed for `sm`
+in these jobs) skips opening the node's InfiniBand adapters at start-up. At 4 GPUs (669435, hgpn037, 2 reps each): wall
+10.7 / 13.5 s against 22.6 / 17.0 s, grind 0.0551-0.0556 against 0.0552-0.0554, bitwise. At 1 GPU `UCX_TLS=self`
+suffices: ~5.5 s against ~6.0 s (669410). Wall times on nano4 vary run to run, so these need more reps before a final
+claim. Multi-node runs must keep the default.

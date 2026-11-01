@@ -1,0 +1,28 @@
+[1793533761.074846] [25a-hgpn023:3329234:0]          select.c:653  UCX  ERROR   no active messages transport to <no debug data>: self/memory - iface id and iface address differ (18270390471273460891 vs 160335406286163182)
+[25a-hgpn023:3329234] ../../../../../ompi/mca/pml/ucx/pml_ucx.c:429  Error: ucp_ep_create(proc=1) failed: Destination is unreachable
+[1793533761.075871] [25a-hgpn023:3329235:0]          select.c:653  UCX  ERROR   no active messages transport to <no debug data>: self/memory - iface id and iface address differ (160335406286163182 vs 7632675280269426960)
+[25a-hgpn023:3329235] ../../../../../ompi/mca/pml/ucx/pml_ucx.c:429  Error: ucp_ep_create(proc=2) failed: Destination is unreachable
+[1793533761.076370] [25a-hgpn023:3329236:0]          select.c:653  UCX  ERROR   no active messages transport to <no debug data>: self/memory - iface id and iface address differ (7632675280269426960 vs 195667871121957370)
+[25a-hgpn023:3329236] ../../../../../ompi/mca/pml/ucx/pml_ucx.c:429  Error: ucp_ep_create(proc=3) failed: Destination is unreachable
+--------------------------------------------------------------------------
+It looks like MPI_INIT failed for some reason; your parallel process is
+likely to abort.  There are many reasons that a parallel process can
+fail during MPI_INIT; some of which are due to configuration or environment
+problems.  This failure appears to be an internal failure; here's some
+additional information (which may only be relevant to an Open MPI
+developer):
+
+  PML add procs failed
+  --> Returned "Error" (-1) instead of "Success" (0)
+--------------------------------------------------------------------------
+[1793533761.076916] [25a-hgpn023:3329237:0]          select.c:653  UCX  ERROR   no active messages transport to <no debug data>: self/memory - iface id and iface address differ (195667871121957370 vs 18270390471273460891)
+[25a-hgpn023:3329237] ../../../../../ompi/mca/pml/ucx/pml_ucx.c:429  Error: ucp_ep_create(proc=0) failed: Destination is unreachable
+[25a-hgpn023:3329236] *** An error occurred in MPI_Init
+[25a-hgpn023:3329236] *** reported by process [4123262977,2]
+[25a-hgpn023:3329236] *** on a NULL communicator
+[25a-hgpn023:3329236] *** Unknown error
+[25a-hgpn023:3329236] *** MPI_ERRORS_ARE_FATAL (processes in this communicator will now abort,
+[25a-hgpn023:3329236] ***    and potentially your MPI job)
+[25a-hgpn023:3329229] 3 more processes have sent help message help-mpi-runtime.txt / mpi_init:startup:internal-failure
+[25a-hgpn023:3329229] Set MCA parameter "orte_base_help_aggregate" to 0 to see all help / error messages
+[25a-hgpn023:3329229] 2 more processes have sent help message help-mpi-errors.txt / mpi_errors_are_fatal unknown handle

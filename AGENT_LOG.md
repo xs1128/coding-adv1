@@ -103,3 +103,7 @@
   unity-file kernels capped at 128 registers calling the generated m_thermochem (148-230 registers). The fmt (P11)
   pre-build had not hit it; its chemistry variants were not rebuilt there. Fixed by 0018 (cap m_thermochem as well,
   like m_hb_function). The P14 suite waits for the rebuilt variants.
+- Correction: the P11 suite shards that ran (p11_full_s0/s1, "94/94 pass" in commit b5f97c7) used the CPU build
+  (`--no-gpu` in the test banner). mfc-fmt's pre-build had built CPU variants only, the same cause as the second
+  p12_full failure. So there is no GPU test-suite result for any series after P4 yet. The P3 and P4 suites did run
+  GPU builds (`--acc-gpu`). The P12 ladder row no longer cites a suite.
