@@ -63,3 +63,7 @@
   option; `SBATCH_EXCLUDE` is not read by sbatch (664752 landed on a braked node; the guard refused it in 4 s).
 - Budget 2026-11-01 (sacct): 98.1 GPU-min, of which 22.5 on power-braked nodes before the guard existed. No set over
   30 GPU-min; no 8-GPU run; full test suite not run yet for 0007-0014.
+- 8-GPU A/B P4 vs P11 (667577, user-approved at "~40 GPU-min"): cost 67 GPU-min (8 × 8.4 min) and still hit its
+  8-minute limit, so P11 has 2 reps, not 3, and there was no second round. The estimate counted only the timed reps
+  (~19 s each). It missed the per-arm pre_process run, the compare-vs-ref step and the 8-rank start-up. Lesson: for
+  8-GPU sets, budget from the elapsed time of an earlier job of the same shape (622306), not from rep wall time.
