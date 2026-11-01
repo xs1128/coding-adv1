@@ -8,6 +8,7 @@ set -euo pipefail
 ROOT=/work/u1131128/coding-adv1
 source "$ROOT/scripts/env.sh"
 : "${LABEL:?}" "${CASE:?}" "${NGPU:=1}" "${REPS:=3}" "${BUILD:=generic}" "${CASE_ARGS:=}" "${MPIRUN_ARGS:=}" "${RUN_ENV:=}" "${WRAP:=}"
+RUN_ENV=${RUN_ENV//+/,}; RUN_ENV=${RUN_ENV//@/ }  # sbatch --export splits at commas: write + for a comma, @ between variables
 : "${STEPPROF:=1}" "${KEEP_OUTPUT:=0}"
 out=$ROOT/results/$LABEL
 run=$ROOT/runs/$LABEL            # bulky outputs (D/, restart_data/, silo) live outside results/

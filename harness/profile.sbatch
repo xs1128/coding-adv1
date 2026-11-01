@@ -15,6 +15,7 @@ fi
 : "${NSYS_TRACE:=cuda,nvtx,mpi,openacc,ucx}" "${NSYS_SAMPLE:=none}"
 NSYS_TRACE=${NSYS_TRACE//+/,}  # sbatch --export splits at commas: pass cuda+nvtx+...
 : "${MPIRUN_ARGS:=}" "${RUN_ENV:=}" "${NCU_SKIP:=200}" "${NCU_COUNT:=120}" "${NCU_SET:=full}" "${NCU_KERNEL:=.*}"
+RUN_ENV=${RUN_ENV//+/,}; RUN_ENV=${RUN_ENV//@/ }  # sbatch --export splits at commas: write + for a comma, @ between variables
 out=$ROOT/results/$LABEL
 run=$ROOT/runs/$LABEL
 mkdir -p "$out" "$run"
