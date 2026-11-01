@@ -6,7 +6,7 @@ Every number in this report cites a Slurm job and a path under `results/`. Chang
 `docs/ladder.md`, and agent mistakes are in `AGENT_LOG.md`.
 
 **Addendum (2026-11-01, after the deadline):** §11 adds P7–P18 (`patches/opt/0007…0021`): 1 GPU now **2.13×**
-v5.7.0 in one same-node A/B at P16 and 2.26× (chained) at P18, the full GPU test suite clean on P15, and the start-up/save work on wall time. §1–§10 are
+v5.7.0 in one same-node A/B at P16 and **2.24×** at P18 (job 670158), the full GPU test suite clean on P15, and the start-up/save work on wall time. §1–§10 are
 the 10-31 report, unchanged.
 
 ## 1. Result
@@ -229,8 +229,9 @@ Rung by rung, with every rejected variant, in `docs/ladder.md` (rows 9–28) and
 | Grind (ns) | 0.3968–0.3985 | 0.1872–0.1877 | 2.12× |
 | Wall, default environment (median of 10) | 7.31 s | 5.65 s | 1.29× |
 
-P17 and P18 (below) take the 1-GPU step to 34.51 ms (670088): 2.26× v5.7.0 by chaining 669752 with the same-node
-A/Bs 670011 and 670088 (a direct v5.7.0 vs P18 A/B is pending). The 10-31 final (P4) was 1.27× at 1 GPU (§1). At 4 GPUs (`rdma_mpi`) P14 runs 10.56–10.69 ms per step (669420,
+With P17 and P18 (below), one more same-node A/B of v5.7.0 against the canonical tree (v5.7.0 + 0001–0021, 2 rounds ×
+5 reps, hgpn005, job 670158): step **76.75 / 76.74 → 34.39 / 34.30 ms, 2.24×**; grind 0.3963–0.3990 → 0.1768–0.1779 ns
+(2.24×); bitwise. (Chaining the A/Bs gave 2.26×.) The 10-31 final (P4) was 1.27× at 1 GPU (§1). At 4 GPUs (`rdma_mpi`) P14 runs 10.56–10.69 ms per step (669420,
 669435) against 17.03 ms for P4 (664614) and 23.10 ms for v5.7.0 (606018, a different job: about 2.2×, not a
 same-node ratio). At 8 GPUs, P4 → P11 grind 0.0502 → 0.0376 ns (667577); P12–P16 are not measured at 8 GPUs.
 

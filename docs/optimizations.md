@@ -43,6 +43,7 @@ AGENT_LOG #16). Every arm is bitwise identical to v5.7.0.
 | + P14: 0017 flux differences fused into the TVD-RK stage update (`rhs` neither written nor read) | **36.24 ms** (−1.9 % vs P13) | — | 669327 |
 | **v5.7.0 → P14, chained same-node ratios** | **2.13×** | (P12: 2.10×) | |
 | **v5.7.0 → P16, direct same-node A/B** (2 rounds × 5 reps, hgpn065) | **77.06 → 36.23 ms: 2.13×**; grind 0.3968–0.3985 → 0.1872–0.1877 ns (2.12×); wall median 7.31 → 5.65 s (1.29×) | — | 669752 |
+| **v5.7.0 → P18, direct same-node A/B** (canonical tree 0001–0021, 2 rounds × 5 reps, hgpn005) | **76.75 / 76.74 → 34.39 / 34.30 ms: 2.24×**; grind 0.3963–0.3990 → 0.1768–0.1779 ns (2.24×) | — | 670158 |
 
 8 GPUs (`rdma_mpi`, 667577, hgpn029): P4 → P11 grind 0.0502 → 0.0376 ns (−25.2 %), bitwise; the P11 arm got 2 of 3
 reps (time limit, AGENT_LOG). P12 at 8 GPUs is not measured.
