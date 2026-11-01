@@ -58,3 +58,8 @@
   "HW Power Brake Slowdown: Active" (664593). A 30 s probe found a clean node (hgpn028) for the real A/B (664597).
   Lesson: run.sbatch should record the clock-event reasons, not just clocks; a braked GPU shows 1980 MHz idle.
 - Budget: ~40 GPU-min for the 1-GPU work (~28 of it lost to the power brake), plus the 4-GPU A/B (664612, ≤32).
+- Build-script slips (no GPU cost, caught by checking each build's `git log` before timing): `git -C dir am ../x*.patch`
+  globbed relative to the shell's cwd, so P8/P9 first built without their patches; `git revert --no-verify` is not an
+  option; `SBATCH_EXCLUDE` is not read by sbatch (664752 landed on a braked node; the guard refused it in 4 s).
+- Budget 2026-11-01 (sacct): 98.1 GPU-min, of which 22.5 on power-braked nodes before the guard existed. No set over
+  30 GPU-min; no 8-GPU run; full test suite not run yet for 0007-0014.

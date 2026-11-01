@@ -1,0 +1,153 @@
+From 47855865f0f669f01e79e75debccce438ef892e8 Mon Sep 17 00:00:00 2001
+From: u1131128 <hipac1@lsalab.cs.nthu.edu.tw>
+Date: Sun, 1 Nov 2026 12:01:29 +0800
+Subject: [PATCH] Apply ./mfc.sh format to the series (whitespace and comment
+ reflow only)
+
+---
+ src/common/include/parallel_macros.fpp | 10 +++---
+ src/simulation/m_rhs.fpp               | 47 ++++++++++++--------------
+ 2 files changed, 27 insertions(+), 30 deletions(-)
+
+diff --git a/src/common/include/parallel_macros.fpp b/src/common/include/parallel_macros.fpp
+index 08b539f..1413c4d 100644
+--- a/src/common/include/parallel_macros.fpp
++++ b/src/common/include/parallel_macros.fpp
+@@ -256,13 +256,13 @@
+ ! Wait for work queued with 'async' before synchronous GPU work that consumes it. On NVHPC OpenACC the default async queue is
+ ! the synchronous stream (see GPU_ASYNC), so the device already runs both in issue order and the host need not wait.
+ #:def GPU_ASYNC_WAIT()
+-#:if USING_NVHPC
++    #:if USING_NVHPC
+ #if !defined(MFC_OpenACC)
+-    $:GPU_WAIT()
++        $:GPU_WAIT()
+ #endif
+-#:else
+-    $:GPU_WAIT()
+-#:endif
++    #:else
++        $:GPU_WAIT()
++    #:endif
+ #:enddef
+ 
+ #:def GPU_WAIT(extraAccArgs=None, extraOmpArgs=None)
+diff --git a/src/simulation/m_rhs.fpp b/src/simulation/m_rhs.fpp
+index a1a3713..6110c42 100644
+--- a/src/simulation/m_rhs.fpp
++++ b/src/simulation/m_rhs.fpp
+@@ -46,14 +46,13 @@ module m_rhs
+     type(vector_field) :: q_cons_qp  !< WENO-reconstructed cell-average conservative variables at quadrature points
+     $:GPU_DECLARE(create='[q_cons_qp]')
+ 
+-    !> On the plain path the RK stage state is q_cons_qp itself (m_time_steppers points q_cons_ts(1) at it), so s_compute_rhs
+-    !! skips the per-stage copy. The conversion writes the cont/adv entries back unchanged and reads the interior only; the halo
+-    !! fill then writes the ghost cells, which the RK update never touches. Physics that change q_cons_qp in place, or read
+-    !! the stage state's ghost cells, keep the copy.
+-    logical :: rhs_input_aliasable = .false.  !< set here; m_time_steppers aliases only if this is true
+-    logical :: rhs_input_aliased = .false.  !< set by m_time_steppers once q_cons_ts(1) is q_cons_qp
+-
+-    type(vector_field) :: q_prim_qp  !< Primitive variables at cell-interior quadrature points
++    !> On the plain path the RK stage state is q_cons_qp itself (m_time_steppers points q_cons_ts(1) at it), so s_compute_rhs skips
++    !! the per-stage copy. The conversion writes the cont/adv entries back unchanged and reads the interior only; the halo fill then
++    !! writes the ghost cells, which the RK update never touches. Physics that change q_cons_qp in place, or read the stage state's
++    !! ghost cells, keep the copy.
++    logical            :: rhs_input_aliasable = .false.  !< set here; m_time_steppers aliases only if this is true
++    logical            :: rhs_input_aliased = .false.    !< set by m_time_steppers once q_cons_ts(1) is q_cons_qp
++    type(vector_field) :: q_prim_qp                      !< Primitive variables at cell-interior quadrature points
+     $:GPU_DECLARE(create='[q_prim_qp]')
+ 
+     !> @name The first-order spatial derivatives of the primitive variables at cell- interior Gaussian quadrature points. These are
+@@ -133,10 +132,9 @@ module m_rhs
+     $:GPU_DECLARE(create='[qL_rsx_vf, qR_rsx_vf]')
+     $:GPU_DECLARE(create='[dqL_rsx_vf, dqR_rsx_vf]')
+ 
+-    !> The u-interface alpha_k*div(u) source is added inside the flux-difference kernel of each direction (same arithmetic, one
+-    !! pass over rhs) instead of by s_add_directional_advection_source_terms
++    !> The u-interface alpha_k*div(u) source is added inside the flux-difference kernel of each direction (same arithmetic, one pass
++    !! over rhs) instead of by s_add_directional_advection_source_terms
+     logical :: adv_src_fused
+-
+     integer :: iglob
+     $:GPU_DECLARE(create='[iglob]')
+ 
+@@ -222,11 +220,11 @@ contains
+             ! ordered for every sweep direction, so s_finalize_riemann_solver has nothing to copy. Other physics read further
+             ! or write more and keep their own arrays.
+             flux_aliased = .not. (qbmm .or. viscous .or. surface_tension .or. chemistry .or. hypoelasticity .or. cyl_coord &
+-                                  & .or. ib .or. bubbles_euler .or. bubbles_lagrange .or. relativity) .and. &
+-                                  & adv_src_mode == adv_src_mode_vel_iface .and. hypo_nc_mode /= hypo_nc_mode_dual_pass
++                                  & .or. ib .or. bubbles_euler .or. bubbles_lagrange .or. relativity) &
++                                  & .and. adv_src_mode == adv_src_mode_vel_iface .and. hypo_nc_mode /= hypo_nc_mode_dual_pass
+             rhs_input_aliasable = flux_aliased .and. .not. (probe_wrt .or. run_time_info .or. cont_damage)
+-            adv_src_fused = adv_src_mode == adv_src_mode_vel_iface .and. .not. (alt_soundspeed .or. cyl_coord) .and. &
+-                            & model_eqns /= model_eqns_6eq .and. hypo_nc_mode /= hypo_nc_mode_dual_pass
++            adv_src_fused = adv_src_mode == adv_src_mode_vel_iface .and. .not. (alt_soundspeed .or. cyl_coord) &
++                & .and. model_eqns /= model_eqns_6eq .and. hypo_nc_mode /= hypo_nc_mode_dual_pass
+             if (flux_aliased) then
+                 @:ALLOCATE(flux_rsx_vf(-1:m, -1:n, -1:p, 1:sys_size))
+                 @:ALLOCATE(flux_src_rsx_vf(-1:m, -1:n, -1:p, eqn_idx%adv%beg:sys_size))
+@@ -244,7 +242,7 @@ contains
+                 if (i == 1) then
+                     do l = 1, sys_size
+                         if (flux_aliased) then
+-                            flux_n(i)%vf(l)%sf(-1:, -1:, -1:) => flux_rsx_vf(:,:,:,l)
++                            flux_n(i)%vf(l)%sf(-1:,-1:,-1:) => flux_rsx_vf(:,:,:,l)
+                             $:GPU_ENTER_DATA(attach='[flux_n(i)%vf(l)%sf]')
+                         else
+                             @:ALLOCATE(flux_n(i)%vf(l)%sf(idwbuff(1)%beg:idwbuff(1)%end, idwbuff(2)%beg:idwbuff(2)%end, &
+@@ -273,7 +271,7 @@ contains
+                     ! adv_src_mode_none: flux_src(adv%beg:adv%end) = zeros. No separate NC advection source term. Allocated
+                     ! for structural consistency with s_finalize_riemann_solver.
+                     if (flux_aliased) then
+-                        flux_src_n(i)%vf(eqn_idx%adv%beg)%sf(-1:, -1:, -1:) => flux_src_rsx_vf(:,:,:,eqn_idx%adv%beg)
++                        flux_src_n(i)%vf(eqn_idx%adv%beg)%sf(-1:,-1:,-1:) => flux_src_rsx_vf(:,:,:,eqn_idx%adv%beg)
+                         $:GPU_ENTER_DATA(attach='[flux_src_n(i)%vf(eqn_idx%adv%beg)%sf]')
+                     else
+                         @:ALLOCATE(flux_src_n(i)%vf(eqn_idx%adv%beg)%sf(idwbuff(1)%beg:idwbuff(1)%end, &
+@@ -1098,8 +1096,7 @@ contains
+         real(wp) :: inv_ds, flux_face1, flux_face2
+         real(wp) :: advected_qty_val, pressure_val, velocity_val
+         real(wp) :: G1_eff, G2_eff, pres_K, alpha_K, alpha_rho_K, blkmod_K
+-
+-        logical :: fuse_src  !< add the u-interface alpha*div(u) term here (see adv_src_fused)
++        logical :: fuse_src                !< add the u-interface alpha*div(u) term here (see adv_src_fused)
+ 
+         fuse_src = adv_src_fused
+         G1_eff = 0._wp
+@@ -1171,8 +1168,8 @@ contains
+                                 flux_face2 = flux_src_n_vf%vf(eqn_idx%adv%beg)%sf(k_loop - 1, l_loop, q_loop)
+                                 $:GPU_LOOP(parallelism='[seq]')
+                                 do j = eqn_idx%adv%beg, eqn_idx%adv%end
+-                                    rhs_vf(j)%sf(k_loop, l_loop, q_loop) = rhs_vf(j)%sf(k_loop, l_loop, q_loop) &
+-                                                     & + inv_ds*q_cons_vf%vf(j)%sf(k_loop, l_loop, q_loop)*(flux_face1 - flux_face2)
++                                    rhs_vf(j)%sf(k_loop, l_loop, q_loop) = rhs_vf(j)%sf(k_loop, l_loop, &
++                                           & q_loop) + inv_ds*q_cons_vf%vf(j)%sf(k_loop, l_loop, q_loop)*(flux_face1 - flux_face2)
+                                 end do
+                             end if
+                         end do
+@@ -1259,8 +1256,8 @@ contains
+                                 flux_face2 = flux_src_n_vf%vf(eqn_idx%adv%beg)%sf(q, k - 1, l)
+                                 $:GPU_LOOP(parallelism='[seq]')
+                                 do j = eqn_idx%adv%beg, eqn_idx%adv%end
+-                                    rhs_vf(j)%sf(q, k, l) = rhs_vf(j)%sf(q, k, l) + inv_ds*q_cons_vf%vf(j)%sf(q, k, l)* &
+-                                                     & (flux_face1 - flux_face2)
++                                    rhs_vf(j)%sf(q, k, l) = rhs_vf(j)%sf(q, k, l) + inv_ds*q_cons_vf%vf(j)%sf(q, k, &
++                                           & l)*(flux_face1 - flux_face2)
+                                 end do
+                             end if
+                         end do
+@@ -1439,8 +1436,8 @@ contains
+                                     flux_face2 = flux_src_n_vf%vf(eqn_idx%adv%beg)%sf(l, q, k - 1)
+                                     $:GPU_LOOP(parallelism='[seq]')
+                                     do j = eqn_idx%adv%beg, eqn_idx%adv%end
+-                                        rhs_vf(j)%sf(l, q, k) = rhs_vf(j)%sf(l, q, k) + inv_ds*q_cons_vf%vf(j)%sf(l, q, k)* &
+-                                                         & (flux_face1 - flux_face2)
++                                        rhs_vf(j)%sf(l, q, k) = rhs_vf(j)%sf(l, q, k) + inv_ds*q_cons_vf%vf(j)%sf(l, q, &
++                                               & k)*(flux_face1 - flux_face2)
+                                     end do
+                                 end if
+                             end do
+-- 
+2.47.3
+
