@@ -245,3 +245,9 @@ in these jobs) skips opening the node's InfiniBand adapters at start-up. At 4 GP
 10.7 / 13.5 s against 22.6 / 17.0 s, grind 0.0551-0.0556 against 0.0552-0.0554, bitwise. At 1 GPU `UCX_TLS=self`
 suffices: ~5.5 s against ~6.0 s (669410). Wall times on nano4 vary run to run, so these need more reps before a final
 claim. Multi-node runs must keep the default.
+
+**P16: NaN check of the saved state on the device** (`patches/opt/0019`, wall time only). `s_save_data` scanned every
+saved value on the host with `ieee_is_nan`, single-threaded: 64 ms per variable at 201³ (trace 669407), half the
+save. A device reduction with an exact bit test now counts NaNs, and the host scan, with its message and abort, runs
+only if the count is non-zero. Same node (669490): save 1.11–1.25 → 0.60–0.74 s, wall 6.01–6.57 → 5.78–5.91 s,
+grind and output unchanged (bitwise). Not covered by the P15 suite run (p15_full), which predates it.

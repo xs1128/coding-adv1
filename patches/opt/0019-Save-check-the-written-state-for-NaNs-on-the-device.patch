@@ -1,0 +1,93 @@
+From 4d5e315e1d01ad81540a08cd9524dfceabbdcff9 Mon Sep 17 00:00:00 2001
+From: xs1128 <hipac1@lsalab.cs.nthu.edu.tw>
+Date: Sun, 1 Nov 2026 19:41:51 +0800
+Subject: [PATCH] Save: check the written state for NaNs on the device
+
+s_save_data scanned every saved value on the host with ieee_is_nan, one thread, after each variable's copy: ~64 ms
+per variable at 201^3 (8 ns per value), about half of the save. A device reduction now counts NaNs over the same
+interior cells with an exact bit test (exponent all ones, mantissa non-zero, after widening to real(8)); the host
+scan with its message and abort runs only when that count is non-zero, so the error report is unchanged.
+
+perf3d 201^3, 1 H200, same node (669490, hgpn005): save 1.11-1.25 -> 0.60-0.74 s, wall 6.01-6.57 -> 5.78-5.91 s,
+grind and output unchanged (bitwise).
+---
+ src/simulation/m_start_up.fpp | 47 ++++++++++++++++++++++++++---------
+ 1 file changed, 35 insertions(+), 12 deletions(-)
+
+diff --git a/src/simulation/m_start_up.fpp b/src/simulation/m_start_up.fpp
+index 4004b40..ed2edff 100644
+--- a/src/simulation/m_start_up.fpp
++++ b/src/simulation/m_start_up.fpp
+@@ -720,12 +720,16 @@ contains
+     !> Save conservative variable data to disk at the current time step
+     impure subroutine s_save_data(t_step, start, finish, io_time_avg, nt)
+ 
+-        integer, intent(inout)  :: t_step
+-        real(wp), intent(inout) :: start, finish, io_time_avg
+-        integer, intent(inout)  :: nt
+-        integer(kind=8)         :: i, j, k, l
+-        integer                 :: stor
+-        integer                 :: save_count
++        integer, intent(inout)     :: t_step
++        real(wp), intent(inout)    :: start, finish, io_time_avg
++        integer, intent(inout)     :: nt
++        integer(kind=8)            :: i, j, k, l
++        integer                    :: stor
++        integer                    :: save_count
++        integer                    :: nan_cnt  !< NaNs in the state about to be written (device count)
++        integer(kind=8)            :: bits
++        integer(kind=8), parameter :: nan_exp_mask = int(z'7FF0000000000000', kind=8)
++        integer(kind=8), parameter :: nan_man_mask = int(z'000FFFFFFFFFFFFF', kind=8)
+ 
+         if (down_sample) then
+             call s_populate_variables_buffers(bc_type, q_cons_ts(1)%vf)
+@@ -750,21 +754,40 @@ contains
+ 
+         call cpu_time(start)
+         call nvtxStartRange("SAVE-DATA")
++        ! Count NaNs on the device (an exact bit test: exponent all ones, mantissa non-zero), so the host scans the
++        ! output only to report one. The host scan alone took ~64 ms per variable at 201^3.
++        nan_cnt = 0
++        $:GPU_PARALLEL_LOOP(collapse=4, private='[bits]', reduction='[[nan_cnt]]', reductionOp='[+]')
+         do i = 1, sys_size
+-#ifndef FRONTIER_UNIFIED
+-            $:GPU_UPDATE(host='[q_cons_ts(stor)%vf(i)%sf]')
+-#endif
+             do l = 0, p
+                 do k = 0, n
+                     do j = 0, m
+-                        if (ieee_is_nan(real(q_cons_ts(stor)%vf(i)%sf(j, k, l), kind=wp))) then
+-                            print *, "NaN(s) in timestep output.", j, k, l, i, proc_rank, t_step, m, n, p
+-                            call s_mpi_abort("NaN(s) in timestep output.")
++                        bits = transfer(real(q_cons_ts(stor)%vf(i)%sf(j, k, l), kind=8), 0_8)
++                        if (iand(bits, nan_exp_mask) == nan_exp_mask .and. iand(bits, nan_man_mask) /= 0_8) then
++                            nan_cnt = nan_cnt + 1
+                         end if
+                     end do
+                 end do
+             end do
+         end do
++        $:END_GPU_PARALLEL_LOOP()
++        do i = 1, sys_size
++#ifndef FRONTIER_UNIFIED
++            $:GPU_UPDATE(host='[q_cons_ts(stor)%vf(i)%sf]')
++#endif
++            if (nan_cnt > 0) then
++                do l = 0, p
++                    do k = 0, n
++                        do j = 0, m
++                            if (ieee_is_nan(real(q_cons_ts(stor)%vf(i)%sf(j, k, l), kind=wp))) then
++                                print *, "NaN(s) in timestep output.", j, k, l, i, proc_rank, t_step, m, n, p
++                                call s_mpi_abort("NaN(s) in timestep output.")
++                            end if
++                        end do
++                    end do
++                end do
++            end if
++        end do
+ 
+         if (qbmm .and. .not. polytropic) then
+             $:GPU_UPDATE(host='[pb_ts(1)%sf]')
+-- 
+2.47.3
+
