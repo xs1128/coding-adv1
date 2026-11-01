@@ -46,6 +46,7 @@ AGENT_LOG #16). Every arm is bitwise identical to v5.7.0.
 | **v5.7.0 → P18, direct same-node A/B** (canonical tree 0001–0021, 2 rounds × 5 reps, hgpn005) | **76.75 / 76.74 → 34.39 / 34.30 ms: 2.24×**; grind 0.3963–0.3990 → 0.1768–0.1779 ns (2.24×) | — | 670158 |
 | **P18 → P19** (flux slabs read directly in the fused RK update; 2 rounds × 3 reps, hgpn021) | **34.27 / 34.28 → 33.14 / 33.10 ms (−3.4 %)**; grind 0.1777 → 0.1714 | — | 670619 |
 | *P19 → P20 candidate* (exp-rkq + exp-qslab + exp-fslab; not a rung until its full suite) | P19 33.17 / 33.20 → **30.07 / 30.08 ms (−9.4 %)** | — | 670811 (also 670687, 670779) |
+| *P19 → P20 candidate + exp-c2pskip* (cons→prim skips the identity copy of aliased fields) | P19 33.075 / 33.100 → **29.620 / 29.633 ms (−10.5 %)** | — | 671002 |
 | **P11 → P18 at 4 / 8 GPUs** (`rdma_mpi`, same node, `UCX_TLS=self,sm,cuda_copy,cuda_ipc` both arms, 3 reps, hgpn034) | 4g **12.294 → 10.131 ms (−17.6 %)**, grind 0.0632 → 0.0525; 8g **7.344 → 6.115 ms (−16.7 %)**, grind 0.0376 → 0.0315; wall unchanged (start-up dominated); bitwise all 4 arms | — | 670516, 670540 |
 
 8 GPUs (`rdma_mpi`, 667577, hgpn029): P4 → P11 grind 0.0502 → 0.0376 ns (−25.2 %), bitwise; the P11 arm got 2 of 3
@@ -175,7 +176,12 @@ per variable: P19 33.13 → 31.75 ms (670779). (3) exp-fslab: `flux_rsx_vf`, `fl
 passed down from the dispatch as explicit-shape dummies (`FLX`/`FSRC`/new `VSRC` macros of the fused emission): static
 LDG 346 → 158, IMAD 718 → 483; P19 33.18 → 30.07 ms (670811). All arms bitwise. Not adopted: per-cell packed WENO
 coefficients (`wcoef_x(0:26, cell)`; no gain, 670870), the RK update per (cell, equation) (+1.7 ms, 670933), and the
-reciprocal WENO normalisation (the compiler already emits it: identical SASS).
+reciprocal WENO normalisation (the compiler already emits it: identical SASS). (4) exp-c2pskip: `s_convert_conservative_to_primitive_variables` stored
+`q_prim(i) = q_cons(i)` for the cont and adv fields, which in the simulation are the same arrays (ncu 670978: all 8
+fields written, 505 MB per call, 29 % of DRAM peak, ~970 instructions per cell). It now checks
+`associated(qK_prim_vf(i)%sf, qK_cons_vf(i)%sf)` on the host and skips the copy (a store of a value onto itself, so
+bitwise by construction; pre/post-process pass separate arrays and are unchanged): −10.5 % against P19 with (1)–(3)
+(671002). Storing the velocities after the pressure on top of it was slower (671032).
 
 *Fused HLLC kernel, SASS mix after P18* (670130, `--print-source sass`, one launch): DFMA 23.1 %, DMUL 13.0 %, DADD 4.6 %
 of warp instructions; integer address arithmetic (IMAD, IADD3, LEA) 22.5 %; branch bookkeeping (BRA, BSSY, BSYNC)
