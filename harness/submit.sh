@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# harness/submit.sh LABEL CASE NGPU MINUTES [VAR=value ...]   (SCRIPT=run|profile|mfctest|osu, AFTER=<jobid>, NODE=<host>)
+# harness/submit.sh LABEL CASE NGPU MINUTES [VAR=value ...]   (SCRIPT=run|profile|mfctest|osu, AFTER=<jobid>, NODE=<host>,
+#   EXCLUDE=<host,...>)
 set -euo pipefail
 ROOT=/work/u1131128/coding-adv1
 label=${1:?LABEL}; case=${2:?CASE}; ngpu=${3:?NGPU}; mins=${4:?MINUTES}; shift 4
@@ -10,6 +11,7 @@ for kv in "$@"; do
     SCRIPT=*) script=${kv#SCRIPT=} ;;
     AFTER=*) dep=(--dependency=afterany:${kv#AFTER=}); continue ;;
     NODE=*) dep+=(--nodelist=${kv#NODE=}); continue ;;
+    EXCLUDE=*) dep+=(--exclude=${kv#EXCLUDE=}); continue ;;
   esac
   exports="$exports,$kv"
 done
