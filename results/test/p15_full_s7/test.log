@@ -1,0 +1,116 @@
+mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn005 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 2
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | 
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ambient N2 rho=1.1380 a1=353 | bubble rho=0.4879 (ratio 0.43) | shock M=2.5 u2=618 T2/T1=2.14
+fresh T=300 rho=0.0844 | burned T=2187 rho=0.0127 | driver P=6.67e+04
+Stoichiometric mixture fraction: Z_st = 0.029
+Convective Mach: Ma = 0.1530510393535898
+Reynolds number: Re = 3524.088030224578
+ Build | syscheck and pre_process
+
+
+ Build | syscheck and simulation
+
+
+ Build | syscheck and pre_process | Chemistry: h2o2.yaml
+
+
+ Build | syscheck and simulation | Chemistry: h2o2.yaml
+
+
+ Build | syscheck and pre_process | Chemistry: /work/u1131128/coding-adv1/mfc-rkfuse/examples/3D_reacting_mixing_layer/sandiego.yaml
+
+
+ Build | syscheck and simulation | Chemistry: /work/u1131128/coding-adv1/mfc-rkfuse/examples/3D_reacting_mixing_layer/sandiego.yaml
+
+
+
+ Test pre_process and simulation | from A582B270 to D0AC8751 (79 tests)
+  
+     Progress      Test Name                                        Time(s)   UUID
+  
+  
+     ✗ FAILED: 1D -> Example -> vacuum
+       UUID: E8C7E354
+       Attempts: 1
+       Error: Test tests/E8C7E354: 1D -> Example -> vacuum: Variable n°99 (1-indexed) in D/cons.3.00.000050.dat is not within tolerance:
+  - Candidate:   -94655.54501070228
+  - Golden:      -94812.67840696829
+  - Error:       abs: 1.57E+02, rel: 1.66E-03
+  - Tolerance:   abs: 1.00E-03, rel: 1.00E-03
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.7.00.000050.dat
+ - Variable n°100
+ - Candidate: 732540999.5158952
+ - Golden: 736885081.6279409
+ - Absolute Error: 4.34E+06
+ - Relative Error: 5.90E-03
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.8.00.000050.dat
+ - Variable n°100
+ - Candidate: 0.01198829016922
+ - Golden: 541003.1978254081
+ - Relative Error: 1.00E+00
+ - Absolute Error: 5.41E+05
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+     (  1/ 79)    1D -> Example -> shuosher_wenom5                     14.95    C1134EF2
+     (  2/ 79)    1D -> Example -> shuosher_old                        14.85    1DBC8382
+     (  3/ 79)    2D -> Example -> herschel_bulkley_poiseuille_nn      54.95    A582B270
+     (  4/ 79)    3D -> Example -> acoustic_support7                   20.27    72A40EA6
+     (  5/ 79)    2D -> Example -> reactive_shock_bubble               17.38    3F6DA12C
+     (  6/ 79)    2D -> Example -> lungwave_horizontal                 23.85    1BA21D14
+     (  7/ 79)    3D -> Example -> icpp_stl_cube                       26.67    7C11F0ED
+     (  8/ 79)    1D -> Example -> brio_wu_rmhd                        20.34    D9E1BECF
+     (  9/ 79)    1D -> Example -> reactive_burn                       20.37    64F05A05
+     ( 10/ 79)    2D -> Example -> GreshoVortex                        18.86    C9E0B721
+     ( 11/ 79)    2D -> Example -> lid_driven_cavity                   18.42    265366F3
+     ( 12/ 79)    2D -> Example -> shearlayer                          18.32    1D88CFE0
+     ( 13/ 79)    2D -> Example -> patch_modal_shape                   18.38    1967AE06
+  
+     ✗ FAILED: 2D -> Example -> rayleigh_taylor
+       UUID: 2BA0324F
+       Attempts: 1
+       Error: Test tests/2BA0324F: 2D -> Example -> rayleigh_taylor: Variable n°15 (1-indexed) in D/cons.6.00.000050.dat is not within tolerance:
+  - Candidate:   0.00536207306526
+  - Golden:      7.789732e-08
+  - Error:       abs: 5.36E-03, rel: 6.88E+04
+  - Tolerance:   abs: 1.00E-03, rel: 1.00E-03
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.9.00.000050.dat
+ - Variable n°313
+ - Candidate: 2.49999920522844
+ - Golden: 250053.35569953843
+ - Absolute Error: 2.50E+05
+ - Relative Error: 1.00E+00
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.6.00.000050.dat
+ - Variable n°15
+ - Candidate: 0.00536207306526
+ - Golden: 7.789732e-08
+ - Relative Error: 6.88E+04
+ - Absolute Error: 5.36E-03
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+     ( 14/ 79)    2D -> Example -> mibm_shock_cylinder                 18.61    7FA04E95
+     ( 15/ 79)    1D -> Example -> shuosher_teno7                      20.54    6247B427
+     ( 16/ 79)    2D -> Example -> jet                                 31.61    C7927D03
+     ( 17/ 79)    3D -> Example -> rotating_sphere                     19.02    6076815B
+     ( 18/ 79)    1D -> Example -> acoustic_gauss_sigmadist            19.33    BE3CF022
+     ( 19/ 79)    2D -> Example -> shockdroplet_muscl                  17.87    BE796E10

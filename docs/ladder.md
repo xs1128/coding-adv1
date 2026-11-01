@@ -32,6 +32,8 @@ One row per experiment, newest last. Baseline: `results/base/official_1g` (job 6
 | 22 | rk2p | Fused RK update: all loads of a cell into private arrays first, then the stores (no load waits behind a possibly-aliasing store) | 669580 (1g ×2, hgpn017) | 36.18–36.25 → 38.91–38.93 ms (+7.5 %) | bitwise ✓ | no |
 | 23 | rkb2 | Fused RK update: each thread does 4 cells along y per equation, through per-equation local `contiguous` pointers (SASS: 66 → 26 loads per cell, but 202 registers vs 76) | 669708 (1g ×2, hgpn005) | 36.22–36.29 → 41.69–41.79 ms (+15 %) | bitwise ✓ | no |
 | 24 | regs 96/80 | Register cap 96 / 80 on the Riemann unity file (fused HLLC 128 → 96 / 80 regs; stack 288 → 400 / 496 B) | 669708 (1g ×2, hgpn005) | 36.22–36.29 → 36.52–36.59 (+0.8 %) / 38.71–38.74 ms (+6.8 %) | bitwise ✓ | no |
+| 25 | hcoll/ucc off | `OMPI_MCA_coll=^hcoll,ucc` (environment) | 669785 (1g, 10 reps, hgpn033) | wall median 5.556 → 5.588 s alone, 4.828 → 4.907 s with `UCX_TLS=self` | bitwise ✓ | no |
+| 26 | iomem | MPI-IO of the restart interior in place through a memory subarray datatype (no compiler temporary) | 669871 (1g, 10 reps, hgpn025, `UCX_TLS=self`) | save 0.48–0.64 → 0.83–0.91 s; wall median 4.839 → 5.011 s | bitwise ✓ | no |
 
 ### K4 diagnosis (HLLC, 1.88–2.19 ms/call vs 1.46 in v4.9.3)
 - ncu (job 600146): 18.75 % occupancy (160 regs), long-scoreboard stalls; **local-memory traffic exceeds global**

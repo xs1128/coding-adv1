@@ -265,6 +265,14 @@ With P16 and 10 reps per arm on one node (669785, hgpn033, bitwise): wall median
 (`OMPI_MCA_coll=^hcoll,ucc`) changes nothing, alone (5.588 s) or with `UCX_TLS=self` (4.907 s). In 669435 the
 `UCX_POSIX_USE_PROC_LINK=n` setting reached both arms (job-wide export), so that comparison isolates `UCX_TLS` only.
 
+**Start-up and save on the host (trace 669826, P16, `UCX_TLS=self`, CPU sampling at ~1 kHz).** Outside MPI_Init, the
+largest host costs are Fortran array temporaries in the restart I/O: `MPI_IO_DATA%var(i)%sf` points at the
+(0:m,0:n,0:p) interior of a ghost-padded array, so each `MPI_FILE_READ_ALL` / `WRITE_ALL` goes through a fresh
+temporary copied in and out (`local_copy_i8`, plus page faults): ~112 ms in the start-up read, ~74 ms in the save.
+The device-to-host copies of the save take ~170 ms, the host-to-device copies of INIT-GPU-VARS ~64 ms.
+- *Rejected: iomem.* Passing the padded array with a memory subarray datatype removes the temporaries, but ROMIO's
+  own handling of non-contiguous memory is slower: save 0.48–0.64 → 0.83–0.91 s, wall +3.5 % (669871, bitwise).
+
 **P16: NaN check of the saved state on the device** (`patches/opt/0019`, wall time only). `s_save_data` scanned every
 saved value on the host with `ieee_is_nan`, single-threaded: 64 ms per variable at 201³ (trace 669407), half the
 save. A device reduction with an exact bit test now counts NaNs, and the host scan, with its message and abort, runs

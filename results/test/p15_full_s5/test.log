@@ -112,3 +112,26 @@ mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
      ( 88/ 94)    3D -> Hypoelasticity -> HLL -> Interface RHS ->...   16.07    0648E422
      ( 89/ 94)    3D -> Hypoelasticity -> HLL -> u-interface -> I...   16.40    19981E38
      ( 90/ 94)    3D -> Hypoelasticity -> HLL -> u-interface -> I...   16.21    AB56B056
+     ( 91/ 94)    2D -> Hypoelasticity -> 3 Fluid(s) -> HLL -> u-...   12.95    E6F54696
+     ( 92/ 94)    2D -> Hypoelasticity -> 3 Fluid(s) -> HLLC -> a...   13.03    CC89283B
+     ( 93/ 94)    2D -> Hypoelasticity -> HLLD -> Fan-order fallback   13.21    C531DC93
+     ( 94/ 94)    2D -> Hypoelasticity -> HLLD -> Shear guard -> ...   13.63    10CCE589
+
+  
+
+╭──────────────────────────────── Test Summary ────────────────────────────────╮
+│                                                                              │
+│  ✓ ALL TESTS PASSED                                                          │
+│                                                                              │
+│      94 passed                                                               │
+│       0 failed                                                               │
+│     666 skipped                                                              │
+│    ────────────                                                              │
+│     760 total                                                                │
+│                                                                              │
+│    Time: 12m 45.7s                                                           │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+
+mfc: (venv) Exiting the Python virtual environment.
