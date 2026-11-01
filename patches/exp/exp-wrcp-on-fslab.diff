@@ -1,0 +1,82 @@
+diff --git a/src/simulation/include/weno5_macros.fpp b/src/simulation/include/weno5_macros.fpp
+index 701f7cd..87e1b08 100644
+--- a/src/simulation/include/weno5_macros.fpp
++++ b/src/simulation/include/weno5_macros.fpp
+@@ -24,8 +24,10 @@
+ #:enddef
+ 
+ !> OUT = the WENO5 value of cell CELL at its boundary CB ('cbL' or 'cbR'), from DVD, V0 and BETA. FIRST=False is the cell's second
+-!! boundary: WENO-Z's tau and TENO's cut-off delta depend on BETA only, so they are reused from the first.
+-#:def WENO5_SIDE(CB, XYZ, CELL, V0, DVD, BETA, POLY, ALPHA, OMEGA, TAU, DELTA, OUT, FIRST=True)
++!! boundary: WENO-Z's tau and TENO's cut-off delta depend on BETA only, so they are reused from the first. RS (optional, EXPERIMENT
++!! exp-wrcp, not bitwise): a scalar that holds 1/sum(ALPHA), so each weight normalisation is one division and three multiplications
++!! instead of three divisions (results differ from s_weno in the last bits).
++#:def WENO5_SIDE(CB, XYZ, CELL, V0, DVD, BETA, POLY, ALPHA, OMEGA, TAU, DELTA, OUT, FIRST=True, RS=None)
+     ${POLY}$ (0) = ${V0}$ + poly_coef_${CB}$_${XYZ}$ (${CELL}$, 0, 0)*${DVD}$ (1) + poly_coef_${CB}$_${XYZ}$ (${CELL}$, 0, &
+               & 1)*${DVD}$ (0)
+     ${POLY}$ (1) = ${V0}$ + poly_coef_${CB}$_${XYZ}$ (${CELL}$, 1, 0)*${DVD}$ (0) + poly_coef_${CB}$_${XYZ}$ (${CELL}$, 1, &
+@@ -43,7 +45,12 @@
+         do q = 0, weno_num_stencils
+             ${ALPHA}$ (q) = d_${CB}$_${XYZ}$ (q, ${CELL}$)/(${BETA}$ (q)**2._wp)
+         end do
+-        ${OMEGA}$ = ${ALPHA}$/sum(${ALPHA}$)
++        #:if RS
++            ${RS}$ = 1._wp/sum(${ALPHA}$)
++            ${OMEGA}$ = ${ALPHA}$*${RS}$
++        #:else
++            ${OMEGA}$ = ${ALPHA}$/sum(${ALPHA}$)
++        #:endif
+         $:GPU_LOOP(parallelism='[seq]')
+         do q = 0, weno_num_stencils
+             ${ALPHA}$ (q) = (d_${CB}$_${XYZ}$ (q, ${CELL}$)*(1._wp + d_${CB}$_${XYZ}$ (q, &
+@@ -86,9 +93,16 @@
+         end do
+     end if
+ 
+-    ${OMEGA}$ (0) = ${ALPHA}$ (0)/(${ALPHA}$ (0) + ${ALPHA}$ (1) + ${ALPHA}$ (2))
+-    ${OMEGA}$ (1) = ${ALPHA}$ (1)/(${ALPHA}$ (0) + ${ALPHA}$ (1) + ${ALPHA}$ (2))
+-    ${OMEGA}$ (2) = ${ALPHA}$ (2)/(${ALPHA}$ (0) + ${ALPHA}$ (1) + ${ALPHA}$ (2))
++    #:if RS
++        ${RS}$ = 1._wp/(${ALPHA}$ (0) + ${ALPHA}$ (1) + ${ALPHA}$ (2))
++        ${OMEGA}$ (0) = ${ALPHA}$ (0)*${RS}$
++        ${OMEGA}$ (1) = ${ALPHA}$ (1)*${RS}$
++        ${OMEGA}$ (2) = ${ALPHA}$ (2)*${RS}$
++    #:else
++        ${OMEGA}$ (0) = ${ALPHA}$ (0)/(${ALPHA}$ (0) + ${ALPHA}$ (1) + ${ALPHA}$ (2))
++        ${OMEGA}$ (1) = ${ALPHA}$ (1)/(${ALPHA}$ (0) + ${ALPHA}$ (1) + ${ALPHA}$ (2))
++        ${OMEGA}$ (2) = ${ALPHA}$ (2)/(${ALPHA}$ (0) + ${ALPHA}$ (1) + ${ALPHA}$ (2))
++    #:endif
+ 
+     ${OUT}$ = ${OMEGA}$ (0)*${POLY}$ (0) + ${OMEGA}$ (1)*${POLY}$ (1) + ${OMEGA}$ (2)*${POLY}$ (2)
+ #:enddef
+diff --git a/src/simulation/m_riemann_solver_hllc.fpp b/src/simulation/m_riemann_solver_hllc.fpp
+index 02f5f04..3a335c5 100644
+--- a/src/simulation/m_riemann_solver_hllc.fpp
++++ b/src/simulation/m_riemann_solver_hllc.fpp
+@@ -176,7 +176,7 @@ contains
+         real(wp), dimension(-2:3)                     :: w_n          !< next variable's stencil, loaded one iteration ahead
+         real(wp), dimension(-2:1)                     :: w_dvd
+         real(wp), dimension(0:2)                      :: w_poly, w_beta, w_alpha, w_omega, w_delta
+-        real(wp)                                      :: w_tau
++        real(wp)                                      :: w_tau, w_rs
+         integer                                       :: foff, fsoff  !< this direction's flux slab (flux_per_dir)
+ 
+         ! Populating the buffers of the left and right Riemann problem states variables, based on the choice of boundary conditions
+@@ -936,7 +936,7 @@ contains
+                             #:elif FUSED
+                                 #:set _hllc_priv = '[' + ', '.join(_hllc_s1 + _hllc_s2 + _hllc_s3 + _hllc_s4 + _hllc_s5 + _hllc_s6 &
+                                                                & + ['qLf', 'qRf', 'w_v', 'w_n', 'w_dvd', 'w_poly', 'w_beta', 'w_alpha', &
+-                                                               & 'w_omega', 'w_delta', 'w_tau']) + ']'
++                                                               & 'w_omega', 'w_delta', 'w_tau', 'w_rs']) + ']'
+                             #:else
+                                 #:set _hllc_priv = '[' + ', '.join(_hllc_s1 + _hllc_s2 + _hllc_s3 + _hllc_s4 + _hllc_s5 + _hllc_s6) &
+                                                                & + ']'
+@@ -983,7 +983,7 @@ contains
+                                                     w_dvd(-2) = w_v(${o - 1}$) - w_v(${o - 2}$)
+                                                     $:WENO5_BETA(XYZ, C, NORM_DIR, 'w_dvd', 'w_beta')
+                                                     $:WENO5_SIDE(CB, XYZ, C, 'w_v(%d)' % o, 'w_dvd', 'w_beta', 'w_poly', &
+-                                                                 & 'w_alpha', 'w_omega', 'w_tau', 'w_delta', OUT + '(i)')
++                                                                 & 'w_alpha', 'w_omega', 'w_tau', 'w_delta', OUT + '(i)', RS='w_rs')
+                                                 #:endfor
+                                             end do
+                                         #:endif
