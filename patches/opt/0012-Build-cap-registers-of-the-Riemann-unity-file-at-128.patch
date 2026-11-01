@@ -1,0 +1,33 @@
+From e5116f9c4ab1bea40f8a232850115d803ebbe90b Mon Sep 17 00:00:00 2001
+From: u1131128 <hipac1@lsalab.cs.nthu.edu.tw>
+Date: Sun, 1 Nov 2026 11:14:48 +0800
+Subject: [PATCH] Build: cap registers of the Riemann unity file at 128 on
+ NVHPC GPU builds
+
+The inlined 5-eq HLLC kernels use 146-152 registers, which allows 3 blocks of 128 threads per SM. Capping the
+unity file at 128 allows 4, without spills (ptxas: 0 bytes local/stack). Sweep on H200 (664763): 152 -> 128
+-2.4 % step, 96 -0.6 %. m_hb_function and m_bubbles_EL_kernels hold device routines that the unity file calls
+across files, so nvlink requires them to have the same cap. Compiler flag only; bit-identical.
+---
+ CMakeLists.txt | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 94f63e2..7780294 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -174,6 +174,11 @@ if (MFC_SIMULATION)
+         set_source_files_properties(${_unity_parts} PROPERTIES HEADER_FILE_ONLY ON)
+         set_source_files_properties("${_unity}" PROPERTIES OBJECT_DEPENDS "${_unity_parts}")
+         list(APPEND simulation_SRCs "${_unity}")
++        # The 5-eq HLLC kernels then use 146-152 registers: 3 blocks of 128 threads per SM. A cap of 128 makes it 4
++        # (best of 152/128/96 on H200). Device routines that the unity file calls in other files need the same cap (nvlink).
++        set_source_files_properties("${_unity}" "${CMAKE_BINARY_DIR}/fypp/simulation/m_hb_function.fpp.f90"
++                                    "${CMAKE_BINARY_DIR}/fypp/simulation/m_bubbles_EL_kernels.fpp.f90"
++                                    PROPERTIES COMPILE_OPTIONS "-gpu=maxregcount:128")
+ 
+         # The WENO reconstruction kernels need ~190 registers, which limits them to 8 resident warps per SM. Capping
+         # this file at 128 doubles that for a few L1-resident spills (best of 168/128/96 on H200).
+-- 
+2.34.1
+
