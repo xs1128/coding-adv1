@@ -136,6 +136,15 @@ precheck passes formatting, spelling and source lint; its toolchain lint fails o
 built before `./mfc.sh format` reflowed one FYPP directive and a comment (no change to the generated code beyond
 line numbers).
 
+**P18: the fused RK update loads the next equation ahead** (`patches/opt/0021`). The kernel is bound by the latency of
+its descriptor chains (above), and the store to `q1` keeps the compiler from starting equation j + 1's loads early.
+Loading equation j + 1's six face fluxes, `q1` and `qs` into scalars before equation j is computed and stored overlaps
+them with the arithmetic. Each value equals an in-place read (equation j does not write equation j + 1's fields), and
+the arithmetic is unchanged. Unlike rk2p (arrays in local memory) and rkb2 (202 registers), this costs 18 registers
+(76 → 94). Same node (670088, hgpn038, 2 rounds × 3 reps): 35.86 / 35.91 → 34.51 / 34.52 ms (−3.8 %), grind
+0.1858 → 0.1787, bitwise. The A/B binary predates the formatter's realignment of two declarations and a reworded
+comment.
+
 **Before P12 (P7 profile, 1 GPU, 664617; 14.8 ms of kernels per stage).** WENO5 5.57 ms (38 %), HLLC
 4.26 ms (29 %), flux differences + α·div(u) 2.03 ms, RK update 0.89 ms, cons→prim 0.63 ms, q_cons copy 0.40 ms (removed
 by 0011). WENO and HLLC are FP64/latency-bound (no `pow` calls; divides are already `rcp`-based under `-fast`).

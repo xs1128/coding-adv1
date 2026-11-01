@@ -1,0 +1,112 @@
+From 9f21ecf9b59cead8716b70888d964aec6f08adcd Mon Sep 17 00:00:00 2001
+From: u1131128 <hipac1@lsalab.cs.nthu.edu.tw>
+Date: Sun, 1 Nov 2026 23:08:29 +0800
+Subject: [PATCH] RHS: load the next equation's values ahead in the fused RK
+ update
+
+s_add_flux_differences_rk_update needs about twelve values per cell and
+equation but each one sits behind three levels of Fortran descriptors
+(module structure, vf(j), sf), and the store to q1 keeps the compiler from
+starting equation j + 1's loads early. ncu (669515): DRAM at 25 %, 11.4 of
+16.5 cycles per instruction in long-scoreboard stalls.
+
+Load equation j + 1's face fluxes, q1 and qs into scalars before equation j
+is computed and stored. Every value is the one the original reads (equation
+j + 1's fields are not written by equation j), and the arithmetic is
+unchanged. The kernel goes from 76 to 94 registers.
+
+H200, 201^3, 1 GPU, same-node A/B (2 rounds x 3 reps): 35.88 -> 34.51 ms per
+step (-3.8 %), grind 0.1858 -> 0.1787 ns, bitwise identical to v5.7.0.
+---
+ src/simulation/m_rhs.fpp | 55 ++++++++++++++++++++++++++++++----------
+ 1 file changed, 41 insertions(+), 14 deletions(-)
+
+diff --git a/src/simulation/m_rhs.fpp b/src/simulation/m_rhs.fpp
+index 1f40a13..b6762ce 100644
+--- a/src/simulation/m_rhs.fpp
++++ b/src/simulation/m_rhs.fpp
+@@ -1940,10 +1940,16 @@ contains
+         type(scalar_field), dimension(sys_size), intent(inout) :: q1_vf, qs_vf
+         real(wp), intent(in)                                   :: c1, c2, c3, c4
+         logical, intent(in)                                    :: save_stor
+-        integer                                                :: j, k, l, q
++        integer                                                :: j, jn, k, l, q
+         real(wp)                                               :: inv_dx, inv_dy, inv_dz, r
+-
+-        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3, private='[j, k, l, q, inv_dx, inv_dy, inv_dz, r]')
++        ! This equation's and (n*) the next equation's face fluxes, q1 and qs: equation j + 1's loads are issued before
++        ! equation j is computed and stored, so their latency overlaps the arithmetic. Each value equals an in-place read:
++        ! equation j does not write equation j + 1's fields.
++        real(wp) :: fx0, fx1, fy0, fy1, fz0, fz1, v1, vs
++        real(wp) :: nfx0, nfx1, nfy0, nfy1, nfz0, nfz1, nv1, nvs
++
++        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3, private='[j, jn, k, l, q, inv_dx, inv_dy, inv_dz, r, fx0, fx1, &
++                            & fy0, fy1, fz0, fz1, v1, vs, nfx0, nfx1, nfy0, nfy1, nfz0, nfz1, nv1, nvs]')
+         do l = 0, p
+             do k = 0, n
+                 do q = 0, m
+@@ -1951,29 +1957,50 @@ contains
+                     inv_dy = 0._wp; inv_dz = 0._wp
+                     if (n > 0) inv_dy = 1._wp/dy(k)
+                     if (p > 0) inv_dz = 1._wp/dz(l)
++                    nfy0 = 0._wp; nfy1 = 0._wp; nfz0 = 0._wp; nfz1 = 0._wp
++                    nfx0 = flux_n(1)%vf(1)%sf(q - 1, k, l); nfx1 = flux_n(1)%vf(1)%sf(q, k, l)
++                    if (n > 0) then
++                        nfy0 = flux_n(2)%vf(1)%sf(q, k - 1, l); nfy1 = flux_n(2)%vf(1)%sf(q, k, l)
++                    end if
++                    if (p > 0) then
++                        nfz0 = flux_n(3)%vf(1)%sf(q, k, l - 1); nfz1 = flux_n(3)%vf(1)%sf(q, k, l)
++                    end if
++                    nv1 = q1_vf(1)%sf(q, k, l); nvs = qs_vf(1)%sf(q, k, l)
+                     $:GPU_LOOP(parallelism='[seq]')
+                     do j = 1, sys_size
+-                        r = inv_dx*(flux_n(1)%vf(j)%sf(q - 1, k, l) - flux_n(1)%vf(j)%sf(q, k, l))
++                        fx0 = nfx0; fx1 = nfx1; fy0 = nfy0; fy1 = nfy1; fz0 = nfz0; fz1 = nfz1; v1 = nv1; vs = nvs
++                        if (j < sys_size) then
++                            jn = j + 1
++                            nfx0 = flux_n(1)%vf(jn)%sf(q - 1, k, l); nfx1 = flux_n(1)%vf(jn)%sf(q, k, l)
++                            if (n > 0) then
++                                nfy0 = flux_n(2)%vf(jn)%sf(q, k - 1, l); nfy1 = flux_n(2)%vf(jn)%sf(q, k, l)
++                            end if
++                            if (p > 0) then
++                                nfz0 = flux_n(3)%vf(jn)%sf(q, k, l - 1); nfz1 = flux_n(3)%vf(jn)%sf(q, k, l)
++                            end if
++                            nv1 = q1_vf(jn)%sf(q, k, l); nvs = qs_vf(jn)%sf(q, k, l)
++                        end if
++                        r = inv_dx*(fx0 - fx1)
+                         if (j >= eqn_idx%adv%beg .and. j <= eqn_idx%adv%end) then
+-                            r = r + inv_dx*q1_vf(j)%sf(q, k, l)*(flux_src_n(1)%vf(j)%sf(q, k, l) - flux_src_n(1)%vf(j)%sf(q - 1, &
+-                                                 & k, l))
++                            r = r + inv_dx*v1*(flux_src_n(1)%vf(j)%sf(q, k, l) - flux_src_n(1)%vf(j)%sf(q - 1, k, l))
+                         end if
+                         if (n > 0) then
+-                            r = r + inv_dy*(flux_n(2)%vf(j)%sf(q, k - 1, l) - flux_n(2)%vf(j)%sf(q, k, l))
++                            r = r + inv_dy*(fy0 - fy1)
+                             if (j >= eqn_idx%adv%beg .and. j <= eqn_idx%adv%end) then
+-                                r = r + inv_dy*q1_vf(j)%sf(q, k, l)*(flux_src_n(2)%vf(j)%sf(q, k, l) - flux_src_n(2)%vf(j)%sf(q, &
+-                                                     & k - 1, l))
++                                r = r + inv_dy*v1*(flux_src_n(2)%vf(j)%sf(q, k, l) - flux_src_n(2)%vf(j)%sf(q, k - 1, l))
+                             end if
+                         end if
+                         if (p > 0) then
+-                            r = r + inv_dz*(flux_n(3)%vf(j)%sf(q, k, l - 1) - flux_n(3)%vf(j)%sf(q, k, l))
++                            r = r + inv_dz*(fz0 - fz1)
+                             if (j >= eqn_idx%adv%beg .and. j <= eqn_idx%adv%end) then
+-                                r = r + inv_dz*q1_vf(j)%sf(q, k, l)*(flux_src_n(3)%vf(j)%sf(q, k, l) - flux_src_n(3)%vf(j)%sf(q, &
+-                                                     & k, l - 1))
++                                r = r + inv_dz*v1*(flux_src_n(3)%vf(j)%sf(q, k, l) - flux_src_n(3)%vf(j)%sf(q, k, l - 1))
+                             end if
+                         end if
+-                        if (save_stor) qs_vf(j)%sf(q, k, l) = q1_vf(j)%sf(q, k, l)
+-                        q1_vf(j)%sf(q, k, l) = (c1*q1_vf(j)%sf(q, k, l) + c2*qs_vf(j)%sf(q, k, l) + c3*dt*r)/c4
++                        if (save_stor) then
++                            qs_vf(j)%sf(q, k, l) = v1
++                            vs = v1
++                        end if
++                        q1_vf(j)%sf(q, k, l) = (c1*v1 + c2*vs + c3*dt*r)/c4
+                     end do
+                 end do
+             end do
+-- 
+2.47.3
+
