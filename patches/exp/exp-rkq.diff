@@ -1,0 +1,209 @@
+diff -ru a/src/simulation/m_rhs.fpp b/src/simulation/m_rhs.fpp
+--- a/src/simulation/m_rhs.fpp	2026-11-02 01:29:52.623498170 +0800
++++ b/src/simulation/m_rhs.fpp	2026-11-02 01:30:47.643051150 +0800
+@@ -42,11 +42,18 @@
+     implicit none
+ 
+     private; public :: s_initialize_rhs_module, s_compute_rhs, s_finalize_rhs_module, q_cons_qp, rhs_input_aliasable, &
+-        & rhs_input_aliased, rk_diff_fusable, rhs_diff_deferred, s_add_flux_differences_rk_update
++        & rhs_input_aliased, rk_diff_fusable, rhs_diff_deferred, s_add_flux_differences_rk_update, q_stor_slab, rk_slabs
+ 
+     type(vector_field) :: q_cons_qp  !< WENO-reconstructed cell-average conservative variables at quadrature points
+     $:GPU_DECLARE(create='[q_cons_qp]')
+ 
++    !> The fields of q_cons_qp are the equation slices of q_cons_slab, and m_time_steppers keeps the saved RK stage
++    !! (q_cons_ts(2)) in q_stor_slab the same way when the stage state is q_cons_qp. rk_slabs (set by m_time_steppers): both
++    !! are slabs, so s_add_flux_differences_rk_update can address them, and the flux slabs, as plain arrays.
++    real(wp), allocatable, target, dimension(:,:,:,:) :: q_cons_slab, q_stor_slab
++    $:GPU_DECLARE(create='[q_cons_slab, q_stor_slab]')
++    logical :: rk_slabs = .false.
++
+     !> On the plain path the RK stage state is q_cons_qp itself (m_time_steppers points q_cons_ts(1) at it), so s_compute_rhs skips
+     !! the per-stage copy. The conversion writes the cont/adv entries back unchanged and reads the interior only; the halo fill then
+     !! writes the ghost cells, which the RK update never touches. Physics that change q_cons_qp in place, or read the stage state's
+@@ -165,9 +172,11 @@
+         @:ALLOCATE(q_prim_qp%vf(1:sys_size))
+ 
+         if (.not. igr) then
++            @:ALLOCATE(q_cons_slab(idwbuff(1)%beg:idwbuff(1)%end, idwbuff(2)%beg:idwbuff(2)%end, idwbuff(3)%beg:idwbuff(3)%end, &
++                       & 1:sys_size))
+             do l = 1, sys_size
+-                @:ALLOCATE(q_cons_qp%vf(l)%sf(idwbuff(1)%beg:idwbuff(1)%end, idwbuff(2)%beg:idwbuff(2)%end, &
+-                           & idwbuff(3)%beg:idwbuff(3)%end))
++                q_cons_qp%vf(l)%sf(idwbuff(1)%beg:,idwbuff(2)%beg:,idwbuff(3)%beg:) => q_cons_slab(:,:,:,l)
++                $:GPU_ENTER_DATA(attach='[q_cons_qp%vf(l)%sf]')
+             end do
+             do l = eqn_idx%mom%beg, eqn_idx%E
+                 @:ALLOCATE(q_prim_qp%vf(l)%sf(idwbuff(1)%beg:idwbuff(1)%end, idwbuff(2)%beg:idwbuff(2)%end, &
+@@ -1952,6 +1961,11 @@
+         ! see s_initialize_rhs_module): flux_n(d)%vf(j)%sf is flux_rsx_vf(:, :, :, j + (d - 1)*sys_size), and every adv entry
+         ! of flux_src_n(d) is the one face-velocity slab ux/uy/uz. Same memory, one array descriptor instead of a walk through
+         ! flux_n(d)%vf(j) per load. The face-velocity difference is the same for every adv equation, so it is formed once.
++        if (rk_slabs) then
++            call s_add_flux_differences_rk_update_slabs(flux_rsx_vf, flux_src_rsx_vf, q_cons_slab, q_stor_slab, c1, c2, c3, c4, &
++                                                        & save_stor)
++            return
++        end if
+         sy = sys_size; sz = 2*sys_size
+         ux = eqn_idx%adv%beg; uy = ux + (sys_size - eqn_idx%adv%beg + 1); uz = ux + 2*(sys_size - eqn_idx%adv%beg + 1)
+ 
+@@ -2021,6 +2035,94 @@
+ 
+     end subroutine s_add_flux_differences_rk_update
+ 
++    !> s_add_flux_differences_rk_update when every field it touches is one array (rk_slabs): q1 is q_cons_slab (the stage state is
++    !! q_cons_qp), qs is q_stor_slab, and the fluxes are the slabs fx and fs. As explicit-shape dummies their bounds are fixed at
++    !! entry, so the kernel indexes them from scalars instead of reloading array descriptors after every store. Same loads, same
++    !! operations in the same order per cell as the general version, so bitwise the same q1 and qs.
++    subroutine s_add_flux_differences_rk_update_slabs(fx, fs, q1, qs, c1, c2, c3, c4, save_stor)
++
++        real(wp), dimension(-1:m, -1:n, -1:p, 1:sys_size*num_dims), intent(in) :: fx
++        real(wp), dimension(-1:m, -1:n, -1:p, 1:(sys_size - eqn_idx%adv%beg + 1)*num_dims), intent(in) :: fs
++        real(wp), dimension(idwbuff(1)%beg:idwbuff(1)%end, idwbuff(2)%beg:idwbuff(2)%end, idwbuff(3)%beg:idwbuff(3)%end, &
++                          & 1:sys_size), intent(inout) :: q1, qs
++        real(wp), intent(in) :: c1, c2, c3, c4
++        logical, intent(in)  :: save_stor
++        integer              :: j, jn, k, l, q, ns, ab, ae, sy, sz, uy, uz
++        real(wp)             :: inv_dx, inv_dy, inv_dz, r, dux, duy, duz, dtl
++        real(wp)             :: fx0, fx1, fy0, fy1, fz0, fz1, v1, vs
++        real(wp)             :: nfx0, nfx1, nfy0, nfy1, nfz0, nfz1, nv1, nvs
++
++        ! fx(:, :, :, j + (d - 1)*sys_size) is flux_n(d)%vf(j)%sf; fs(:, :, :, 1 + (d - 1)*(sys_size - adv%beg + 1)) is the face
++        ! velocity of direction d (flux_src_rsx_vf from adv%beg). The scalars are kernel arguments, not module reads.
++        ns = sys_size; ab = eqn_idx%adv%beg; ae = eqn_idx%adv%end; dtl = dt
++        sy = sys_size; sz = 2*sys_size; uy = 1 + (sys_size - ab + 1); uz = 1 + 2*(sys_size - ab + 1)
++
++        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3, private='[j, jn, k, l, q, inv_dx, inv_dy, inv_dz, r, fx0, fx1, &
++                            & fy0, fy1, fz0, fz1, v1, vs, nfx0, nfx1, nfy0, nfy1, nfz0, nfz1, nv1, nvs, dux, duy, duz]', &
++                            & firstprivate='[ns, ab, ae, dtl, sy, sz, uy, uz]')
++        do l = 0, p
++            do k = 0, n
++                do q = 0, m
++                    inv_dx = 1._wp/dx(q)
++                    inv_dy = 0._wp; inv_dz = 0._wp
++                    if (n > 0) inv_dy = 1._wp/dy(k)
++                    if (p > 0) inv_dz = 1._wp/dz(l)
++                    nfy0 = 0._wp; nfy1 = 0._wp; nfz0 = 0._wp; nfz1 = 0._wp
++                    duy = 0._wp; duz = 0._wp
++                    nfx0 = fx(q - 1, k, l, 1); nfx1 = fx(q, k, l, 1)
++                    dux = fs(q, k, l, 1) - fs(q - 1, k, l, 1)
++                    if (n > 0) then
++                        nfy0 = fx(q, k - 1, l, 1 + sy); nfy1 = fx(q, k, l, 1 + sy)
++                        duy = fs(q, k, l, uy) - fs(q, k - 1, l, uy)
++                    end if
++                    if (p > 0) then
++                        nfz0 = fx(q, k, l - 1, 1 + sz); nfz1 = fx(q, k, l, 1 + sz)
++                        duz = fs(q, k, l, uz) - fs(q, k, l - 1, uz)
++                    end if
++                    nv1 = q1(q, k, l, 1); nvs = qs(q, k, l, 1)
++                    $:GPU_LOOP(parallelism='[seq]')
++                    do j = 1, ns
++                        fx0 = nfx0; fx1 = nfx1; fy0 = nfy0; fy1 = nfy1; fz0 = nfz0; fz1 = nfz1; v1 = nv1; vs = nvs
++                        if (j < ns) then
++                            jn = j + 1
++                            nfx0 = fx(q - 1, k, l, jn); nfx1 = fx(q, k, l, jn)
++                            if (n > 0) then
++                                nfy0 = fx(q, k - 1, l, jn + sy); nfy1 = fx(q, k, l, jn + sy)
++                            end if
++                            if (p > 0) then
++                                nfz0 = fx(q, k, l - 1, jn + sz); nfz1 = fx(q, k, l, jn + sz)
++                            end if
++                            nv1 = q1(q, k, l, jn); nvs = qs(q, k, l, jn)
++                        end if
++                        r = inv_dx*(fx0 - fx1)
++                        if (j >= ab .and. j <= ae) then
++                            r = r + inv_dx*v1*dux
++                        end if
++                        if (n > 0) then
++                            r = r + inv_dy*(fy0 - fy1)
++                            if (j >= ab .and. j <= ae) then
++                                r = r + inv_dy*v1*duy
++                            end if
++                        end if
++                        if (p > 0) then
++                            r = r + inv_dz*(fz0 - fz1)
++                            if (j >= ab .and. j <= ae) then
++                                r = r + inv_dz*v1*duz
++                            end if
++                        end if
++                        if (save_stor) then
++                            qs(q, k, l, j) = v1
++                            vs = v1
++                        end if
++                        q1(q, k, l, j) = (c1*v1 + c2*vs + c3*dtl*r)/c4
++                    end do
++                end do
++            end do
++        end do
++        $:END_GPU_PARALLEL_LOOP()
++
++    end subroutine s_add_flux_differences_rk_update_slabs
++
+     !> Add viscous, surface-tension, and species-diffusion source flux contributions to the RHS for a given direction
+     subroutine s_compute_additional_physics_rhs(idir, q_prim_vf, rhs_vf, flux_src_n_in, dq_prim_dx_vf, dq_prim_dy_vf, dq_prim_dz_vf)
+ 
+@@ -2393,7 +2495,6 @@
+             do j = eqn_idx%cont%beg, eqn_idx%cont%end
+                 if (relativity) then
+                     ! Cons and Prim densities are different for relativity
+-                    @:DEALLOCATE(q_cons_qp%vf(j)%sf)
+                     @:DEALLOCATE(q_prim_qp%vf(j)%sf)
+                 else
+                     nullify (q_prim_qp%vf(j)%sf)
+@@ -2405,9 +2506,12 @@
+             end do
+ 
+             do j = eqn_idx%mom%beg, eqn_idx%E
+-                @:DEALLOCATE(q_cons_qp%vf(j)%sf)
+                 @:DEALLOCATE(q_prim_qp%vf(j)%sf)
+             end do
++            do j = 1, sys_size
++                nullify (q_cons_qp%vf(j)%sf)  ! slices of q_cons_slab
++            end do
++            @:DEALLOCATE(q_cons_slab)
+         end if
+ 
+         @:DEALLOCATE(q_cons_qp%vf, q_prim_qp%vf)
+diff -ru a/src/simulation/m_time_steppers.fpp b/src/simulation/m_time_steppers.fpp
+--- a/src/simulation/m_time_steppers.fpp	2026-11-02 01:29:52.767496873 +0800
++++ b/src/simulation/m_time_steppers.fpp	2026-11-02 01:31:16.102855872 +0800
+@@ -179,11 +179,20 @@
+         end do
+ #else
+         !> @endcond
++        ! With the stage state aliased, the saved stage is one slab too (q_stor_slab), so the fused RK update sees both as arrays
++        rk_slabs = rhs_input_aliasable .and. num_ts == 2
++        if (rk_slabs) then
++            @:ALLOCATE(q_stor_slab(idwbuff(1)%beg:idwbuff(1)%end, idwbuff(2)%beg:idwbuff(2)%end, idwbuff(3)%beg:idwbuff(3)%end, &
++                       & 1:sys_size))
++        end if
+         do i = 1, num_ts
+             do j = 1, sys_size
+                 if (i == 1 .and. rhs_input_aliasable) then  ! the stage state is the RHS's working copy (see m_rhs)
+                     q_cons_ts(1)%vf(j)%sf => q_cons_qp%vf(j)%sf
+                     $:GPU_ENTER_DATA(attach='[q_cons_ts(1)%vf(j)%sf]')
++                else if (i == 2 .and. rk_slabs) then
++                    q_cons_ts(2)%vf(j)%sf(idwbuff(1)%beg:,idwbuff(2)%beg:,idwbuff(3)%beg:) => q_stor_slab(:,:,:,j)
++                    $:GPU_ENTER_DATA(attach='[q_cons_ts(2)%vf(j)%sf]')
+                 else
+                     @:ALLOCATE(q_cons_ts(i)%vf(j)%sf(idwbuff(1)%beg:idwbuff(1)%end, idwbuff(2)%beg:idwbuff(2)%end, &
+                                & idwbuff(3)%beg:idwbuff(3)%end))
+@@ -1005,13 +1014,16 @@
+ #else
+         do i = 1, num_ts
+             do j = 1, sys_size
+-                if (i == 1 .and. rhs_input_aliased) then
+-                    nullify (q_cons_ts(1)%vf(j)%sf)
++                if ((i == 1 .and. rhs_input_aliased) .or. (i == 2 .and. rk_slabs)) then
++                    nullify (q_cons_ts(i)%vf(j)%sf)
+                 else
+                     @:DEALLOCATE(q_cons_ts(i)%vf(j)%sf)
+                 end if
+             end do
+         end do
++        if (rk_slabs) then
++            @:DEALLOCATE(q_stor_slab)
++        end if
+ #endif
+         do i = 1, num_ts
+             @:DEALLOCATE(q_cons_ts(i)%vf)
