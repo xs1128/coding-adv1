@@ -30,6 +30,8 @@ One row per experiment, newest last. Baseline: `results/base/official_1g` (job 6
 | 20 | P16 | **NaN check of the saved state on the device**; host scan only to report (`patches/opt/0019`) | 669490 (1g ×2, hgpn005) | save 1.11–1.25 → 0.60–0.74 s; wall 6.01–6.57 → 5.78–5.91 s; grind unchanged | bitwise ✓ | yes |
 | 21 | rk4 | Fused RK update with one thread per (equation, cell), `collapse(4)` equation outermost (ncu 669515: the kernel ran DRAM at 25 %, latency-bound) | 669544 (1g ×2, hgpn037) | 36.63 → 37.96 ms (+3.6 %) | bitwise ✓ | no |
 | 22 | rk2p | Fused RK update: all loads of a cell into private arrays first, then the stores (no load waits behind a possibly-aliasing store) | 669580 (1g ×2, hgpn017) | 36.18–36.25 → 38.91–38.93 ms (+7.5 %) | bitwise ✓ | no |
+| 23 | rkb2 | Fused RK update: each thread does 4 cells along y per equation, through per-equation local `contiguous` pointers (SASS: 66 → 26 loads per cell, but 202 registers vs 76) | 669708 (1g ×2, hgpn005) | 36.22–36.29 → 41.69–41.79 ms (+15 %) | bitwise ✓ | no |
+| 24 | regs 96/80 | Register cap 96 / 80 on the Riemann unity file (fused HLLC 128 → 96 / 80 regs; stack 288 → 400 / 496 B) | 669708 (1g ×2, hgpn005) | 36.22–36.29 → 36.52–36.59 (+0.8 %) / 38.71–38.74 ms (+6.8 %) | bitwise ✓ | no |
 
 ### K4 diagnosis (HLLC, 1.88–2.19 ms/call vs 1.46 in v4.9.3)
 - ncu (job 600146): 18.75 % occupancy (160 regs), long-scoreboard stalls; **local-memory traffic exceeds global**

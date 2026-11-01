@@ -82,3 +82,99 @@ mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
      ( 54/ 94)    2D -> bc=-10                                         15.55    B96AC58F
      ( 55/ 94)    2D -> bc=-12                                         15.35    BF46F657
      ( 56/ 94)    2D -> bc=-3                                          15.30    D972BA0F
+     ( 57/ 94)    2D -> bc=-16                                         15.26    98081DA3
+     ( 58/ 94)    2D -> bc=-15                                         15.31    4D7926CD
+     ( 59/ 94)    2D -> bc=-17                                         15.34    10DBA76B
+     ( 60/ 94)    2D -> grcbc x                                        15.29    212401B4
+     ( 61/ 94)    2D -> grcbc y                                        15.65    EB6687AB
+     ( 62/ 94)    2D -> weno_order=3                                   15.60    EA9C3FA3
+     ( 63/ 94)    2D -> weno_order=3 -> wenoz=T                        15.72    A21CF713
+     ( 64/ 94)    2D -> weno_order=3 -> mapped_weno=T                  15.68    39816683
+     ( 65/ 94)    2D -> weno_order=5 -> mp_weno=T                      14.93    0ACB1F16
+     ( 66/ 94)    2D -> weno_order=5                                   14.99    9EF5305B
+     ( 67/ 94)    2D -> weno_order=5 -> teno=T                         15.64    E719C5F2
+     ( 68/ 94)    2D -> weno_order=5 -> wenoz=T                        15.60    31742FC7
+     ( 69/ 94)    2D -> weno_order=7                                   15.14    A72F7006
+     ( 70/ 94)    2D -> weno_order=5 -> mapped_weno=T                  15.19    D6415F48
+     ( 71/ 94)    2D -> weno_order=7 -> teno=T                         15.47    B8BF00C9
+     ( 72/ 94)    2D -> weno_order=7 -> wenoz=T                        15.42    9E9DA539
+     ( 73/ 94)    2D -> weno_order=7 -> mapped_weno=T                  15.63    448EA9A4
+     ( 74/ 94)    2D -> muscl_order=2 -> muscl_lim=2                   15.58    F883F4EE
+     ( 75/ 94)    2D -> muscl_order=2 -> muscl_lim=4                   15.50    84A12B88
+     ( 76/ 94)    2D -> muscl_order=2 -> muscl_lim=3                   15.55    743D6D71
+     ( 77/ 94)    2D -> muscl_order=2 -> muscl_eps=0 -> muscl_lim=1    15.46    D68EDC50
+     ( 78/ 94)    2D -> muscl_order=2 -> muscl_lim=5                   15.51    6B227FF5
+     ( 79/ 94)    2D -> muscl_order=2 -> muscl_eps=0 -> muscl_lim=2    15.44    5EC347F2
+     ( 80/ 94)    2D -> muscl_order=2 -> muscl_eps=0 -> muscl_lim=3    15.39    42848784
+     ( 81/ 94)    2D -> muscl_order=2 -> muscl_eps=0 -> muscl_lim=4    15.40    374C9B16
+     ( 82/ 94)    2D -> muscl_order=2 -> muscl_eps=0 -> muscl_lim=5    15.35    347964C3
+     ( 83/ 94)    2D -> 1 Fluid(s) -> riemann_solver=1 -> mixture...   15.37    7374E266
+     ( 84/ 94)    2D -> 1 Fluid(s) -> riemann_solver=1 -> avg_sta...   15.33    3BFEAC19
+     ( 85/ 94)    2D -> 1 Fluid(s) -> riemann_solver=1 -> avg_sta...   15.24    3154EC76
+     ( 86/ 94)    2D -> 1 Fluid(s) -> riemann_solver=1 -> wave_sp...   15.30    FBF808BE
+     ( 87/ 94)    2D -> 1 Fluid(s) -> riemann_solver=2 -> mixture...   15.10    3B414AF0
+     ( 88/ 94)    2D -> 1 Fluid(s) -> riemann_solver=5 -> mixture...   15.16    09DDCC0C
+     ( 89/ 94)    2D -> 1 Fluid(s) -> riemann_solver=2 -> wave_sp...   15.12    345A94C0
+     ( 90/ 94)    2D -> 1 Fluid(s) -> riemann_solver=2 -> avg_sta...   15.18    3C00B89D
+  
+     ✗ FAILED: 2D -> 1 Fluid(s) -> riemann_solver=2 -> model_e...
+       UUID: 043B535A
+       Attempts: 1
+       Error: Test tests/043B535A: 2D -> 1 Fluid(s) -> riemann_solver=2 -> model_eqns=3: Variable n°1 (1-indexed) in D/cons.6.00.000050.dat is not within tolerance:
+  - Candidate:   2.4984039103167
+  - Golden:      2.49776682450169
+  - Error:       abs: 6.37E-04, rel: 2.55E-04
+  - Tolerance:   abs: 1.00E-12, rel: 1.00E-12
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.6.00.000050.dat
+ - Variable n°33
+ - Candidate: 4.72611507574603
+ - Golden: 0.51560121845524
+ - Absolute Error: 4.21E+00
+ - Relative Error: 8.17E+00
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.6.00.000050.dat
+ - Variable n°800
+ - Candidate: -2.64576637501082
+ - Golden: 0.25000002220981
+ - Relative Error: 1.16E+01
+ - Absolute Error: 2.90E+00
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+     ( 91/ 94)    2D -> 1 Fluid(s) -> riemann_solver=2 -> avg_sta...   15.50    036E4F8E
+     ( 92/ 94)    2D -> 1 Fluid(s) -> riemann_solver=1 -> low_Mach=1   15.59    1A78D4CC
+     ( 93/ 94)    2D -> 1 Fluid(s) -> riemann_solver=2 -> low_Mach=1   15.54    126FF74F
+
+  
+
+╭──────────────────────────────── Test Summary ────────────────────────────────╮
+│                                                                              │
+│  ✗ 1 TEST FAILED                                                             │
+│                                                                              │
+│      93 passed                                                               │
+│       1 failed                                                               │
+│     666 skipped                                                              │
+│    ────────────                                                              │
+│     760 total                                                                │
+│                                                                              │
+│    Time: 20m 8.2s                                                            │
+│                                                                              │
+│    Failed Tests:                                                             │
+│      • 2D -> 1 Fluid(s) -> riemann_solver=2 ...                              │
+│        UUID: 043B535A                                                        │
+│        (tolerance mismatch)                                                  │
+│                                                                              │
+│    Next Steps:                                                               │
+│      • Run with --generate to update golden files (if changes are            │
+│  intentional)                                                                │
+│      • Check individual test output in tests/<UUID>/                         │
+│      • Run specific test: ./mfc.sh test --only <UUID>                        │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+
+mfc: ERROR > main.py finished with a 1 exit code.
+mfc: (venv) Exiting the Python virtual environment.

@@ -1,0 +1,63 @@
+mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn005 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 2
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | 
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Build | syscheck and pre_process
+
+
+ Build | syscheck and simulation
+
+
+
+ Test pre_process and simulation | from C06849AD to 549393AA (94 tests)
+  
+     Progress      Test Name                                        Time(s)   UUID
+  
+     (  1/ 94)    3D -> 1 Fluid(s) -> riemann_solver=2 -> mixture...   17.13    C06849AD
+     (  2/ 94)    3D -> 1 Fluid(s) -> riemann_solver=2 -> avg_sta...   17.14    AB0BE4E4
+     (  3/ 94)    3D -> 1 Fluid(s) -> riemann_solver=2 -> avg_sta...   19.51    28A7D6F4
+     (  4/ 94)    3D -> 1 Fluid(s) -> riemann_solver=2 -> wave_sp...   19.57    C36F18FB
+     (  5/ 94)    3D -> 1 Fluid(s) -> riemann_solver=1 -> low_Mach=1   20.64    4D88A48D
+  
+     ✗ FAILED: 3D -> 1 Fluid(s) -> riemann_solver=2 -> model_e...
+       UUID: 6241177B
+       Attempts: 1
+       Error: Test tests/6241177B: 3D -> 1 Fluid(s) -> riemann_solver=2 -> model_eqns=3: Variable n°25 (1-indexed) in D/cons.6.00.000050.dat is not within tolerance:
+  - Candidate:   1.00000000000298
+  - Golden:      0.99999999999981
+  - Error:       abs: 3.17E-12, rel: 3.17E-12
+  - Tolerance:   abs: 1.00E-12, rel: 1.00E-12
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.7.00.000050.dat
+ - Variable n°4
+ - Candidate: 0.0
+ - Golden: 1.53296467663035
+ - Absolute Error: 1.53E+00
+ - Relative Error: 1.00E+00
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.7.00.000050.dat
+ - Variable n°7963
+ - Candidate: 2.64577127128114
+ - Golden: 1.24999999941644
+ - Relative Error: 1.12E+00
+ - Absolute Error: 1.40E+00
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+     (  6/ 94)    3D -> 1 Fluid(s) -> riemann_solver=2 -> low_Mach=1   20.24    07C1FECC
+     (  7/ 94)    3D -> 1 Fluid(s) -> riemann_solver=2 -> low_Mach=2   19.17    0853FBD1
+     (  8/ 94)    3D -> 1 Fluid(s) -> IBM -> Sphere -> slip            19.95    28D037A7
+     (  9/ 94)    3D -> 1 Fluid(s) -> eos=ideal_gas                    20.33    385F6582
+     ( 10/ 94)    3D -> 1 Fluid(s) -> IBM -> Cylinder -> slip          18.54    5173E637
+     ( 11/ 94)    3D -> 1 Fluid(s) -> IBM -> Cuboid -> slip            18.60    43A1D3C6

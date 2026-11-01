@@ -101,6 +101,14 @@ reps (time limit, AGENT_LOG). P12 at 8 GPUs is not measured.
   latency-bound). One thread per (equation, cell) with `collapse(4)`: +3.6 % (669544). All loads of a cell into
   private arrays first, then the stores, so no load waits behind a store the compiler cannot prove does not alias it:
   +7.5 % (669580); likely cause (not profiled): the private arrays sit in local memory. Both were bitwise identical.
+- *Why the fused RK update is slow (SASS of P16).* It needs ~12 values per equation and cell but issues ~66 global loads:
+  every `x(j)%sf(q,k,l)` walks module structure → `vf(j)` → `sf` descriptor (base, offset, strides) before the data
+  load, and the stores to `q1` keep the compiler from reusing any of it. Taking 4 cells along y per thread does not
+  help on its own (the descriptors are still reloaded per cell: 112 loads per iteration, unchanged). With per-equation
+  local `contiguous` pointers the loop drops to 26 loads per cell, but the kernel then holds 202 registers (occupancy
+  37.5 → 12.5 %) and the step is 15 % slower (rkb2, 669708, bitwise).
+- *Rejected: register caps 96 / 80* on the Riemann unity file with the fused kernel: +0.8 % / +6.8 % (669708). 128
+  stays (168 and 255 were also worse, 669327).
 
 **Where the time is now (P12 profile, 1 GPU, 668466; 12.3 ms of kernels per stage).** Fused WENO5+HLLC 8.07 ms
 (65 %), flux differences + α·div(u) 2.0 ms, RK update 0.90 ms, cons→prim 0.64 ms, BCs + CBC ~0.65 ms. ncu (668497):
