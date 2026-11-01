@@ -1,0 +1,9 @@
+total 312
+drwx------+ 1 u1131128 ACD110018      0 Nov  1 18:12 .
+drwx------+ 1 u1131128 ACD110018      0 Nov  1 18:10 ..
+-rw-------  1 u1131128 ACD110018    880 Nov  1 18:11 env.txt
+-rw-------  1 u1131128 ACD110018  86335 Nov  1 18:12 ncu_details.csv
+-rw-------  1 u1131128 ACD110018 210151 Nov  1 18:12 ncu_raw.csv
+-rw-------  1 u1131128 ACD110018   5939 Nov  1 18:11 prep.log
+-rw-------  1 u1131128 ACD110018   1833 Nov  1 18:11 run.log
+-rw-------  1 u1131128 ACD110018      0 Nov  1 18:11 slurm-668497.out

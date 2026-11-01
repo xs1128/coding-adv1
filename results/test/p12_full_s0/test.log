@@ -1,0 +1,28 @@
+mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn017 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 2
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --no-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | 
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Build | syscheck and pre_process
+
+
+ Build | syscheck and simulation
+
+
+
+ Test pre_process and simulation | from EA8FA07E to F1E9F8BC (94 tests)
+  
+     Progress      Test Name                                        Time(s)   UUID
+  
+     (  1/ 94)    2D -> IBM -> STL                                     16.24    EA8FA07E
+     (  2/ 94)    3D -> ICPP -> STL                                    27.02    E777BE53
+     (  3/ 94)    2D -> ICPP -> STL                                    15.02    138D6A0D
+     (  4/ 94)    1D -> bc=-1                                          14.61    D79C3E6F
