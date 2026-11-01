@@ -1,0 +1,474 @@
+diff --git a/src/common/m_variables_conversion.fpp b/src/common/m_variables_conversion.fpp
+index 78a1945..73c8abd 100644
+--- a/src/common/m_variables_conversion.fpp
++++ b/src/common/m_variables_conversion.fpp
+@@ -492,10 +492,22 @@ contains
+         real(wp)               :: E, D                     !< Prim/Cons variables within Newton-Raphson iteration
+         real(wp)               :: f, dGa_dW, dp_dW, df_dW  !< Functions within Newton-Raphson iteration
+         integer                :: iter                     !< Newton-Raphson iteration counter
++        !> The primitive and conservative partial densities (volume fractions) are the same array, as in m_rhs: their copy below
++        !! would store each value onto itself, so it is skipped (and the kernel stores 4 fields instead of 8 for 5-eq)
++        logical :: skip_cont, skip_adv
++
++        skip_cont = associated(qK_prim_vf(1)%sf, qK_cons_vf(1)%sf) .and. associated(qK_prim_vf(eqn_idx%cont%end)%sf, &
++                               & qK_cons_vf(eqn_idx%cont%end)%sf)
++        skip_adv = .false.
++        if (eqn_idx%adv%beg >= 1 .and. eqn_idx%adv%end >= eqn_idx%adv%beg) then
++            skip_adv = associated(qK_prim_vf(eqn_idx%adv%beg)%sf, &
++                                  & qK_cons_vf(eqn_idx%adv%beg)%sf) .and. associated(qK_prim_vf(eqn_idx%adv%end)%sf, &
++                                  & qK_cons_vf(eqn_idx%adv%end)%sf)
++        end if
+ 
+         $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3, private='[alpha_K, alpha_rho_K, Re_K, nRtmp, rho_K, gamma_K, &
+                             & pi_inf_K, qv_K, dyn_pres_K, rhoYks, B, pres, vftmp, nbub_sc, G_K, solid_partial_density, T, &
+-                            & pres_mag, Ga, B2, m2, S, W, dW, E, D, f, dGa_dW, dp_dW, df_dW, iter]')
++                            & pres_mag, Ga, B2, m2, S, W, dW, E, D, f, dGa_dW, dp_dW, df_dW, iter]', firstprivate='[skip_cont, skip_adv]')
+         do l = ibounds(3)%beg, ibounds(3)%end
+             do k = ibounds(2)%beg, ibounds(2)%end
+                 do j = ibounds(1)%beg, ibounds(1)%end
+@@ -616,7 +628,7 @@ contains
+                         do i = eqn_idx%species%beg, eqn_idx%species%end
+                             qK_prim_vf(i)%sf(j, k, l) = max(0._wp, qK_cons_vf(i)%sf(j, k, l)/rho_K)
+                         end do
+-                    else
++                    else if (.not. skip_cont) then
+                         ! Non-reacting: partial densities are directly primitive (alpha_i * rho_i)
+                         $:GPU_LOOP(parallelism='[seq]')
+                         do i = 1, eqn_idx%cont%end
+@@ -737,7 +749,7 @@ contains
+                         end do
+                     end if
+ 
+-                    if (.not. igr .or. num_fluids > 1) then
++                    if ((.not. igr .or. num_fluids > 1) .and. .not. skip_adv) then
+                         $:GPU_LOOP(parallelism='[seq]')
+                         do i = eqn_idx%adv%beg, eqn_idx%adv%end
+                             qK_prim_vf(i)%sf(j, k, l) = qK_cons_vf(i)%sf(j, k, l)
+diff --git a/src/simulation/m_rhs.fpp b/src/simulation/m_rhs.fpp
+index b1d8c7b..c770378 100644
+--- a/src/simulation/m_rhs.fpp
++++ b/src/simulation/m_rhs.fpp
+@@ -42,11 +42,22 @@ module m_rhs
+     implicit none
+ 
+     private; public :: s_initialize_rhs_module, s_compute_rhs, s_finalize_rhs_module, q_cons_qp, rhs_input_aliasable, &
+-        & rhs_input_aliased, rk_diff_fusable, rhs_diff_deferred, s_add_flux_differences_rk_update
++        & rhs_input_aliased, rk_diff_fusable, rhs_diff_deferred, s_add_flux_differences_rk_update, q_stor_slab, rk_slabs
+ 
+     type(vector_field) :: q_cons_qp  !< WENO-reconstructed cell-average conservative variables at quadrature points
+     $:GPU_DECLARE(create='[q_cons_qp]')
+ 
++    !> The fields of q_cons_qp are the equation slices of q_slab, and m_time_steppers keeps the saved RK stage (q_cons_ts(2)) in
++    !! q_stor_slab the same way when the stage state is q_cons_qp. rk_slabs (set by m_time_steppers): both are slabs, so
++    !! s_add_flux_differences_rk_update can address them, and the flux slabs, as plain arrays. q_slab holds the conservative fields
++    !! in layers 1:sys_size and the primitive fields that are not aliases of them in layers sys_size + 1:2*sys_size; qp_layer(i) is
++    !! the layer of primitive field i, so the fused WENO5+HLLC kernel reads every primitive variable from one explicit-shape array
++    !! instead of walking a descriptor per variable.
++    real(wp), allocatable, target, dimension(:,:,:,:) :: q_slab, q_stor_slab
++    integer, allocatable, dimension(:)                :: qp_layer
++    $:GPU_DECLARE(create='[q_slab, q_stor_slab, qp_layer]')
++    logical :: rk_slabs = .false.
++
+     !> On the plain path the RK stage state is q_cons_qp itself (m_time_steppers points q_cons_ts(1) at it), so s_compute_rhs skips
+     !! the per-stage copy. The conversion writes the cont/adv entries back unchanged and reads the interior only; the halo fill then
+     !! writes the ghost cells, which the RK update never touches. Physics that change q_cons_qp in place, or read the stage state's
+@@ -165,25 +176,36 @@ contains
+         @:ALLOCATE(q_prim_qp%vf(1:sys_size))
+ 
+         if (.not. igr) then
++            @:ALLOCATE(q_slab(idwbuff(1)%beg:idwbuff(1)%end, idwbuff(2)%beg:idwbuff(2)%end, idwbuff(3)%beg:idwbuff(3)%end, &
++                       & 1:2*sys_size))
++            @:ALLOCATE(qp_layer(1:sys_size))
++            qp_layer = [(l, l=1, sys_size)]
+             do l = 1, sys_size
+-                @:ALLOCATE(q_cons_qp%vf(l)%sf(idwbuff(1)%beg:idwbuff(1)%end, idwbuff(2)%beg:idwbuff(2)%end, &
+-                           & idwbuff(3)%beg:idwbuff(3)%end))
++                q_cons_qp%vf(l)%sf(idwbuff(1)%beg:,idwbuff(2)%beg:,idwbuff(3)%beg:) => q_slab(:,:,:,l)
++                $:GPU_ENTER_DATA(attach='[q_cons_qp%vf(l)%sf]')
+             end do
+             do l = eqn_idx%mom%beg, eqn_idx%E
+-                @:ALLOCATE(q_prim_qp%vf(l)%sf(idwbuff(1)%beg:idwbuff(1)%end, idwbuff(2)%beg:idwbuff(2)%end, &
+-                           & idwbuff(3)%beg:idwbuff(3)%end))
++                call s_point_prim_at_slab(l)
+             end do
+         end if
+ 
+         if (surface_tension) then
+             do l = eqn_idx%adv%end + 1, eqn_idx%c - 1
+-                @:ALLOCATE(q_prim_qp%vf(l)%sf(idwbuff(1)%beg:idwbuff(1)%end, idwbuff(2)%beg:idwbuff(2)%end, &
+-                           & idwbuff(3)%beg:idwbuff(3)%end))
++                if (igr) then
++                    @:ALLOCATE(q_prim_qp%vf(l)%sf(idwbuff(1)%beg:idwbuff(1)%end, idwbuff(2)%beg:idwbuff(2)%end, &
++                               & idwbuff(3)%beg:idwbuff(3)%end))
++                else
++                    call s_point_prim_at_slab(l)
++                end if
+             end do
+         else
+             do l = eqn_idx%adv%end + 1, sys_size
+-                @:ALLOCATE(q_prim_qp%vf(l)%sf(idwbuff(1)%beg:idwbuff(1)%end, idwbuff(2)%beg:idwbuff(2)%end, &
+-                           & idwbuff(3)%beg:idwbuff(3)%end))
++                if (igr) then
++                    @:ALLOCATE(q_prim_qp%vf(l)%sf(idwbuff(1)%beg:idwbuff(1)%end, idwbuff(2)%beg:idwbuff(2)%end, &
++                               & idwbuff(3)%beg:idwbuff(3)%end))
++                else
++                    call s_point_prim_at_slab(l)
++                end if
+             end do
+         end if
+ 
+@@ -193,8 +215,7 @@ contains
+             do l = 1, eqn_idx%cont%end
+                 if (relativity) then
+                     ! Cons and Prim densities are different for relativity
+-                    @:ALLOCATE(q_prim_qp%vf(l)%sf(idwbuff(1)%beg:idwbuff(1)%end, idwbuff(2)%beg:idwbuff(2)%end, &
+-                               & idwbuff(3)%beg:idwbuff(3)%end))
++                    call s_point_prim_at_slab(l)
+                 else
+                     q_prim_qp%vf(l)%sf => q_cons_qp%vf(l)%sf
+                     $:GPU_ENTER_DATA(copyin='[q_prim_qp%vf(l)%sf]')
+@@ -219,6 +240,11 @@ contains
+             q_prim_qp%vf(eqn_idx%psi)%sf => q_cons_qp%vf(eqn_idx%psi)%sf
+             $:GPU_ENTER_DATA(copyin='[q_prim_qp%vf(eqn_idx%psi)%sf]')
+             $:GPU_ENTER_DATA(attach='[q_prim_qp%vf(eqn_idx%psi)%sf]')
++            if (.not. igr) qp_layer(eqn_idx%psi) = eqn_idx%psi
++        end if
++
++        if (.not. igr) then
++            $:GPU_UPDATE(device='[qp_layer]')
+         end if
+ 
+         if (.not. igr) then
+@@ -1106,7 +1132,8 @@ contains
+         call nvtxStartRange("RHS-RIEMANN-SOLVER")
+         call s_riemann_solver(qR_rsx_vf, dqR_prim_dx_n(id)%vf, dqR_prim_dy_n(id)%vf, dqR_prim_dz_n(id)%vf, qR_prim(id)%vf, &
+                               & qL_rsx_vf, dqL_prim_dx_n(id)%vf, dqL_prim_dy_n(id)%vf, dqL_prim_dz_n(id)%vf, qL_prim(id)%vf, &
+-                              & q_prim_qp%vf, flux_n(id)%vf, flux_src_n(id)%vf, flux_gsrc_n(id)%vf, id, irx, iry, irz)
++                              & q_prim_qp%vf, flux_n(id)%vf, flux_src_n(id)%vf, flux_gsrc_n(id)%vf, id, irx, iry, irz, q_slab, &
++                              & qp_layer)
+         call nvtxEndRange
+ 
+         if (use_nc_iface_vel) then
+@@ -1952,6 +1979,12 @@ contains
+         ! see s_initialize_rhs_module): flux_n(d)%vf(j)%sf is flux_rsx_vf(:, :, :, j + (d - 1)*sys_size), and every adv entry
+         ! of flux_src_n(d) is the one face-velocity slab ux/uy/uz. Same memory, one array descriptor instead of a walk through
+         ! flux_n(d)%vf(j) per load. The face-velocity difference is the same for every adv equation, so it is formed once.
++
++        if (rk_slabs) then
++            call s_add_flux_differences_rk_update_slabs(flux_rsx_vf, flux_src_rsx_vf, q_slab, q_stor_slab, c1, c2, c3, c4, &
++                & save_stor)
++            return
++        end if
+         sy = sys_size; sz = 2*sys_size
+         ux = eqn_idx%adv%beg; uy = ux + (sys_size - eqn_idx%adv%beg + 1); uz = ux + 2*(sys_size - eqn_idx%adv%beg + 1)
+ 
+@@ -2021,6 +2054,95 @@ contains
+ 
+     end subroutine s_add_flux_differences_rk_update
+ 
++    !> s_add_flux_differences_rk_update when every field it touches is one array (rk_slabs): q1 is q_slab (the stage state is
++    !! q_cons_qp), qs is q_stor_slab, and the fluxes are the slabs fx and fs. As explicit-shape dummies their bounds are fixed at
++    !! entry, so the kernel indexes them from scalars instead of reloading array descriptors after every store. Same loads, same
++    !! operations in the same order per cell as the general version, so bitwise the same q1 and qs.
++    subroutine s_add_flux_differences_rk_update_slabs(fx, fs, q1, qs, c1, c2, c3, c4, save_stor)
++
++        real(wp), dimension(-1:m,-1:n,-1:p,1:sys_size*num_dims), intent(in)                         :: fx
++        real(wp), dimension(-1:m,-1:n,-1:p,1:(sys_size - eqn_idx%adv%beg + 1)*num_dims), intent(in) :: fs
++
++        real(wp), dimension(idwbuff(1)%beg:idwbuff(1)%end,idwbuff(2)%beg:idwbuff(2)%end,idwbuff(3)%beg:idwbuff(3)%end, &
++             & 1:sys_size), intent(inout) :: q1, qs
++        real(wp), intent(in) :: c1, c2, c3, c4
++        logical, intent(in)  :: save_stor
++        integer              :: j, jn, k, l, q, ns, ab, ae, sy, sz, uy, uz
++        real(wp)             :: inv_dx, inv_dy, inv_dz, r, dux, duy, duz, dtl
++        real(wp)             :: fx0, fx1, fy0, fy1, fz0, fz1, v1, vs
++        real(wp)             :: nfx0, nfx1, nfy0, nfy1, nfz0, nfz1, nv1, nvs
++
++        ! fx(:, :, :, j + (d - 1)*sys_size) is flux_n(d)%vf(j)%sf; fs(:, :, :, 1 + (d - 1)*(sys_size - adv%beg + 1)) is the face
++        ! velocity of direction d (flux_src_rsx_vf from adv%beg). The scalars are kernel arguments, not module reads.
++        ns = sys_size; ab = eqn_idx%adv%beg; ae = eqn_idx%adv%end; dtl = dt
++        sy = sys_size; sz = 2*sys_size; uy = 1 + (sys_size - ab + 1); uz = 1 + 2*(sys_size - ab + 1)
++
++        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3, private='[j, jn, k, l, q, inv_dx, inv_dy, inv_dz, r, fx0, fx1, &
++                            & fy0, fy1, fz0, fz1, v1, vs, nfx0, nfx1, nfy0, nfy1, nfz0, nfz1, nv1, nvs, dux, duy, duz]', &
++                            & firstprivate='[ns, ab, ae, dtl, sy, sz, uy, uz]')
++        do l = 0, p
++            do k = 0, n
++                do q = 0, m
++                    inv_dx = 1._wp/dx(q)
++                    inv_dy = 0._wp; inv_dz = 0._wp
++                    if (n > 0) inv_dy = 1._wp/dy(k)
++                    if (p > 0) inv_dz = 1._wp/dz(l)
++                    nfy0 = 0._wp; nfy1 = 0._wp; nfz0 = 0._wp; nfz1 = 0._wp
++                    duy = 0._wp; duz = 0._wp
++                    nfx0 = fx(q - 1, k, l, 1); nfx1 = fx(q, k, l, 1)
++                    dux = fs(q, k, l, 1) - fs(q - 1, k, l, 1)
++                    if (n > 0) then
++                        nfy0 = fx(q, k - 1, l, 1 + sy); nfy1 = fx(q, k, l, 1 + sy)
++                        duy = fs(q, k, l, uy) - fs(q, k - 1, l, uy)
++                    end if
++                    if (p > 0) then
++                        nfz0 = fx(q, k, l - 1, 1 + sz); nfz1 = fx(q, k, l, 1 + sz)
++                        duz = fs(q, k, l, uz) - fs(q, k, l - 1, uz)
++                    end if
++                    nv1 = q1(q, k, l, 1); nvs = qs(q, k, l, 1)
++                    $:GPU_LOOP(parallelism='[seq]')
++                    do j = 1, ns
++                        fx0 = nfx0; fx1 = nfx1; fy0 = nfy0; fy1 = nfy1; fz0 = nfz0; fz1 = nfz1; v1 = nv1; vs = nvs
++                        if (j < ns) then
++                            jn = j + 1
++                            nfx0 = fx(q - 1, k, l, jn); nfx1 = fx(q, k, l, jn)
++                            if (n > 0) then
++                                nfy0 = fx(q, k - 1, l, jn + sy); nfy1 = fx(q, k, l, jn + sy)
++                            end if
++                            if (p > 0) then
++                                nfz0 = fx(q, k, l - 1, jn + sz); nfz1 = fx(q, k, l, jn + sz)
++                            end if
++                            nv1 = q1(q, k, l, jn); nvs = qs(q, k, l, jn)
++                        end if
++                        r = inv_dx*(fx0 - fx1)
++                        if (j >= ab .and. j <= ae) then
++                            r = r + inv_dx*v1*dux
++                        end if
++                        if (n > 0) then
++                            r = r + inv_dy*(fy0 - fy1)
++                            if (j >= ab .and. j <= ae) then
++                                r = r + inv_dy*v1*duy
++                            end if
++                        end if
++                        if (p > 0) then
++                            r = r + inv_dz*(fz0 - fz1)
++                            if (j >= ab .and. j <= ae) then
++                                r = r + inv_dz*v1*duz
++                            end if
++                        end if
++                        if (save_stor) then
++                            qs(q, k, l, j) = v1
++                            vs = v1
++                        end if
++                        q1(q, k, l, j) = (c1*v1 + c2*vs + c3*dtl*r)/c4
++                    end do
++                end do
++            end do
++        end do
++        $:END_GPU_PARALLEL_LOOP()
++
++    end subroutine s_add_flux_differences_rk_update_slabs
++
+     !> Add viscous, surface-tension, and species-diffusion source flux contributions to the RHS for a given direction
+     subroutine s_compute_additional_physics_rhs(idir, q_prim_vf, rhs_vf, flux_src_n_in, dq_prim_dx_vf, dq_prim_dy_vf, dq_prim_dz_vf)
+ 
+@@ -2384,6 +2506,17 @@ contains
+ 
+     end subroutine s_reconstruct_cell_boundary_values_first_order
+ 
++    !> Point primitive field l at its layer of q_slab (sys_size + l) instead of allocating it
++    impure subroutine s_point_prim_at_slab(l)
++
++        integer, intent(in) :: l
++
++        q_prim_qp%vf(l)%sf(idwbuff(1)%beg:,idwbuff(2)%beg:,idwbuff(3)%beg:) => q_slab(:,:,:,sys_size + l)
++        $:GPU_ENTER_DATA(attach='[q_prim_qp%vf(l)%sf]')
++        qp_layer(l) = sys_size + l
++
++    end subroutine s_point_prim_at_slab
++
+     !> Module deallocation and/or disassociation procedures
+     impure subroutine s_finalize_rhs_module
+ 
+@@ -2391,23 +2524,17 @@ contains
+ 
+         if (.not. igr) then
+             do j = eqn_idx%cont%beg, eqn_idx%cont%end
+-                if (relativity) then
+-                    ! Cons and Prim densities are different for relativity
+-                    @:DEALLOCATE(q_cons_qp%vf(j)%sf)
+-                    @:DEALLOCATE(q_prim_qp%vf(j)%sf)
+-                else
+-                    nullify (q_prim_qp%vf(j)%sf)
+-                end if
++                nullify (q_prim_qp%vf(j)%sf)
+             end do
+ 
+             do j = eqn_idx%adv%beg, eqn_idx%adv%end
+                 nullify (q_prim_qp%vf(j)%sf)
+             end do
+ 
+-            do j = eqn_idx%mom%beg, eqn_idx%E
+-                @:DEALLOCATE(q_cons_qp%vf(j)%sf)
+-                @:DEALLOCATE(q_prim_qp%vf(j)%sf)
++            do j = 1, sys_size
++                nullify (q_cons_qp%vf(j)%sf, q_prim_qp%vf(j)%sf)  ! layers of q_slab
+             end do
++            @:DEALLOCATE(q_slab, qp_layer)
+         end if
+ 
+         @:DEALLOCATE(q_cons_qp%vf, q_prim_qp%vf)
+diff --git a/src/simulation/m_riemann_solver_hllc.fpp b/src/simulation/m_riemann_solver_hllc.fpp
+index a250729..02f5f04 100644
+--- a/src/simulation/m_riemann_solver_hllc.fpp
++++ b/src/simulation/m_riemann_solver_hllc.fpp
+@@ -32,7 +32,8 @@ contains
+     !> HLLC Riemann solver with contact restoration, Toro et al. Shock Waves (1994)
+     subroutine s_hllc_riemann_solver(qL_prim_rsx_vf, dqL_prim_dx_vf, dqL_prim_dy_vf, dqL_prim_dz_vf, qL_prim_vf, qR_prim_rsx_vf, &
+                                      & dqR_prim_dx_vf, dqR_prim_dy_vf, dqR_prim_dz_vf, qR_prim_vf, q_prim_vf, flux_vf, &
+-                                     & flux_src_vf, flux_gsrc_vf, norm_dir, ix, iy, iz)
++                                     & flux_src_vf, flux_gsrc_vf, norm_dir, ix, iy, iz, q_slab, qp_layer, fx_slab, fs_slab, &
++                                     & vs_slab, nfx, nfs, nvs)
+ 
+         real(wp), dimension(idwbuff(1)%beg:,idwbuff(2)%beg:,idwbuff(3)%beg:,1:), intent(inout) :: qL_prim_rsx_vf, qR_prim_rsx_vf
+         type(scalar_field), dimension(sys_size), intent(in) :: q_prim_vf
+@@ -44,6 +45,17 @@ contains
+         type(scalar_field), dimension(sys_size), intent(inout) :: flux_vf, flux_src_vf, flux_gsrc_vf
+         integer, intent(in)                                    :: norm_dir
+         type(int_bounds_info), intent(in)                      :: ix, iy, iz
++        !> conservative + primitive layers (m_rhs)
++
++        real(wp), dimension(idwbuff(1)%beg:idwbuff(1)%end,idwbuff(2)%beg:idwbuff(2)%end,idwbuff(3)%beg:idwbuff(3)%end, &
++             & 1:2*sys_size), intent(in) :: q_slab
++        integer, dimension(1:sys_size), intent(in) :: qp_layer  !< layer of each primitive field in q_slab
++        !> flux_rsx_vf, flux_src_rsx_vf and vel_src_rsx_vf (m_riemann_state) as explicit-shape dummies for the fused kernel: their
++        !! bounds are fixed at entry, so its stores do not make it reload a module descriptor
++        integer, intent(in)                                                                          :: nfx, nfs, nvs
++        real(wp), dimension(-1:m,-1:n,-1:p,1:nfx), intent(inout)                                     :: fx_slab
++        real(wp), dimension(-1:m,-1:n,-1:p,eqn_idx%adv%beg:eqn_idx%adv%beg + nfs - 1), intent(inout) :: fs_slab
++        real(wp), dimension(-1:m,-1:n,-1:p,1:nvs), intent(inout)                                     :: vs_slab
+ 
+         #:if not MFC_CASE_OPTIMIZATION and USING_AMD
+             real(wp), dimension(3) :: alpha_rho_L, alpha_rho_R
+@@ -874,13 +886,15 @@ contains
+                             #:if FUSED
+                                 #:set QL = lambda x: 'qLf(' + x + ')'
+                                 #:set QR = lambda x: 'qRf(' + x + ')'
+-                                #:set FLX = lambda x: 'flux_rsx_vf(' + SF('') + ', ' + x + ' + foff)'
+-                                #:set FSRC = lambda x: 'flux_src_rsx_vf(' + SF('') + ', ' + x + ' + fsoff)'
++                                #:set FLX = lambda x: 'fx_slab(' + SF('') + ', ' + x + ' + foff)'
++                                #:set FSRC = lambda x: 'fs_slab(' + SF('') + ', ' + x + ' + fsoff)'
++                                #:set VSRC = lambda x: 'vs_slab(' + SF('') + ', ' + x + ')'
+                             #:else
+                                 #:set QL = lambda x: 'qL_prim_rsx_vf(' + SF('') + ', ' + x + ')'
+                                 #:set QR = lambda x: 'qR_prim_rsx_vf(' + SF(' + 1') + ', ' + x + ')'
+                                 #:set FLX = lambda x: 'flux_rsx_vf(' + SF('') + ', ' + x + ')'
+                                 #:set FSRC = lambda x: 'flux_src_rsx_vf(' + SF('') + ', ' + x + ')'
++                                #:set VSRC = lambda x: 'vel_src_rsx_vf(' + SF('') + ', ' + x + ')'
+                             #:endif
+                             ! 5-equation model (model_eqns=2): mixture total energy, volume fraction advection. Emitted twice --
+                             ! once specialized for hypoelasticity, once pure-fluid. The #:if HYPO guards strip every hypoelastic
+@@ -953,14 +967,14 @@ contains
+                                             ! reconstructed, so the loads overlap the arithmetic (the last iteration reloads i).
+                                             #:for o, os in [(-2, ' - 2'), (-1, ' - 1'), (0, ''), (1, ' + 1'), (2, ' + 2'), (3, &
+                                                              & ' + 3')]
+-                                                w_n(${o}$) = q_prim_vf(1)%sf(${SF(os)}$)
++                                                w_n(${o}$) = q_slab(${SF(os)}$, qp_layer(1))
+                                             #:endfor
+                                             $:GPU_LOOP(parallelism='[seq]')
+                                             do i = 1, sys_size
+                                                 #:for o, os in [(-2, ' - 2'), (-1, ' - 1'), (0, ''), (1, ' + 1'), (2, ' + 2'), &
+                                                                  & (3, ' + 3')]
+                                                     w_v(${o}$) = w_n(${o}$)
+-                                                    w_n(${o}$) = q_prim_vf(min(i + 1, sys_size))%sf(${SF(os)}$)
++                                                    w_n(${o}$) = q_slab(${SF(os)}$, qp_layer(min(i + 1, sys_size)))
+                                                 #:endfor
+                                                 #:for OUT, CB, C, o in [('qLf', 'cbR', SV, 0), ('qRf', 'cbL', SV + ' + 1', 1)]
+                                                     w_dvd(1) = w_v(${o + 2}$) - w_v(${o + 1}$)
+@@ -1415,10 +1429,8 @@ contains
+                                         ! VOLUME FRACTION SOURCE FLUX.
+                                         $:GPU_LOOP(parallelism='[seq]')
+                                         do i = 1, num_dims
+-                                            vel_src_rsx_vf(${SF('')}$, &
+-                                                           & dir_idx(i)) = xi_M*(vel_L(dir_idx(i)) + dir_flg(dir_idx(i)) &
+-                                                           & *s_M*xi_L_m1) + xi_P*(vel_R(dir_idx(i)) + dir_flg(dir_idx(i)) &
+-                                                           & *s_P*xi_R_m1)
++                                            ${VSRC('dir_idx(i)')}$ = xi_M*(vel_L(dir_idx(i)) + dir_flg(dir_idx(i))*s_M*xi_L_m1) &
++                                                   & + xi_P*(vel_R(dir_idx(i)) + dir_flg(dir_idx(i))*s_P*xi_R_m1)
+                                         end do
+ 
+                                         ! COLOR FUNCTION FLUX
+@@ -1427,7 +1439,7 @@ contains
+                                                   & + xi_P*${QR('eqn_idx%c')}$*(vel_R(dir_idx(1)) + s_P*xi_R_m1)
+                                         end if
+ 
+-                                        ${FSRC('eqn_idx%adv%beg')}$ = vel_src_rsx_vf(${SF('')}$, dir_idx(1))
++                                        ${FSRC('eqn_idx%adv%beg')}$ = ${VSRC('dir_idx(1)')}$
+ 
+                                         if (chemistry) then
+                                             $:GPU_LOOP(parallelism='[seq]')
+diff --git a/src/simulation/m_riemann_solvers.fpp b/src/simulation/m_riemann_solvers.fpp
+index b68c1ef..c5e5fbb 100644
+--- a/src/simulation/m_riemann_solvers.fpp
++++ b/src/simulation/m_riemann_solvers.fpp
+@@ -30,7 +30,7 @@ contains
+     !! reference: 1) s_hll_riemann_solver 2) s_hllc_riemann_solver 3) s_lf_riemann_solver 4) s_hlld_riemann_solver
+     subroutine s_riemann_solver(qL_prim_rsx_vf, dqL_prim_dx_vf, dqL_prim_dy_vf, dqL_prim_dz_vf, qL_prim_vf, qR_prim_rsx_vf, &
+                                 & dqR_prim_dx_vf, dqR_prim_dy_vf, dqR_prim_dz_vf, qR_prim_vf, q_prim_vf, flux_vf, flux_src_vf, &
+-                                & flux_gsrc_vf, norm_dir, ix, iy, iz)
++                                & flux_gsrc_vf, norm_dir, ix, iy, iz, q_slab, qp_layer)
+ 
+         real(wp), dimension(idwbuff(1)%beg:,idwbuff(2)%beg:,idwbuff(3)%beg:,1:), intent(inout) :: qL_prim_rsx_vf, qR_prim_rsx_vf
+         type(scalar_field), dimension(sys_size), intent(in) :: q_prim_vf
+@@ -41,6 +41,11 @@ contains
+         type(scalar_field), dimension(sys_size), intent(inout) :: flux_vf, flux_src_vf, flux_gsrc_vf
+         integer, intent(in)                                    :: norm_dir
+         type(int_bounds_info), intent(in)                      :: ix, iy, iz
++        !> conservative + primitive layers (m_rhs)
++
++        real(wp), dimension(idwbuff(1)%beg:idwbuff(1)%end,idwbuff(2)%beg:idwbuff(2)%end,idwbuff(3)%beg:idwbuff(3)%end, &
++             & 1:2*sys_size), intent(in) :: q_slab
++        integer, dimension(1:sys_size), intent(in) :: qp_layer  !< layer of each primitive field in q_slab
+ 
+         ! Hypoelasticity enters the Riemann layer in THREE distinct code shapes:
+         !   1. HLLC - inline "if (hypoelasticity)" branches inside s_hllc_riemann_solver
+@@ -65,7 +70,8 @@ contains
+             if (riemann_solver == ${NUM}$) then
+                 call s_${NAME}$_riemann_solver(qL_prim_rsx_vf, dqL_prim_dx_vf, dqL_prim_dy_vf, dqL_prim_dz_vf, qL_prim_vf, &
+                                                & qR_prim_rsx_vf, dqR_prim_dx_vf, dqR_prim_dy_vf, dqR_prim_dz_vf, qR_prim_vf, &
+-                                               & q_prim_vf, flux_vf, flux_src_vf, flux_gsrc_vf, norm_dir, ix, iy, iz)
++                                               & q_prim_vf, flux_vf, flux_src_vf, flux_gsrc_vf, norm_dir, ix, iy, &
++                                               & iz ${', q_slab, qp_layer, flux_rsx_vf, flux_src_rsx_vf, vel_src_rsx_vf, size(flux_rsx_vf, 4), ' + 'size(flux_src_rsx_vf, 4), size(vel_src_rsx_vf, 4)' if NAME == 'hllc' else ''}$)
+             end if
+         #:endfor
+ 
+diff --git a/src/simulation/m_time_steppers.fpp b/src/simulation/m_time_steppers.fpp
+index a1b5c9e..feffd6a 100644
+--- a/src/simulation/m_time_steppers.fpp
++++ b/src/simulation/m_time_steppers.fpp
+@@ -179,11 +179,20 @@ contains
+         end do
+ #else
+         !> @endcond
++        ! With the stage state aliased, the saved stage is one slab too (q_stor_slab), so the fused RK update sees both as arrays
++        rk_slabs = rhs_input_aliasable .and. num_ts == 2
++        if (rk_slabs) then
++            @:ALLOCATE(q_stor_slab(idwbuff(1)%beg:idwbuff(1)%end, idwbuff(2)%beg:idwbuff(2)%end, idwbuff(3)%beg:idwbuff(3)%end, &
++                       & 1:sys_size))
++        end if
+         do i = 1, num_ts
+             do j = 1, sys_size
+                 if (i == 1 .and. rhs_input_aliasable) then  ! the stage state is the RHS's working copy (see m_rhs)
+                     q_cons_ts(1)%vf(j)%sf => q_cons_qp%vf(j)%sf
+                     $:GPU_ENTER_DATA(attach='[q_cons_ts(1)%vf(j)%sf]')
++                else if (i == 2 .and. rk_slabs) then
++                    q_cons_ts(2)%vf(j)%sf(idwbuff(1)%beg:,idwbuff(2)%beg:,idwbuff(3)%beg:) => q_stor_slab(:,:,:,j)
++                    $:GPU_ENTER_DATA(attach='[q_cons_ts(2)%vf(j)%sf]')
+                 else
+                     @:ALLOCATE(q_cons_ts(i)%vf(j)%sf(idwbuff(1)%beg:idwbuff(1)%end, idwbuff(2)%beg:idwbuff(2)%end, &
+                                & idwbuff(3)%beg:idwbuff(3)%end))
+@@ -1005,13 +1014,16 @@ contains
+ #else
+         do i = 1, num_ts
+             do j = 1, sys_size
+-                if (i == 1 .and. rhs_input_aliased) then
+-                    nullify (q_cons_ts(1)%vf(j)%sf)
++                if ((i == 1 .and. rhs_input_aliased) .or. (i == 2 .and. rk_slabs)) then
++                    nullify (q_cons_ts(i)%vf(j)%sf)
+                 else
+                     @:DEALLOCATE(q_cons_ts(i)%vf(j)%sf)
+                 end if
+             end do
+         end do
++        if (rk_slabs) then
++            @:DEALLOCATE(q_stor_slab)
++        end if
+ #endif
+         do i = 1, num_ts
+             @:DEALLOCATE(q_cons_ts(i)%vf)
