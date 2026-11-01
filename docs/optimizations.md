@@ -164,7 +164,7 @@ two-level walk); they are allocated one array per equation, so giving them the s
 **P20 candidate: the fused WENO5+HLLC kernel on explicit-shape slabs** (`patches/exp/exp-rkq.diff`,
 `exp-qslab.diff`, `exp-fslab-on-qslab.diff`; suite pending). The ncu source counters of the fused kernel (670130) do not
 resolve `.fpp` lines, so the per-instruction counts were joined by address to `nvdisasm -g` line info of the same kernel
-variant (`runs/prof/join.py`). Stencil loads were 16 % of executed instructions (IMAD/IADD3 on one descriptor per
+variant (`tools/ncu_line_join.py`). Stencil loads were 16 % of executed instructions (IMAD/IADD3 on one descriptor per
 variable), and HLLC flux stores reloaded the module descriptors of `flux_rsx_vf`/`flux_src_rsx_vf` after each store.
 (1) exp-rkq: the stage state and the saved stage become one 4-D array each (`q_cons_qp%vf(j)%sf` are pointer views), and
 the RK update takes them as explicit-shape dummies: −0.4 % (670687), alone not worth a suite. (2) exp-qslab: the same
