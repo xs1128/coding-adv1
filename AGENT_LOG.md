@@ -70,3 +70,9 @@
 - ncu job 667720 was submitted with CASE `-`, which only the A/B and test scripts accept. It held one GPU for 7.5 min
   and then failed on `cp` (the slow part before that was node-side start-up). Cost: 7.5 GPU-min. submit.sh now rejects
   a missing case file at submit time. submit_clean.sh also looped 6 times on an sbatch argument error; it now stops.
+- Repeated the CASE `-` mistake on the A/B script, which also copies the case file per arm. W3 try 1 (667909) failed
+  every arm after slow start-ups (8 GPU-min). submit_clean.sh read the missing a1 result as a braked node and
+  resubmitted (667944); the fused A/B (667932) had the same argument. submit.sh now accepts `-` only for SCRIPT=mfctest.
+- 17:14-17:35: 667917 (correct arguments), 667932 and 667944 never wrote a Slurm output file and ran to their 10-min
+  limits. About 100 jobs on nano4 were stuck in COMPLETING (18 nodes completing, 24 drained), so this was a
+  cluster-side Slurm/epilog or filesystem fault. Cost: 30 GPU-min with no data. GPU submissions held until it cleared.

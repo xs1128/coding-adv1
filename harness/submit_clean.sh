@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# harness/submit_clean.sh LABEL CASE NGPU MINUTES SCRIPT=ab ...   (same arguments as submit.sh, ab jobs only)
+# harness/submit_clean.sh LABEL CASE NGPU MINUTES SCRIPT=ab ...   (CASE is a file, e.g. harness/cases/perf3d.py)   (same arguments as submit.sh, ab jobs only)
 # ab.sbatch refuses a power-braked node within seconds (AGENT_LOG #16); resubmit excluding every node it refused, up to
 # 6 tries. Blocks until a job has produced results/LABEL/a1, so run it under nohup.
 set -uo pipefail
