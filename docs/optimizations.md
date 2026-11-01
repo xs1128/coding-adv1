@@ -45,6 +45,7 @@ AGENT_LOG #16). Every arm is bitwise identical to v5.7.0.
 | **v5.7.0 → P16, direct same-node A/B** (2 rounds × 5 reps, hgpn065) | **77.06 → 36.23 ms: 2.13×**; grind 0.3968–0.3985 → 0.1872–0.1877 ns (2.12×); wall median 7.31 → 5.65 s (1.29×) | — | 669752 |
 | **v5.7.0 → P18, direct same-node A/B** (canonical tree 0001–0021, 2 rounds × 5 reps, hgpn005) | **76.75 / 76.74 → 34.39 / 34.30 ms: 2.24×**; grind 0.3963–0.3990 → 0.1768–0.1779 ns (2.24×) | — | 670158 |
 | **P18 → P19** (flux slabs read directly in the fused RK update; 2 rounds × 3 reps, hgpn021) | **34.27 / 34.28 → 33.14 / 33.10 ms (−3.4 %)**; grind 0.1777 → 0.1714 | — | 670619 |
+| *P19 → P20 candidate* (exp-rkq + exp-qslab + exp-fslab; not a rung until its full suite) | P19 33.17 / 33.20 → **30.07 / 30.08 ms (−9.4 %)** | — | 670811 (also 670687, 670779) |
 | **P11 → P18 at 4 / 8 GPUs** (`rdma_mpi`, same node, `UCX_TLS=self,sm,cuda_copy,cuda_ipc` both arms, 3 reps, hgpn034) | 4g **12.294 → 10.131 ms (−17.6 %)**, grind 0.0632 → 0.0525; 8g **7.344 → 6.115 ms (−16.7 %)**, grind 0.0376 → 0.0315; wall unchanged (start-up dominated); bitwise all 4 arms | — | 670516, 670540 |
 
 8 GPUs (`rdma_mpi`, 667577, hgpn029): P4 → P11 grind 0.0502 → 0.0376 ns (−25.2 %), bitwise; the P11 arm got 2 of 3
@@ -159,6 +160,22 @@ local memory. Same node (670619, hgpn021, 2 rounds × 3 reps): 34.27 / 34.28 →
 0.1776–0.1779 → 0.1713–0.1715, bitwise in all 4 arms. `q1` and `qs` still go through `q_cons_ts(i)%vf(j)%sf` (a
 two-level walk); they are allocated one array per equation, so giving them the same treatment means allocating
 `q_cons_qp` and `q_cons_ts(2)` as slabs.
+
+**P20 candidate: the fused WENO5+HLLC kernel on explicit-shape slabs** (`patches/exp/exp-rkq.diff`,
+`exp-qslab.diff`, `exp-fslab-on-qslab.diff`; suite pending). The ncu source counters of the fused kernel (670130) do not
+resolve `.fpp` lines, so the per-instruction counts were joined by address to `nvdisasm -g` line info of the same kernel
+variant (`runs/prof/join.py`). Stencil loads were 16 % of executed instructions (IMAD/IADD3 on one descriptor per
+variable), and HLLC flux stores reloaded the module descriptors of `flux_rsx_vf`/`flux_src_rsx_vf` after each store.
+(1) exp-rkq: the stage state and the saved stage become one 4-D array each (`q_cons_qp%vf(j)%sf` are pointer views), and
+the RK update takes them as explicit-shape dummies: −0.4 % (670687), alone not worth a suite. (2) exp-qslab: the same
+slab holds the primitives that are not aliases of the conservatives in layers `sys_size + 1 : 2*sys_size`, with
+`qp_layer(i)` the layer of primitive i; the fused kernel reads `q_slab(…, qp_layer(i))`. On the x sweep the six stencil
+loads become one address plus immediate offsets (`LDG.E.64.CONSTANT [R+-0x10 … +0x18]`), 66 → 22 static instructions
+per variable: P19 33.13 → 31.75 ms (670779). (3) exp-fslab: `flux_rsx_vf`, `flux_src_rsx_vf` and `vel_src_rsx_vf` are
+passed down from the dispatch as explicit-shape dummies (`FLX`/`FSRC`/new `VSRC` macros of the fused emission): static
+LDG 346 → 158, IMAD 718 → 483; P19 33.18 → 30.07 ms (670811). All arms bitwise. Not adopted: per-cell packed WENO
+coefficients (`wcoef_x(0:26, cell)`; no gain, 670870), the RK update per (cell, equation) (+1.7 ms, 670933), and the
+reciprocal WENO normalisation (the compiler already emits it: identical SASS).
 
 *Fused HLLC kernel, SASS mix after P18* (670130, `--print-source sass`, one launch): DFMA 23.1 %, DMUL 13.0 %, DADD 4.6 %
 of warp instructions; integer address arithmetic (IMAD, IADD3, LEA) 22.5 %; branch bookkeeping (BRA, BSSY, BSYNC)
