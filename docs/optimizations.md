@@ -26,7 +26,7 @@ v5.7.0 vs P3 on one node, P3 vs P4 (final) on another; speedup = product of the 
 | + P4 transverse-interior reconstruction (same-node A/B vs P3: 61.90 → 60.38 ms) | **60.38 ms** | **0.3123** | — | bitwise | 621788 |
 | **total (rungs in sequence, different nodes)** | **−21.6 % (1.28×)** | **−21.6 %** | | | |
 
-## After the deadline (2026-11-01): P7–P12, `patches/opt/0007…0015`
+## After the deadline (2026-11-01): P7–P13, `patches/opt/0007…0016`
 Each row is a same-node A/B against the row above (alternating arms in one allocation, power-braked nodes refused,
 AGENT_LOG #16). Every arm is bitwise identical to v5.7.0.
 
@@ -39,7 +39,8 @@ AGENT_LOG #16). Every arm is bitwise identical to v5.7.0.
 | + P10: 0012 register cap 128 on the Riemann unity file | **42.23 ms** (−5.4 % vs P7) | **12.45 ms** (−4.4 % vs P7) | 664848; 664859 |
 | + P11: 0013 no CBC host waits on NVHPC OpenACC (0014: formatter only) | 42.04 ms (−0.3 % vs P10) | 12.26 ms (−1.5 % vs P10) | 664894; 664895 |
 | + P12: 0015 HLLC reconstructs its WENO5 states in-kernel | **37.71 ms** (−10.5 % vs P11) | **10.94 ms** (−10.6 % vs P11) | 668372 (667981: −10.2 %); 668436 |
-| **v5.7.0 → P12, chained same-node ratios** | **2.04×** | **2.10×** | |
+| + P13: 0016 all directions' flux differences into `rhs` in one pass (per-direction flux slabs) | **36.83 ms** (−2.4 % vs P12) | — | 669254 |
+| **v5.7.0 → P13, chained same-node ratios** | **2.09×** | (P12: 2.10×) | |
 
 8 GPUs (`rdma_mpi`, 667577, hgpn029): P4 → P11 grind 0.0502 → 0.0376 ns (−25.2 %), bitwise; the P11 arm got 2 of 3
 reps (time limit, AGENT_LOG). P12 at 8 GPUs is not measured.
@@ -86,8 +87,10 @@ reps (time limit, AGENT_LOG). P12 at 8 GPUs is not measured.
 
 **Where the time is now (P12 profile, 1 GPU, 668466; 12.3 ms of kernels per stage).** Fused WENO5+HLLC 8.07 ms
 (65 %), flux differences + α·div(u) 2.0 ms, RK update 0.90 ms, cons→prim 0.64 ms, BCs + CBC ~0.65 ms. ncu (668497):
-the fused kernel runs the FP64 pipe at 42 % of peak with DRAM at 12–21 %. It is now instruction-bound, and mapped
-WENO's 12 IEEE divisions per side are roughly half its instructions.
+the fused kernel runs the FP64 pipe at 42 % of peak with DRAM at 12–21 %, so it is now instruction-bound, not
+memory-bound. Normalising the WENO weights by one reciprocal of their sum instead of three divisions (exp-rcp, 669254)
+came out bitwise identical and no faster (37.68 vs 37.72 ms). The compiler already does this, so the division cost is
+lower than a count of `/` in the source suggests.
 
 **Before P12 (P7 profile, 1 GPU, 664617; 14.8 ms of kernels per stage).** WENO5 5.57 ms (38 %), HLLC
 4.26 ms (29 %), flux differences + α·div(u) 2.03 ms, RK update 0.89 ms, cons→prim 0.63 ms, q_cons copy 0.40 ms (removed
