@@ -5,6 +5,10 @@ Every number in this report cites a Slurm job and a path under `results/`. Chang
 `patches/opt/0001…0006` (branch `p4` on nano4). The per-rung detail, including all rejected variants, is in
 `docs/ladder.md`, and agent mistakes are in `AGENT_LOG.md`.
 
+**Addendum (2026-11-01, after the deadline):** §11 adds P7–P16 (`patches/opt/0007…0019`): 1 GPU now **2.13×**
+v5.7.0 in one same-node A/B, the full GPU test suite clean on P15, and the start-up/save work on wall time. §1–§10 are
+the 10-31 report, unchanged.
+
 ## 1. Result
 
 Outputs bitwise identical to unmodified v5.7.0. Step = median NVTX step time (steps 2–30) of the slowest rank, from
@@ -211,3 +215,66 @@ bash harness/reproduce.sh verify   # bitwise gate + median step per run
 ```
 The patch series applied to v5.7.0 gives a tree identical to the one measured here (checked for 0001–0005: empty
 diff against branch `p3`; 0006 is `git format-patch p3..p4`). Multi-GPU runs with `rdma_mpi` add `WRAP=$ROOT/harness/nicbind.sh` for the start-up fix (T0.4).
+
+## 11. Addendum (2026-11-01): P7–P16
+
+Same rules as §2: every arm bitwise identical to v5.7.0, same-node A/B against the rung below, every number a job.
+Rung by rung, with every rejected variant, in `docs/ladder.md` (rows 9–28) and `docs/optimizations.md`.
+
+**Result at 1 GPU, one same-node A/B** (v5.7.0 against P16, 2 rounds × 5 reps per arm, hgpn065, job 669752):
+
+| | v5.7.0 | P16 | |
+|---|---|---|---|
+| Step (median NVTX) | 77.06 ms | **36.23 ms** | **2.13×** |
+| Grind (ns) | 0.3968–0.3985 | 0.1872–0.1877 | 2.12× |
+| Wall, default environment (median of 10) | 7.31 s | 5.65 s | 1.29× |
+
+The 10-31 final (P4) was 1.27× at 1 GPU (§1). At 4 GPUs (`rdma_mpi`) P14 runs 10.56–10.69 ms per step (669420,
+669435) against 17.03 ms for P4 (664614) and 23.10 ms for v5.7.0 (606018, a different job: about 2.2×, not a
+same-node ratio). At 8 GPUs, P4 → P11 grind 0.0502 → 0.0376 ns (667577); P12–P16 are not measured at 8 GPUs.
+
+**What changed** (one commit and one patch each; P7–P11 are summarised in `docs/optimizations.md`):
+
+| Rung | Patch | Change | 1 GPU step | Job |
+|---|---|---|---|---|
+| P7 | 0007–0009 | Copy kernels collapse over space only; WENO reads `q_prim` directly; Riemann buffers aliased | 60.95 → 45.10 ms | 664597 |
+| P8–P11 | 0010–0014 | α·div(u) inside the flux differences; RK stage state aliased; register cap 128; no CBC host waits | → 42.04 ms | 664763–664895 |
+| P12 | 0015 | **HLLC reconstructs its WENO5 states in-kernel** (one kernel per direction; the WENO formula shared with `s_weno` as FYPP macros) | → 37.71 ms (−10.5 %) | 668372 |
+| P13 | 0016 | Per-direction flux slabs; all three flux differences in one pass | → 36.83 ms (−2.4 %) | 669254 |
+| P14 | 0017 | Flux differences fused into the TVD-RK stage update (`rhs` neither written nor read) | → 36.24 ms (−1.9 %) | 669327 |
+| P15 | 0018 | Build fix: chemistry GPU builds failed to link since 0012 (register cap on a generated callee) | — | suite |
+| P16 | 0019 | NaN check of the saved state on the device (the host scan was 64 ms per variable) | save 1.1–1.25 → 0.6–0.74 s | 669490 |
+
+**Correctness.** Full `./mfc.sh test` on the GPU build of P15 (v5.7.0 + 0001–0018, `--mpi --acc-gpu`, jobs
+669500–669511): 712 passed; the failures are exactly the 23 tests in `harness/known_test_failures.txt`, which fail
+identically on pinned v5.7.0. P16 changes only the save path; it has its bitwise runs but no suite run.
+
+**Wall time (environment, disclosed; not a source change).** At 1 GPU most of the wall is outside the steps. The
+largest piece was MPI_Init, which on HPC-X opens UCX and the node's InfiniBand adapters even for one rank. Same node,
+10 reps per arm, all bitwise:
+
+| Environment (1 rank) | Wall median | Job |
+|---|---|---|
+| default | 5.556 s | 669785 |
+| `UCX_TLS=self` | 4.828 s / 4.919 s | 669785 / 669940 |
+| `OMPI_MCA_pml=ob1 OMPI_MCA_btl=self,vader OMPI_MCA_osc=^ucx` (UCX not loaded) | **4.300 s** | 669940 |
+| `OMPI_MCA_coll=^hcoll,ucc` | no effect | 669785 |
+
+Combined with P16, the 1-GPU wall goes from 7.31 s (v5.7.0, default) to about 4.3 s, about 1.7× (different jobs: 669752 and
+669940). This setting is for single-rank runs only; multi-GPU runs need a CUDA-aware transport, which we did not compare.
+What remains (trace 669961): INIT 1.35 s (CUDA context, MPI-IO read, Fortran temporaries), 30 steps 1.11 s, save 0.59 s
+(0.30 s of it `MPI_File_write_all` for 520 MB).
+
+**Negative results added since 10-31 (all bitwise, all measured):** WENO kernel `collapse(4)` +15.7 %; register cap
+168/255 +7 %, 96 +0.8 %, 80 +6.8 % on the fused kernel; the fused RK update with `collapse(4)` +3.6 %, loads-then-stores
++7.5 % (local memory), 4 cells per thread through local pointers +15 % (202 registers); MPI-IO through a memory
+datatype (save +70 %) or a staging buffer (within noise); ROMIO hints (no effect). Why the fused RK update stays as it
+is: it needs ~12 values per cell but issues ~66 loads, because each `x(j)%sf(q,k,l)` walks three levels of Fortran
+descriptors, and every fix we tried costs more in registers than it saves (`docs/optimizations.md`).
+
+**Where the time is now (1 GPU, per RK stage):** fused WENO5+HLLC 8.0 ms (FP64 pipe at 42 %, instruction-bound),
+fused flux difference + RK update 2.35 ms (descriptor-latency-bound), cons→prim 0.63 ms, boundaries + CBC ~0.6 ms.
+
+**Reproduce.** `harness/reproduce.sh` applies `patches/opt/0001…0019`; the canonical nano4 tree is branch `p16full`
+(worktree `mfc-p16`).
+
