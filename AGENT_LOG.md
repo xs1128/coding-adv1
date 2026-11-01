@@ -86,3 +86,11 @@
   (gpu-acc-7d1e32e277), and tests executed a binary that was being rewritten (installed 18:27:16). Cost: ~22 GPU-min.
   Lesson: never build in a worktree while a suite runs from it; the suite now gets its own worktree, or runs after
   the builds. Rerun the same day; the failed attempt is kept under results/test/failed_p12_full_concurrent_build.
+- Full suite p12_full, second attempt (669256-669261): shards failed again under the 100 % guard, with mpirun unable to
+  find `build/install/gpu-acc-c819d00b45/bin/simulation`. The test-variant pre-build (`./mfc.sh test --dry-run`) ran in
+  a fresh worktree whose build lock had no GPU mode yet, so it built CPU variants. The fmt suite had worked only
+  because an earlier GPU build had set the lock. Shards 5-7 were cancelled once noticed. Cost: ~56 GPU-min (shards
+  ran 2.6-20.6 min each, mostly syscheck and pre_process of tests that then failed). Two attempts together: ~78
+  GPU-min with no suite result. Fixes: run_suite.sh refuses unless the lock is gpu: acc and every configured GPU build
+  has installed binaries; the next suite runs on the final series (P14) after a 3-test smoke shard.
+- Also today: two watchers waited on mistyped job ids (no GPU cost). Job ids are now captured from submit output.

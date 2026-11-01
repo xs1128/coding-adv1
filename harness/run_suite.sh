@@ -9,6 +9,14 @@ for kv in "$@"; do
   case "$kv" in NGPU=*) ngpu=${kv#NGPU=} ;; SHARDS=*) shards=${kv#SHARDS=} ;; MIN=*) mins=${kv#MIN=} ;; *) vars+=("$kv") ;; esac
 done
 source "$ROOT/scripts/env.sh"
+# Preflight (p12_full lost ~78 GPU-min to a CPU-only pre-build and to a binary rebuilt mid-suite, AGENT_LOG):
+# the tests run the GPU build, so the worktree's build lock must say gpu: acc and every configured GPU build must
+# have installed binaries. Never build in $MFC_DIR while the shards run.
+grep -q "gpu: acc" "$MFC_DIR/build/lock.yaml" || { echo "run_suite: $MFC_DIR/build/lock.yaml is not gpu: acc" >&2; exit 2; }
+for st in "$MFC_DIR"/build/staging/gpu-acc-*; do
+  inst=$MFC_DIR/build/install/$(basename "$st")
+  ls "$inst"/bin/* > /dev/null 2>&1 || { echo "run_suite: $(basename "$st") configured but not installed (run ./mfc.sh test --dry-run -j 8 --gpu acc)" >&2; exit 2; }
+done
 mapfile -t uuids < <(cd "$MFC_DIR" && ./mfc.sh test -l 2>/dev/null | sed 's/\x1b\[[0-9;]*m//g' | grep -oE '[0-9A-F]{8}')
 n=${#uuids[@]}; per=$(( (n + shards - 1) / shards )); prev=""
 cd "$ROOT"
