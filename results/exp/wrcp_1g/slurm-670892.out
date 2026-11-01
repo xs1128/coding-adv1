@@ -1,0 +1,8 @@
+rep	wall_s	grind_ns
+1	6.096	0.1716718750000000
+2	5.427	0.1712812500000000
+3	5.833	0.1712968750000000
+rank	steps	first_ms	step_med_ms	step_min_ms	step_max_ms	rhs_med_ms	comm_med_ms
+0	30	39.322	33.124	33.102	33.594	9.405	0.030
+all	30	39.322	33.124	33.102	33.594	9.405	0.030
+[2026-11-02T02:35:17.844] error: *** JOB 670892 ON 25a-hgpn021 CANCELLED AT 2026-11-02T02:35:17 DUE to SIGNAL Terminated ***
