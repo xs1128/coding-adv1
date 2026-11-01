@@ -100,7 +100,7 @@ reps (time limit, AGENT_LOG). P12 at 8 GPUs is not measured.
 - *Rejected: two rewrites of the fused RK update kernel* (ncu 669515: DRAM at 25 %, occupancy 37 %, 76 registers,
   latency-bound). One thread per (equation, cell) with `collapse(4)`: +3.6 % (669544). All loads of a cell into
   private arrays first, then the stores, so no load waits behind a store the compiler cannot prove does not alias it:
-  +7.5 % (669580). The private arrays spill to local memory. Both were bitwise identical.
+  +7.5 % (669580); likely cause (not profiled): the private arrays sit in local memory. Both were bitwise identical.
 
 **Where the time is now (P12 profile, 1 GPU, 668466; 12.3 ms of kernels per stage).** Fused WENO5+HLLC 8.07 ms
 (65 %), flux differences + α·div(u) 2.0 ms, RK update 0.90 ms, cons→prim 0.64 ms, BCs + CBC ~0.65 ms. ncu (668497):
