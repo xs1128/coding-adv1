@@ -261,6 +261,7 @@ v5.7.0 multi-GPU A/B was not run.
 | P17 | 0020 | Fused kernel: the next variable's WENO5 stencil is loaded one iteration ahead (12.5 % of its stalls were load latency) | 36.66 → 35.90 ms (−2.1 %) | 670011 |
 | P18 | 0021 | Fused RK update: the next equation's fluxes, `q1`, `qs` loaded before the current one is stored | 35.88 → 34.51 ms (−3.8 %) | 670088 |
 | P19 | 0022 | Fused RK update reads the flux slabs (`flux_rsx_vf`, `flux_src_rsx_vf`) directly: one descriptor instead of a three-level walk per load (static LDGs 159 → 92) | 34.27 → 33.12 ms (−3.4 %) | 670619 |
+| *P20 cand.* | *exp diffs* | *Not yet a rung (needs its own full suite).* Stage state, saved stage and the non-aliased primitives as slabs; the fused WENO5+HLLC kernel reads its stencil from `q_slab` and writes the flux slabs, all as explicit-shape dummies (exp-rkq + exp-qslab + exp-fslab) | 33.17 / 33.20 → **30.07 / 30.08 ms (−9.4 %)**, bitwise | 670687, 670779, 670811 |
 
 **Correctness.** Full `./mfc.sh test` on the GPU build of P15 (v5.7.0 + 0001–0018, `--mpi --acc-gpu`, jobs
 669500–669511): 712 passed; the failures are exactly the 23 tests in `harness/known_test_failures.txt`, which fail
@@ -291,8 +292,20 @@ descriptors; the fixes above cost more in registers than they saved. What worked
 flux slabs that P13 already allocates as one array: indexing them directly removes the walk for 6 of the 8 loads per
 equation (`docs/optimizations.md`).
 
+**P20 candidate (bitwise, suite pending).** Profiling the fused kernel by source line (ncu 670130 joined to `nvdisasm -g`)
+showed 16 % of its instructions computing stencil addresses through one Fortran descriptor per variable, and its flux
+stores reloading module descriptors after every store. Passing one slab of all fields (`q_slab`, with `qp_layer(i)` the
+layer of primitive i) and the three flux slabs as explicit-shape dummies fixes their bounds at entry: on the x sweep the
+six stencil loads become one address plus immediate offsets (66 → 22 static instructions per variable), and the stores
+no longer force reloads. 1 GPU, same node per A/B, all arms bitwise: P19 33.13 → 31.75 ms with the stencil slab (670779),
+33.18 → 30.07 ms with the flux slabs too (670811), −9.4 %. Not a rung yet: it changes the allocation of every non-IGR case,
+so it needs its own full suite; the nano4 commits also wait for a login node whose `tar` has zstd (the MFC pre-commit lint
+fails on lgn01 without it, and we do not bypass the hook). Rejected around it: packed WENO coefficients (no gain, 670870),
+the RK update per (cell, equation) (+1.7 ms, 670933); the reciprocal WENO normalisation was a no-op (identical SASS).
+
 **Where the time is now (1 GPU, per RK stage):** fused WENO5+HLLC 8.0 ms (FP64 pipe at 42 %, instruction-bound),
-fused flux difference + RK update ~1.9 ms after P18 and ~1.5 ms after P19 (estimated from the A/B, not profiled), cons→prim 0.63 ms, boundaries + CBC ~0.6 ms.
+fused flux difference + RK update ~1.9 ms after P18 and ~1.5 ms after P19 (estimated from the A/B, not profiled), cons→prim 0.63 ms, boundaries + CBC ~0.6 ms. On the P20 candidate (nsys 670902): fused WENO5+HLLC 6.87 ms (68 %), RK update 1.50 ms (15 %, about 55 % of HBM
+peak), cons→prim 0.63 ms, boundaries 0.25 ms.
 
 **Reproduce.** `harness/reproduce.sh` applies `patches/opt/0001…0022`; the canonical nano4 tree is branch `p19`
 (worktree `mfc-rkb2`, reused from a rejected experiment); `p18` (worktree `mfc-p18`) is the tree under the full suite.
