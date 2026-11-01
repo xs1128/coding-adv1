@@ -120,6 +120,12 @@ memory-bound. Normalising the WENO weights by one reciprocal of their sum instea
 came out bitwise identical and no faster (37.68 vs 37.72 ms). The compiler already does this, so the division cost is
 lower than a count of `/` in the source suggests.
 
+*Fused kernel by source line* (ncu 668497 source page, one launch; warp-stall samples / executed instructions): WENO5
+side (polynomials, mapped weights, normalisation) 40.6 % / 44.6 %; smoothness indicators β 9.4 % / 11.2 %; the six
+stencil loads per variable 6.1 % / 11.4 %, and the first use of them (`w_dvd(0) = …`) 12.5 % of samples with 0.2 % of
+instructions, i.e. load latency; the HLLC body itself ~25 %. Sharing each cell's β between its two faces (two faces per
+thread) would save at most ~3 % of instructions, so it is not pursued.
+
 **Before P12 (P7 profile, 1 GPU, 664617; 14.8 ms of kernels per stage).** WENO5 5.57 ms (38 %), HLLC
 4.26 ms (29 %), flux differences + α·div(u) 2.03 ms, RK update 0.89 ms, cons→prim 0.63 ms, q_cons copy 0.40 ms (removed
 by 0011). WENO and HLLC are FP64/latency-bound (no `pow` calls; divides are already `rcp`-based under `-fast`).
