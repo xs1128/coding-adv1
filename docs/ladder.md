@@ -28,6 +28,7 @@ One row per experiment, newest last. Baseline: `results/base/official_1g` (job 6
 | 18 | P14 | **Flux differences fused into the TVD-RK stage update**: `rhs` neither written nor read when nothing between RHS and update touches it (`patches/opt/0017`) | 669327 (1g ×2, hgpn014) | 1g **36.94 → 36.24 ms (−1.9 %)**, grind 0.1903 → 0.1881 | bitwise ✓ | yes |
 | 19 | P15 | **Build fix:** the generated `m_thermochem` gets the unity file's register cap; chemistry GPU builds had failed to link since 0012 (`patches/opt/0018`) | P15 test-variant build (all 10 GPU variants), smoke 669487 (3/3, `--acc-gpu`) | no runtime change for perf3d | — | yes |
 | 20 | P16 | **NaN check of the saved state on the device**; host scan only to report (`patches/opt/0019`) | 669490 (1g ×2, hgpn005) | save 1.11–1.25 → 0.60–0.74 s; wall 6.01–6.57 → 5.78–5.91 s; grind unchanged | bitwise ✓ | yes |
+| 21 | rk4 | Fused RK update with one thread per (equation, cell), `collapse(4)` equation outermost (ncu 669515: the kernel ran DRAM at 25 %, latency-bound) | 669544 (1g ×2, hgpn037) | 36.63 → 37.96 ms (+3.6 %) | bitwise ✓ | no |
 
 ### K4 diagnosis (HLLC, 1.88–2.19 ms/call vs 1.46 in v4.9.3)
 - ncu (job 600146): 18.75 % occupancy (160 regs), long-scoreboard stalls; **local-memory traffic exceeds global**
