@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Same-node A/B[/C...]: harness/submit.sh <label> CASE NGPU MIN SCRIPT=ab MFC_A=<dir> MFC_B=<dir> [MFC_C..MFC_F=<dir>]
-#   [ROUNDS=2] [ENV_A..ENV_F=<VAR=value> per-arm environment] [run.sbatch vars]
+#   [ROUNDS=2] [ENV_A..ENV_F=<VAR=value> per-arm environment; + stands for a comma, @ separates variables] [run.sbatch vars]
 # Runs run.sbatch for each arm in turn (A B ... A B ...) inside one allocation, so node, GPUs and clocks are shared.
 # Out: results/<label>/{a1,b1,...,a2,b2,...}/ (each a full run.sbatch result directory)
 #SBATCH -A acd110018
@@ -21,7 +21,7 @@ for r in $(seq 1 "$ROUNDS"); do
     [[ -n ${!dir:-} ]] || continue
     # optional per-arm environment, appended to RUN_ENV. sbatch --export splits at commas, so write '+' for ','
     # (ENV_B="UCX_TLS=self+sm+cuda_copy+cuda_ipc"): a comma-separated value arrives cut at its first comma.
-    envv=ENV_$(tr a-z A-Z <<<"$v"); armenv=${!envv:-}; armenv=${armenv//+/,}
+    envv=ENV_$(tr a-z A-Z <<<"$v"); armenv=${!envv:-}; armenv=${armenv//+/,}; armenv=${armenv//@/ }
     LABEL=$base/$v$r MFC_DIR=${!dir} RUN_ENV="${RUN_ENV:-} $armenv" bash "$ROOT/harness/run.sbatch" || echo "$v$r failed" >&2
   done
 done
