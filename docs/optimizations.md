@@ -145,6 +145,12 @@ the arithmetic is unchanged. Unlike rk2p (arrays in local memory) and rkb2 (202 
 0.1858 → 0.1787, bitwise. The A/B binary predates the formatter's realignment of two declarations and a reworded
 comment.
 
+*Fused kernel after P18* (ncu 670130, source page): WENO5 side 44.6 % of samples / 43.8 % of instructions, β 13.1 % /
+11.5 %, the prefetched stencil loads 8.0 % / 10.0 % (mostly address arithmetic); the stall at the first use of the
+loads is gone. What is left is the FP64 arithmetic of mapped WENO5 (about a dozen correctly rounded divisions per side)
+and the HLLC body. The per-cell coefficient loads (`poly_coef_*`, `d_*`) hit L1; keeping them in registers across the
+variable loop would spill at the 128-register cap.
+
 **Before P12 (P7 profile, 1 GPU, 664617; 14.8 ms of kernels per stage).** WENO5 5.57 ms (38 %), HLLC
 4.26 ms (29 %), flux differences + α·div(u) 2.03 ms, RK update 0.89 ms, cons→prim 0.63 ms, q_cons copy 0.40 ms (removed
 by 0011). WENO and HLLC are FP64/latency-bound (no `pow` calls; divides are already `rcp`-based under `-fast`).

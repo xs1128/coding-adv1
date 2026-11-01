@@ -5,8 +5,8 @@ Every number in this report cites a Slurm job and a path under `results/`. Chang
 `patches/opt/0001…0006` (branch `p4` on nano4). The per-rung detail, including all rejected variants, is in
 `docs/ladder.md`, and agent mistakes are in `AGENT_LOG.md`.
 
-**Addendum (2026-11-01, after the deadline):** §11 adds P7–P16 (`patches/opt/0007…0019`): 1 GPU now **2.13×**
-v5.7.0 in one same-node A/B, the full GPU test suite clean on P15, and the start-up/save work on wall time. §1–§10 are
+**Addendum (2026-11-01, after the deadline):** §11 adds P7–P18 (`patches/opt/0007…0021`): 1 GPU now **2.13×**
+v5.7.0 in one same-node A/B at P16 and 2.26× (chained) at P18, the full GPU test suite clean on P15, and the start-up/save work on wall time. §1–§10 are
 the 10-31 report, unchanged.
 
 ## 1. Result
@@ -216,7 +216,7 @@ bash harness/reproduce.sh verify   # bitwise gate + median step per run
 The patch series applied to v5.7.0 gives a tree identical to the one measured here (checked for 0001–0005: empty
 diff against branch `p3`; 0006 is `git format-patch p3..p4`). Multi-GPU runs with `rdma_mpi` add `WRAP=$ROOT/harness/nicbind.sh` for the start-up fix (T0.4).
 
-## 11. Addendum (2026-11-01): P7–P16
+## 11. Addendum (2026-11-01): P7–P18
 
 Same rules as §2: every arm bitwise identical to v5.7.0, same-node A/B against the rung below, every number a job.
 Rung by rung, with every rejected variant, in `docs/ladder.md` (rows 9–28) and `docs/optimizations.md`.
@@ -229,7 +229,8 @@ Rung by rung, with every rejected variant, in `docs/ladder.md` (rows 9–28) and
 | Grind (ns) | 0.3968–0.3985 | 0.1872–0.1877 | 2.12× |
 | Wall, default environment (median of 10) | 7.31 s | 5.65 s | 1.29× |
 
-The 10-31 final (P4) was 1.27× at 1 GPU (§1). At 4 GPUs (`rdma_mpi`) P14 runs 10.56–10.69 ms per step (669420,
+P17 and P18 (below) take the 1-GPU step to 34.51 ms (670088): 2.26× v5.7.0 by chaining 669752 with the same-node
+A/Bs 670011 and 670088 (a direct v5.7.0 vs P18 A/B is pending). The 10-31 final (P4) was 1.27× at 1 GPU (§1). At 4 GPUs (`rdma_mpi`) P14 runs 10.56–10.69 ms per step (669420,
 669435) against 17.03 ms for P4 (664614) and 23.10 ms for v5.7.0 (606018, a different job: about 2.2×, not a
 same-node ratio). At 8 GPUs, P4 → P11 grind 0.0502 → 0.0376 ns (667577); P12–P16 are not measured at 8 GPUs.
 
@@ -244,10 +245,12 @@ same-node ratio). At 8 GPUs, P4 → P11 grind 0.0502 → 0.0376 ns (667577); P12
 | P14 | 0017 | Flux differences fused into the TVD-RK stage update (`rhs` neither written nor read) | → 36.24 ms (−1.9 %) | 669327 |
 | P15 | 0018 | Build fix: chemistry GPU builds failed to link since 0012 (register cap on a generated callee) | — | suite |
 | P16 | 0019 | NaN check of the saved state on the device (the host scan was 64 ms per variable) | save 1.1–1.25 → 0.6–0.74 s | 669490 |
+| P17 | 0020 | Fused kernel: the next variable's WENO5 stencil is loaded one iteration ahead (12.5 % of its stalls were load latency) | 36.66 → 35.90 ms (−2.1 %) | 670011 |
+| P18 | 0021 | Fused RK update: the next equation's fluxes, `q1`, `qs` loaded before the current one is stored | 35.88 → 34.51 ms (−3.8 %) | 670088 |
 
 **Correctness.** Full `./mfc.sh test` on the GPU build of P15 (v5.7.0 + 0001–0018, `--mpi --acc-gpu`, jobs
 669500–669511): 712 passed; the failures are exactly the 23 tests in `harness/known_test_failures.txt`, which fail
-identically on pinned v5.7.0. P16 changes only the save path; it has its bitwise runs but no suite run.
+identically on pinned v5.7.0. P16–P18 have their bitwise A/B runs but no suite run yet.
 
 **Wall time (environment, disclosed; not a source change).** At 1 GPU most of the wall is outside the steps. The
 largest piece was MPI_Init, which on HPC-X opens UCX and the node's InfiniBand adapters even for one rank. Same node,
@@ -273,8 +276,8 @@ is: it needs ~12 values per cell but issues ~66 loads, because each `x(j)%sf(q,k
 descriptors, and every fix we tried costs more in registers than it saves (`docs/optimizations.md`).
 
 **Where the time is now (1 GPU, per RK stage):** fused WENO5+HLLC 8.0 ms (FP64 pipe at 42 %, instruction-bound),
-fused flux difference + RK update 2.35 ms (descriptor-latency-bound), cons→prim 0.63 ms, boundaries + CBC ~0.6 ms.
+fused flux difference + RK update ~1.9 ms after P18, cons→prim 0.63 ms, boundaries + CBC ~0.6 ms.
 
-**Reproduce.** `harness/reproduce.sh` applies `patches/opt/0001…0019`; the canonical nano4 tree is branch `p16full`
-(worktree `mfc-p16`).
+**Reproduce.** `harness/reproduce.sh` applies `patches/opt/0001…0021`; the canonical nano4 tree is branch `p18`
+(worktree `mfc-p18`).
 

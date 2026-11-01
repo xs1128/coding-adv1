@@ -1,0 +1,24 @@
+==PROF== Connected to process 89689 (/work/u1131128/coding-adv1/mfc-rkpf/build/install/gpu-acc-3b50febf95/bin/simulation)
+ Simulating a case-optimized 200x200x200 case on 1 rank(s) with OpenACC offloading.
+ [  0%] step 1 of 3 (t_step 0) t/step  0.00E+00s (avg  0.00E+00s) ETA 0:00:00
+==WARNING== Unable to access the following 6 metrics: ctc__rx_bytes_data_user.sum, ctc__rx_bytes_data_user.sum.pct_of_peak_sustained_elapsed, ctc__rx_bytes_data_user.sum.per_second, ctc__tx_bytes_data_user.sum, ctc__tx_bytes_data_user.sum.pct_of_peak_sustained_elapsed, ctc__tx_bytes_data_user.sum.per_second.
+
+
+==PROF== Profiling "m_riemann_solver_hllc_s_hllc_riemann_solver_938": 0%....50%....100% - 39 passes
+ [ 34%] step 2 of 3 (t_step 1) t/step  8.39E+00s (avg  0.00E+00s) ETA 0:00:00
+ Performance:    0.000000000000000      ns/gp/eq/rhs
+==PROF== Disconnected from process 89689
+==WARNING== Failed to import the following source files:
+==WARNING==  default
+==PROF== Report: /work/u1131128/coding-adv1/runs/prof/ncu_p18_fused/ncu_rank0.ncu-rep
+Traceback (most recent call last):
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap>", line 1176, in exec_module
+  File "<frozen site>", line 635, in <module>
+  File "<frozen site>", line 621, in main
+  File "<frozen site>", line 364, in addusersitepackages
+  File "<frozen site>", line 247, in addsitedir
+  File "<frozen site>", line 190, in addpackage
+LookupError: unknown encoding: utf-8-sig
