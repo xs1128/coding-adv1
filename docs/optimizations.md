@@ -272,9 +272,15 @@ temporary copied in and out (`local_copy_i8`, plus page faults): ~112 ms in the 
 The device-to-host copies of the save take ~170 ms, the host-to-device copies of INIT-GPU-VARS ~64 ms.
 - *Rejected: iomem.* Passing the padded array with a memory subarray datatype removes the temporaries, but ROMIO's
   own handling of non-contiguous memory is slower: save 0.48–0.64 → 0.83–0.91 s, wall +3.5 % (669871, bitwise).
+- *Rejected: iobuf.* One persistent contiguous staging buffer, copied once in the needed direction: wall median
+  4.976 → 4.891 s and save 0.589 → 0.556 s, but the two rounds disagree (669917, bitwise). Not worth 70 lines.
 
 **P16: NaN check of the saved state on the device** (`patches/opt/0019`, wall time only). `s_save_data` scanned every
 saved value on the host with `ieee_is_nan`, single-threaded: 64 ms per variable at 201³ (trace 669407), half the
 save. A device reduction with an exact bit test now counts NaNs, and the host scan, with its message and abort, runs
 only if the count is non-zero. Same node (669490): save 1.11–1.25 → 0.60–0.74 s, wall 6.01–6.57 → 5.78–5.91 s,
 grind and output unchanged (bitwise). Not covered by the P15 suite run (p15_full), which predates it.
+
+**Test suite on the GPU build of P15** (v5.7.0 + 0001–0018, `--mpi --acc-gpu`, 669500–669511): 712 passed; the 25
+failures are 23 unique tests, exactly the 23 in `harness/known_test_failures.txt` that fail identically on pinned
+v5.7.0. This covers P7–P15 (0007–0018). P16 (0019, save path only) has its bitwise A/B runs but no suite run.

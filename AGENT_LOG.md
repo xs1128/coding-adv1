@@ -112,3 +112,6 @@
   profile.sbatch now maps '+' to ',' in NSYS_TRACE too. Rule: any comma in a submit.sh value must be written as '+'.
 - A watcher passed the parent label `exp/rkb2_regs_1g` to verify.py and printed FAIL (no state in the parent
   directory). All 8 arms pass bitwise when verified one by one; verify each arm, never the parent.
+- The p15_full watcher printed two "NEW" failures (2BA0324F, E8C7E354). Both are in the known list. Shards 6 and 7
+  overlap and both ran them, and the watcher's `comm` over a list with duplicates reported the second copy as new.
+  Recomputed with sets: 23 unique failures, all known, none new. Count suite failures by unique UUID.
