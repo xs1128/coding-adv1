@@ -107,3 +107,8 @@
   (`--no-gpu` in the test banner). mfc-fmt's pre-build had built CPU variants only, the same cause as the second
   p12_full failure. So there is no GPU test-suite result for any series after P4 yet. The P3 and P4 suites did run
   GPU builds (`--acc-gpu`). The P12 ladder row no longer cites a suite.
+- Same comma bug again (669825, cancelled after 14 s, ~0.2 GPU-min): `NSYS_TRACE=cuda,nvtx,mpi,openacc,osrt` was passed
+  through `submit.sh`, and the job got `NSYS_TRACE=cuda`. Caught by reading `scontrol show job` before it ran.
+  profile.sbatch now maps '+' to ',' in NSYS_TRACE too. Rule: any comma in a submit.sh value must be written as '+'.
+- A watcher passed the parent label `exp/rkb2_regs_1g` to verify.py and printed FAIL (no state in the parent
+  directory). All 8 arms pass bitwise when verified one by one; verify each arm, never the parent.

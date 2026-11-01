@@ -13,6 +13,7 @@ if nvidia-smi --query-gpu=clocks_event_reasons.hw_power_brake_slowdown --format=
 fi
 : "${LABEL:?}" "${CASE:?}" "${NGPU:=1}" "${BUILD:=generic}" "${MODE:=nsys}" "${CASE_ARGS:=}"
 : "${NSYS_TRACE:=cuda,nvtx,mpi,openacc,ucx}" "${NSYS_SAMPLE:=none}"
+NSYS_TRACE=${NSYS_TRACE//+/,}  # sbatch --export splits at commas: pass cuda+nvtx+...
 : "${MPIRUN_ARGS:=}" "${RUN_ENV:=}" "${NCU_SKIP:=200}" "${NCU_COUNT:=120}" "${NCU_SET:=full}" "${NCU_KERNEL:=.*}"
 out=$ROOT/results/$LABEL
 run=$ROOT/runs/$LABEL
