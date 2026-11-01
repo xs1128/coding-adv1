@@ -26,7 +26,7 @@ v5.7.0 vs P3 on one node, P3 vs P4 (final) on another; speedup = product of the 
 | + P4 transverse-interior reconstruction (same-node A/B vs P3: 61.90 → 60.38 ms) | **60.38 ms** | **0.3123** | — | bitwise | 621788 |
 | **total (rungs in sequence, different nodes)** | **−21.6 % (1.28×)** | **−21.6 %** | | | |
 
-## After the deadline (2026-11-01): P7–P13, `patches/opt/0007…0016`
+## After the deadline (2026-11-01): P7–P14, `patches/opt/0007…0017`
 Each row is a same-node A/B against the row above (alternating arms in one allocation, power-braked nodes refused,
 AGENT_LOG #16). Every arm is bitwise identical to v5.7.0.
 
@@ -40,7 +40,8 @@ AGENT_LOG #16). Every arm is bitwise identical to v5.7.0.
 | + P11: 0013 no CBC host waits on NVHPC OpenACC (0014: formatter only) | 42.04 ms (−0.3 % vs P10) | 12.26 ms (−1.5 % vs P10) | 664894; 664895 |
 | + P12: 0015 HLLC reconstructs its WENO5 states in-kernel | **37.71 ms** (−10.5 % vs P11) | **10.94 ms** (−10.6 % vs P11) | 668372 (667981: −10.2 %); 668436 |
 | + P13: 0016 all directions' flux differences into `rhs` in one pass (per-direction flux slabs) | **36.83 ms** (−2.4 % vs P12) | — | 669254 |
-| **v5.7.0 → P13, chained same-node ratios** | **2.09×** | (P12: 2.10×) | |
+| + P14: 0017 flux differences fused into the TVD-RK stage update (`rhs` neither written nor read) | **36.24 ms** (−1.9 % vs P13) | — | 669327 |
+| **v5.7.0 → P14, chained same-node ratios** | **2.13×** | (P12: 2.10×) | |
 
 8 GPUs (`rdma_mpi`, 667577, hgpn029): P4 → P11 grind 0.0502 → 0.0376 ns (−25.2 %), bitwise; the P11 arm got 2 of 3
 reps (time limit, AGENT_LOG). P12 at 8 GPUs is not measured.
@@ -84,6 +85,18 @@ reps (time limit, AGENT_LOG). P12 at 8 GPUs is not measured.
 - *0015, effect.* 1 GPU −10.5 % (668372, hgpn014) and −10.2 % (667981, hgpn005); 4 GPUs −10.6 % (668436). Bitwise in
   every arm.
 - *Rejected: W3,* WENO5 kernel with `collapse(4)` over (variable, z, y, x): +15.7 % (667981), bitwise.
+- *Rejected: register cap 168 / 255* on the Riemann unity file with the fused kernel: +7.1 % / +6.7 % vs 128 (669327).
+  128 is still best.
+
+**P13–P14 (0016–0017).**
+- *0016.* On the fused path each sweep direction writes its own flux slab, so the three flux-difference kernels, each a
+  read-modify-write of all of `rhs`, become one pass after the last sweep. Per cell and equation it adds the same terms
+  in the same order (x flux, x α·div(u), y …, z …). CBC still edits each direction's fluxes right after its sweep. Costs
+  about 1.3 GB of flux buffers at 201³ per GPU. −2.4 % (669254).
+- *0017.* When nothing between the RHS and the stage update reads or adds to `rhs` (no body forces, IB, bubbles,
+  damage, adaptive dt, …), that pass is the TVD-RK update itself: `q1 = (c1·q1 + c2·qs + c3·dt·r)/c4` with r formed
+  as above, so `rhs` is neither written nor read. The first-stage return on the last step still comes before any
+  update. −1.9 % (669327).
 
 **Where the time is now (P12 profile, 1 GPU, 668466; 12.3 ms of kernels per stage).** Fused WENO5+HLLC 8.07 ms
 (65 %), flux differences + α·div(u) 2.0 ms, RK update 0.90 ms, cons→prim 0.64 ms, BCs + CBC ~0.65 ms. ncu (668497):

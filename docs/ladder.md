@@ -24,6 +24,8 @@ One row per experiment, newest last. Baseline: `results/base/official_1g` (job 6
 | 14 | W3 | WENO5 kernel `collapse(4)` over (variable, z, y, x), seq variable loop removed | 667981 (hgpn005) | 1g 42.05 → 48.68 ms (+15.7 %) | bitwise ✓ | no |
 | 15 | P13 | **All directions' flux differences into `rhs` in one pass** on the fused HLLC path: each sweep writes its own flux slab (`flux_per_dir`), one kernel after the last sweep adds x, y, z flux and α·div(u) terms in the original order and stores `rhs` once (`patches/opt/0016`) | 669254 (1g ×2, hgpn003) | 1g **37.72 → 36.83 ms (−2.4 %)**, grind 0.1943 → 0.1901 | bitwise ✓ | yes |
 | 16 | exp-rcp | WENO weights normalised by one reciprocal of the sum instead of three divisions (labelled not-bitwise experiment) | 669254 (hgpn003) | 37.72 → 37.68 ms (±0) | came out **bitwise**: the compiler already does it | no |
+| 17 | regs | Riemann unity-file register cap 168 / 255 on P13 (fused kernel) | 669327 (hgpn014) | 36.94 → 39.55 / 39.42 ms (+7.1 / +6.7 %) | bitwise ✓ | no |
+| 18 | P14 | **Flux differences fused into the TVD-RK stage update**: `rhs` neither written nor read when nothing between RHS and update touches it (`patches/opt/0017`) | 669327 (1g ×2, hgpn014) | 1g **36.94 → 36.24 ms (−1.9 %)**, grind 0.1903 → 0.1881 | bitwise ✓ | yes |
 
 ### K4 diagnosis (HLLC, 1.88–2.19 ms/call vs 1.46 in v4.9.3)
 - ncu (job 600146): 18.75 % occupancy (160 regs), long-scoreboard stalls; **local-memory traffic exceeds global**

@@ -1,0 +1,203 @@
+From a9b7b151540bf8622551f006b7dbd158484fd800 Mon Sep 17 00:00:00 2001
+From: xs1128 <hipac1@lsalab.cs.nthu.edu.tw>
+Date: Sun, 1 Nov 2026 18:53:15 +0800
+Subject: [PATCH] Time stepper: fuse the flux differences into the TVD-RK stage
+ update
+
+With per-direction flux slabs (flux_per_dir) and nothing after the sweeps that adds to or reads rhs, the stage
+update q1 = (c1*q1 + c2*qs + c3*dt*rhs)/c4 now takes the flux differences straight from the fluxes:
+s_add_flux_differences_rk_update forms, per cell and equation, the same r as s_add_flux_differences (x flux,
+x alpha*div(u), y ..., z ...) and applies it at once, after saving qs = q1 on a first stage. rhs is neither written
+nor read, and one kernel per stage goes.
+
+- m_rhs: rk_diff_fusable (flux_per_dir and no IB, acoustic, bubble, chemistry, burn, damage, run-time-info, probe
+  or hypoelastic-interface term after the sweeps); rhs_diff_deferred, set by the time stepper, makes
+  s_compute_advection_source_term leave the differences to the stage update.
+- m_time_steppers: s_tvd_rk sets rhs_diff_deferred unless body forces, synthetic turbulence, adv_n, adaptive dt,
+  Lagrangian bubbles, QBMM, IB, damage, IGR, cylindrical grids or the 6-equation model act between the RHS and the
+  update; otherwise the original update kernel runs. The first-stage return on the last step still happens before
+  any update.
+- The alpha*div(u) term reads the cell's own q1 before its update; q1 holds the values s_compute_rhs used.
+
+perf3d 201^3, 1 H200, same node (669327, hgpn014): 36.94 -> 36.24 ms/step (-1.9 %), bitwise vs v5.7.0.
+---
+ src/simulation/m_rhs.fpp           | 63 +++++++++++++++++++++++++++++-
+ src/simulation/m_time_steppers.fpp | 50 ++++++++++++++----------
+ 2 files changed, 91 insertions(+), 22 deletions(-)
+
+diff --git a/src/simulation/m_rhs.fpp b/src/simulation/m_rhs.fpp
+index 555f496..1f40a13 100644
+--- a/src/simulation/m_rhs.fpp
++++ b/src/simulation/m_rhs.fpp
+@@ -42,7 +42,7 @@ module m_rhs
+     implicit none
+ 
+     private; public :: s_initialize_rhs_module, s_compute_rhs, s_finalize_rhs_module, q_cons_qp, rhs_input_aliasable, &
+-        & rhs_input_aliased
++        & rhs_input_aliased, rk_diff_fusable, rhs_diff_deferred, s_add_flux_differences_rk_update
+ 
+     type(vector_field) :: q_cons_qp  !< WENO-reconstructed cell-average conservative variables at quadrature points
+     $:GPU_DECLARE(create='[q_cons_qp]')
+@@ -136,6 +136,11 @@ module m_rhs
+     !> The u-interface alpha_k*div(u) source is added inside the flux-difference kernel of each direction (same arithmetic, one pass
+     !! over rhs) instead of by s_add_directional_advection_source_terms
+     logical :: adv_src_fused
++    !> With flux_per_dir, nothing after the sweeps adds to rhs (no IB, acoustic, bubble, chemistry, burn, damage or
++    !! hypoelastic-interface term): the time stepper may then fuse the flux differences into its stage update.
++    logical :: rk_diff_fusable = .false.
++    !> Set by the time stepper for one s_compute_rhs call: leave the flux differences to s_add_flux_differences_rk_update
++    logical :: rhs_diff_deferred = .false.
+     integer :: iglob
+     $:GPU_DECLARE(create='[iglob]')
+ 
+@@ -238,6 +243,9 @@ contains
+             ! fused alpha*div(u) term) go into rhs in one pass after the last sweep, instead of one read-modify-write of rhs
+             ! per direction. Same operations in the same order per cell, so bitwise the same rhs.
+             flux_per_dir = recon_riemann_fused .and. adv_src_fused .and. .not. hyper_cleaning
++            rk_diff_fusable = flux_per_dir .and. .not. (ib .or. acoustic_source .or. bubbles_euler .or. bubbles_lagrange &
++                & .or. chemistry .or. reactive_burn .or. cont_damage .or. run_time_info .or. probe_wrt &
++                & .or. hypo_nc_mode == hypo_nc_mode_interface)
+             nflux_dirs = 1
+             if (flux_per_dir) nflux_dirs = num_dims
+             if (flux_aliased) then
+@@ -1539,7 +1547,7 @@ contains
+             call s_add_directional_advection_source_terms(idir, rhs_vf, q_cons_vf, q_prim_vf, flux_src_n_vf, Kterm)
+         end select
+ 
+-        if (flux_per_dir .and. idir == num_dims) call s_add_flux_differences(rhs_vf, q_cons_vf)
++        if (flux_per_dir .and. idir == num_dims .and. .not. rhs_diff_deferred) call s_add_flux_differences(rhs_vf, q_cons_vf)
+ 
+     contains
+ 
+@@ -1923,6 +1931,57 @@ contains
+ 
+     end subroutine s_add_flux_differences
+ 
++    !> s_add_flux_differences fused with the TVD-RK stage update (rhs_diff_deferred): per cell and equation, r is formed exactly as
++    !! there and applied at once, q1 = (c1*q1 + c2*qs + c3*dt*r)/c4, with qs = q1 first on a first stage (save_stor). rhs is neither
++    !! written nor read. The alpha*div(u) term reads the cell's own q1 before its update, and q1 holds the same values as the
++    !! q_cons_qp that s_compute_rhs used.
++    subroutine s_add_flux_differences_rk_update(q1_vf, qs_vf, c1, c2, c3, c4, save_stor)
++
++        type(scalar_field), dimension(sys_size), intent(inout) :: q1_vf, qs_vf
++        real(wp), intent(in)                                   :: c1, c2, c3, c4
++        logical, intent(in)                                    :: save_stor
++        integer                                                :: j, k, l, q
++        real(wp)                                               :: inv_dx, inv_dy, inv_dz, r
++
++        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3, private='[j, k, l, q, inv_dx, inv_dy, inv_dz, r]')
++        do l = 0, p
++            do k = 0, n
++                do q = 0, m
++                    inv_dx = 1._wp/dx(q)
++                    inv_dy = 0._wp; inv_dz = 0._wp
++                    if (n > 0) inv_dy = 1._wp/dy(k)
++                    if (p > 0) inv_dz = 1._wp/dz(l)
++                    $:GPU_LOOP(parallelism='[seq]')
++                    do j = 1, sys_size
++                        r = inv_dx*(flux_n(1)%vf(j)%sf(q - 1, k, l) - flux_n(1)%vf(j)%sf(q, k, l))
++                        if (j >= eqn_idx%adv%beg .and. j <= eqn_idx%adv%end) then
++                            r = r + inv_dx*q1_vf(j)%sf(q, k, l)*(flux_src_n(1)%vf(j)%sf(q, k, l) - flux_src_n(1)%vf(j)%sf(q - 1, &
++                                                 & k, l))
++                        end if
++                        if (n > 0) then
++                            r = r + inv_dy*(flux_n(2)%vf(j)%sf(q, k - 1, l) - flux_n(2)%vf(j)%sf(q, k, l))
++                            if (j >= eqn_idx%adv%beg .and. j <= eqn_idx%adv%end) then
++                                r = r + inv_dy*q1_vf(j)%sf(q, k, l)*(flux_src_n(2)%vf(j)%sf(q, k, l) - flux_src_n(2)%vf(j)%sf(q, &
++                                                     & k - 1, l))
++                            end if
++                        end if
++                        if (p > 0) then
++                            r = r + inv_dz*(flux_n(3)%vf(j)%sf(q, k, l - 1) - flux_n(3)%vf(j)%sf(q, k, l))
++                            if (j >= eqn_idx%adv%beg .and. j <= eqn_idx%adv%end) then
++                                r = r + inv_dz*q1_vf(j)%sf(q, k, l)*(flux_src_n(3)%vf(j)%sf(q, k, l) - flux_src_n(3)%vf(j)%sf(q, &
++                                                     & k, l - 1))
++                            end if
++                        end if
++                        if (save_stor) qs_vf(j)%sf(q, k, l) = q1_vf(j)%sf(q, k, l)
++                        q1_vf(j)%sf(q, k, l) = (c1*q1_vf(j)%sf(q, k, l) + c2*qs_vf(j)%sf(q, k, l) + c3*dt*r)/c4
++                    end do
++                end do
++            end do
++        end do
++        $:END_GPU_PARALLEL_LOOP()
++
++    end subroutine s_add_flux_differences_rk_update
++
+     !> Add viscous, surface-tension, and species-diffusion source flux contributions to the RHS for a given direction
+     subroutine s_compute_additional_physics_rhs(idir, q_prim_vf, rhs_vf, flux_src_n_in, dq_prim_dx_vf, dq_prim_dy_vf, dq_prim_dz_vf)
+ 
+diff --git a/src/simulation/m_time_steppers.fpp b/src/simulation/m_time_steppers.fpp
+index 0315e0b..a1b5c9e 100644
+--- a/src/simulation/m_time_steppers.fpp
++++ b/src/simulation/m_time_steppers.fpp
+@@ -464,6 +464,11 @@ contains
+         ! Adaptive dt: initial stage
+         if (adap_dt) call s_adaptive_dt_bubble(1)
+ 
++        ! Fuse the flux differences into the stage update below when nothing between them reads or adds to rhs
++        rhs_diff_deferred = rk_diff_fusable .and. .not. (bodyForces .or. synthetic_turbulence .or. adv_n .or. adap_dt &
++            & .or. bubbles_lagrange .or. qbmm .or. ib .or. cont_damage .or. igr .or. grid_geometry == 3 &
++            & .or. model_eqns == model_eqns_6eq)
++
+         do s = 1, nstage
+             call system_clock(stage_t0)
+             call s_compute_rhs(q_cons_ts(1)%vf, q_T_sf, q_prim_vf, bc_type, rhs_vf, pb_ts(1)%sf, rhs_pb, mv_ts(1)%sf, rhs_mv, &
+@@ -492,29 +497,34 @@ contains
+             end if
+ 
+             if (bubbles_lagrange .and. .not. adap_dt) call s_update_lagrange_tdv_rk(q_prim_vf, bc_type, stage=s)
+-            $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
+-            do l = 0, p
+-                do k = 0, n
+-                    do j = 0, m
+-                        $:GPU_LOOP(parallelism='[seq]')
+-                        do i = 1, sys_size
+-                            if (s == 1 .and. nstage > 1) then
+-                                q_cons_ts(stor)%vf(i)%sf(j, k, l) = q_cons_ts(1)%vf(i)%sf(j, k, l)
+-                            end if
+-                            if (igr) then
+-                                q_cons_ts(1)%vf(i)%sf(j, k, l) = (rk_coef(s, 1)*q_cons_ts(1)%vf(i)%sf(j, k, l) + rk_coef(s, &
+-                                          & 2)*q_cons_ts(stor)%vf(i)%sf(j, k, l) + rk_coef(s, 3)*rhs_vf(i)%sf(j, k, &
+-                                          & l))/rk_coef(s, 4)
+-                            else
+-                                q_cons_ts(1)%vf(i)%sf(j, k, l) = (rk_coef(s, 1)*q_cons_ts(1)%vf(i)%sf(j, k, l) + rk_coef(s, &
+-                                          & 2)*q_cons_ts(stor)%vf(i)%sf(j, k, l) + rk_coef(s, 3)*dt*rhs_vf(i)%sf(j, k, &
+-                                          & l))/rk_coef(s, 4)
+-                            end if
++            if (rhs_diff_deferred) then
++                call s_add_flux_differences_rk_update(q_cons_ts(1)%vf, q_cons_ts(stor)%vf, rk_coef(s, 1), rk_coef(s, 2), &
++                                                      & rk_coef(s, 3), rk_coef(s, 4), s == 1 .and. nstage > 1)
++            else
++                $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3)
++                do l = 0, p
++                    do k = 0, n
++                        do j = 0, m
++                            $:GPU_LOOP(parallelism='[seq]')
++                            do i = 1, sys_size
++                                if (s == 1 .and. nstage > 1) then
++                                    q_cons_ts(stor)%vf(i)%sf(j, k, l) = q_cons_ts(1)%vf(i)%sf(j, k, l)
++                                end if
++                                if (igr) then
++                                    q_cons_ts(1)%vf(i)%sf(j, k, l) = (rk_coef(s, 1)*q_cons_ts(1)%vf(i)%sf(j, k, l) + rk_coef(s, &
++                                              & 2)*q_cons_ts(stor)%vf(i)%sf(j, k, l) + rk_coef(s, 3)*rhs_vf(i)%sf(j, k, &
++                                              & l))/rk_coef(s, 4)
++                                else
++                                    q_cons_ts(1)%vf(i)%sf(j, k, l) = (rk_coef(s, 1)*q_cons_ts(1)%vf(i)%sf(j, k, l) + rk_coef(s, &
++                                              & 2)*q_cons_ts(stor)%vf(i)%sf(j, k, l) + rk_coef(s, 3)*dt*rhs_vf(i)%sf(j, k, &
++                                              & l))/rk_coef(s, 4)
++                                end if
++                            end do
+                         end do
+                     end do
+                 end do
+-            end do
+-            $:END_GPU_PARALLEL_LOOP()
++                $:END_GPU_PARALLEL_LOOP()
++            end if
+             ! Evolve pb and mv for non-polytropic qbmm
+             if (qbmm .and. (.not. polytropic)) then
+                 $:GPU_PARALLEL_LOOP(collapse=5)
+-- 
+2.47.3
+
