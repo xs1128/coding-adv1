@@ -132,7 +132,9 @@ use of the stencil loads is latency the kernel cannot hide at its occupancy. Loa
 variable; nothing else changes). Same node (670011, hgpn061, 2 rounds × 3 reps): 36.71 / 36.61 → 35.93 / 35.87 ms
 (−2.1 %), grind 0.1897 → 0.1860, bitwise. The kernel's stack grows 288 → 368 B at 128 registers. The commit hook's
 precheck passes formatting, spelling and source lint; its toolchain lint fails on one Python test
-(`test_format_tar_zst`) that fails the same way on pinned v5.7.0, so the commit used `--no-verify`.
+(`test_format_tar_zst`) that fails the same way on pinned v5.7.0, so the commit used `--no-verify`. The A/B binary was
+built before `./mfc.sh format` reflowed one FYPP directive and a comment (no change to the generated code beyond
+line numbers).
 
 **Before P12 (P7 profile, 1 GPU, 664617; 14.8 ms of kernels per stage).** WENO5 5.57 ms (38 %), HLLC
 4.26 ms (29 %), flux differences + α·div(u) 2.03 ms, RK update 0.89 ms, cons→prim 0.63 ms, q_cons copy 0.40 ms (removed
