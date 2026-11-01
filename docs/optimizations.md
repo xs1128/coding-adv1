@@ -26,6 +26,46 @@ v5.7.0 vs P3 on one node, P3 vs P4 (final) on another; speedup = product of the 
 | + P4 transverse-interior reconstruction (same-node A/B vs P3: 61.90 → 60.38 ms) | **60.38 ms** | **0.3123** | — | bitwise | 621788 |
 | **total (rungs in sequence, different nodes)** | **−21.6 % (1.28×)** | **−21.6 %** | | | |
 
+## After the deadline (2026-11-01): P7–P10, `patches/opt/0007…0012`
+Each row is a same-node A/B against the row above (alternating arms in one allocation, power-braked nodes refused,
+AGENT_LOG #16). Every arm is bitwise identical to v5.7.0.
+
+| Rung | 1 GPU step | 4 GPUs step (`rdma_mpi`) | Jobs |
+|---|---|---|---|
+| P4 (above) | 60.95 ms | 17.03 ms | 664597; 664614 |
+| + P7: 0007 spatial-only collapse in copy kernels, 0008 WENO direct read, 0009 Riemann buffers aliased | 45.10 ms (−26.0 %) | 13.02 ms (−23.5 %) | 664597; 664614 |
+| + P8: 0010 α·div(u) added in the flux-difference kernels | −0.4 % | — | 664763 |
+| + P9: 0011 RK stage state aliased to the RHS working copy | −2.6 % | — | 664763 |
+| + P10: 0012 register cap 128 on the Riemann unity file | **42.23 ms** (−5.4 % vs P7) | **12.45 ms** (−4.4 % vs P7) | 664848; 664859 |
+| **v5.7.0 → P10, chained same-node ratios** | **1.82×** | **1.85×** | |
+
+**P7 (0007–0009).**
+- *Evidence.* After P4 the copy-like kernels were 40 % of kernel time at 1–1.8 TB/s, SM-instruction-bound: each
+  collapsed (variable, z, y, x) iteration recovered four indices with 64-bit div/mod and walked a derived-type
+  descriptor.
+- *0007.* `collapse(3)` over space and a `seq` variable loop inside: upstream #2087 (NTHU, merged 10-24) on the q_cons
+  copy, flux differences, finalize and WENO pack, extended here to the RK update, the dual-pass/cylindrical differences,
+  the WENO1 copies and the u-interface source. `tools/var_inner.py` did the reorder mechanically.
+- *0008.* Upstream #2092 (NTHU, merged 10-25): WENO reads `v_vf` directly; the pack runs only for MP-WENO/THINC.
+  Reverting it on P10 costs +8.5 % (664848), so the extra descriptor arithmetic is cheaper than the copy.
+- *0009.* On the inviscid path the RHS fluxes are the Riemann solver's own (x, y, z)-ordered buffers, allocated in
+  m_rhs with remapped bounds before anything is attached, so finalize copies nothing. `harness/src/remap_attach.f90`
+  checked first that NVHPC carries remapped bounds to the device (664560).
+
+**P8–P10 (0010–0012).**
+- *0010.* With the u-interface source and no K·div(u), cylindrical, 6-equation or dual-pass terms, the α·div(u) term is
+  added by the flux-difference kernel right after it writes `rhs`. Small (−0.4 %): the three removed kernels were cheap
+  after 0007.
+- *0011.* `q_cons_ts(1)` points at `q_cons_qp` on the same plain path (no probes, run-time info, damage), so the
+  per-stage copy of the state goes; the conversion writes cont/adv back unchanged and the halo fill writes the ghosts.
+- *0012.* The inlined HLLC kernels used 146–152 registers (3 blocks/SM); a per-file cap of 128 gives 4 with 0 B of
+  spills. 96 is worse (−0.6 % vs −2.4 %). Compiler flag (disclosed); m_hb_function and m_bubbles_EL_kernels get the same
+  cap because nvlink rejects a capped kernel calling a cross-file routine with more registers.
+
+**Where the time is now (P7 profile, 1 GPU, 664617; 14.8 ms of kernels per stage).** WENO5 5.57 ms (38 %), HLLC
+4.26 ms (29 %), flux differences + α·div(u) 2.03 ms, RK update 0.89 ms, cons→prim 0.63 ms, q_cons copy 0.40 ms (removed
+by 0011). WENO and HLLC are FP64/latency-bound (no `pow` calls; divides are already `rcp`-based under `-fast`).
+
 The official MFC table lists 0.38 ns for H100 SXM. That number uses a different metric (v4.9.3, `s_compute_rhs` only,
 `cpu_time`, ghost cells counted), see `baseline/README.md`. Same-metric comparisons are within this table only.
 
