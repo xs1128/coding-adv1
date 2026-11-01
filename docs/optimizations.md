@@ -26,7 +26,7 @@ v5.7.0 vs P3 on one node, P3 vs P4 (final) on another; speedup = product of the 
 | + P4 transverse-interior reconstruction (same-node A/B vs P3: 61.90 → 60.38 ms) | **60.38 ms** | **0.3123** | — | bitwise | 621788 |
 | **total (rungs in sequence, different nodes)** | **−21.6 % (1.28×)** | **−21.6 %** | | | |
 
-## After the deadline (2026-11-01): P7–P10, `patches/opt/0007…0012`
+## After the deadline (2026-11-01): P7–P12, `patches/opt/0007…0015`
 Each row is a same-node A/B against the row above (alternating arms in one allocation, power-braked nodes refused,
 AGENT_LOG #16). Every arm is bitwise identical to v5.7.0.
 
@@ -37,7 +37,12 @@ AGENT_LOG #16). Every arm is bitwise identical to v5.7.0.
 | + P8: 0010 α·div(u) added in the flux-difference kernels | −0.4 % | — | 664763 |
 | + P9: 0011 RK stage state aliased to the RHS working copy | −2.6 % | — | 664763 |
 | + P10: 0012 register cap 128 on the Riemann unity file | **42.23 ms** (−5.4 % vs P7) | **12.45 ms** (−4.4 % vs P7) | 664848; 664859 |
-| **v5.7.0 → P10, chained same-node ratios** | **1.82×** | **1.85×** | |
+| + P11: 0013 no CBC host waits on NVHPC OpenACC (0014: formatter only) | 42.04 ms (−0.3 % vs P10) | 12.26 ms (−1.5 % vs P10) | 664894; 664895 |
+| + P12: 0015 HLLC reconstructs its WENO5 states in-kernel | **37.71 ms** (−10.5 % vs P11) | **10.94 ms** (−10.6 % vs P11) | 668372 (667981: −10.2 %); 668436 |
+| **v5.7.0 → P12, chained same-node ratios** | **2.04×** | **2.10×** | |
+
+8 GPUs (`rdma_mpi`, 667577, hgpn029): P4 → P11 grind 0.0502 → 0.0376 ns (−25.2 %), bitwise; the P11 arm got 2 of 3
+reps (time limit, AGENT_LOG). P12 at 8 GPUs is not measured.
 
 **P7 (0007–0009).**
 - *Evidence.* After P4 the copy-like kernels were 40 % of kernel time at 1–1.8 TB/s, SM-instruction-bound: each
@@ -62,7 +67,29 @@ AGENT_LOG #16). Every arm is bitwise identical to v5.7.0.
   spills. 96 is worse (−0.6 % vs −2.4 %). Compiler flag (disclosed); m_hb_function and m_bubbles_EL_kernels get the same
   cap because nvlink rejects a capped kernel calling a cross-file routine with more registers.
 
-**Where the time is now (P7 profile, 1 GPU, 664617; 14.8 ms of kernels per stage).** WENO5 5.57 ms (38 %), HLLC
+**P11–P12 (0013–0015).**
+- *0013.* On NVHPC OpenACC the async queue is the synchronous stream (P3), so the three host waits in `s_cbc` order
+  nothing; `GPU_ASYNC_WAIT` drops them there and keeps them on every other compiler. MPI-buffer waits stay.
+- *0015, evidence.* WENO wrote 2 × sys_size states per cell to `qL/qR_rs*_vf` and HLLC read them back: 5.57 + 4.26 ms
+  per stage at P7, both latency-bound at 128 registers.
+- *0015, change.* On the 5-equation pure-fluid HLLC path each thread reconstructs its face's two WENO5 states itself
+  (cell j's right boundary, cell j+1's left boundary) from `q_prim`; the buffers are neither written nor read. The WENO5
+  point formula moved to `src/simulation/include/weno5_macros.fpp`, which both `s_weno` and the HLLC kernel expand, so
+  the states are bitwise those `s_weno` stores. HLLC's shared body reads its states through `QL()/QR()` accessors, so
+  the fused kernel is a third emission, not a copy. Selected at init only where nothing else reads or edits the buffers
+  (no viscous/capillary/MP-WENO/THINC/`weno_Re_flux`/Riemann-extrapolation BC; see `recon_riemann_fused`).
+- *0015, cost.* One extra smoothness-indicator evaluation per face; the weights, the expensive part, are computed once
+  per side as before. 128 registers, 288 B stack (HLLC 88 + WENO 152–192 before).
+- *0015, effect.* 1 GPU −10.5 % (668372, hgpn014) and −10.2 % (667981, hgpn005); 4 GPUs −10.6 % (668436). Bitwise in
+  every arm.
+- *Rejected: W3,* WENO5 kernel with `collapse(4)` over (variable, z, y, x): +15.7 % (667981), bitwise.
+
+**Where the time is now (P12 profile, 1 GPU, 668466; 12.3 ms of kernels per stage).** Fused WENO5+HLLC 8.07 ms
+(65 %), flux differences + α·div(u) 2.0 ms, RK update 0.90 ms, cons→prim 0.64 ms, BCs + CBC ~0.65 ms. ncu (668497):
+the fused kernel runs the FP64 pipe at 42 % of peak with DRAM at 12–21 %. It is now instruction-bound, and mapped
+WENO's 12 IEEE divisions per side are roughly half its instructions.
+
+**Before P12 (P7 profile, 1 GPU, 664617; 14.8 ms of kernels per stage).** WENO5 5.57 ms (38 %), HLLC
 4.26 ms (29 %), flux differences + α·div(u) 2.03 ms, RK update 0.89 ms, cons→prim 0.63 ms, q_cons copy 0.40 ms (removed
 by 0011). WENO and HLLC are FP64/latency-bound (no `pow` calls; divides are already `rcp`-based under `-fast`).
 
