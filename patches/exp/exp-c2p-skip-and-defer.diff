@@ -1,0 +1,78 @@
+diff --git a/src/common/m_variables_conversion.fpp b/src/common/m_variables_conversion.fpp
+index 78a1945..3e6415b 100644
+--- a/src/common/m_variables_conversion.fpp
++++ b/src/common/m_variables_conversion.fpp
+@@ -475,6 +475,8 @@ contains
+             real(wp)                        :: rhoYks(1:num_species)
+         #:endif
+         real(wp), dimension(2) :: Re_K
++        !> Velocity, stored after the pressure so that every load of the cell precedes every store
++        real(wp), dimension(3) :: u_K
+         real(wp)               :: rho_K, gamma_K, pi_inf_K, qv_K, dyn_pres_K
+         real(wp)               :: vftmp, nbub_sc
+         real(wp)               :: G_K
+@@ -492,10 +494,22 @@ contains
+         real(wp)               :: E, D                     !< Prim/Cons variables within Newton-Raphson iteration
+         real(wp)               :: f, dGa_dW, dp_dW, df_dW  !< Functions within Newton-Raphson iteration
+         integer                :: iter                     !< Newton-Raphson iteration counter
++        !> The primitive and conservative partial densities (volume fractions) are the same array, as in m_rhs: their copy below
++        !! would store each value onto itself, so it is skipped (and the kernel stores 4 fields instead of 8 for 5-eq)
++        logical :: skip_cont, skip_adv
++
++        skip_cont = associated(qK_prim_vf(1)%sf, qK_cons_vf(1)%sf) .and. associated(qK_prim_vf(eqn_idx%cont%end)%sf, &
++                               & qK_cons_vf(eqn_idx%cont%end)%sf)
++        skip_adv = .false.
++        if (eqn_idx%adv%beg >= 1 .and. eqn_idx%adv%end >= eqn_idx%adv%beg) then
++            skip_adv = associated(qK_prim_vf(eqn_idx%adv%beg)%sf, &
++                                  & qK_cons_vf(eqn_idx%adv%beg)%sf) .and. associated(qK_prim_vf(eqn_idx%adv%end)%sf, &
++                                  & qK_cons_vf(eqn_idx%adv%end)%sf)
++        end if
+ 
+-        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3, private='[alpha_K, alpha_rho_K, Re_K, nRtmp, rho_K, gamma_K, &
++        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3, private='[alpha_K, alpha_rho_K, Re_K, u_K, nRtmp, rho_K, gamma_K, &
+                             & pi_inf_K, qv_K, dyn_pres_K, rhoYks, B, pres, vftmp, nbub_sc, G_K, solid_partial_density, T, &
+-                            & pres_mag, Ga, B2, m2, S, W, dW, E, D, f, dGa_dW, dp_dW, df_dW, iter]')
++                            & pres_mag, Ga, B2, m2, S, W, dW, E, D, f, dGa_dW, dp_dW, df_dW, iter]', firstprivate='[skip_cont, skip_adv]')
+         do l = ibounds(3)%beg, ibounds(3)%end
+             do k = ibounds(2)%beg, ibounds(2)%end
+                 do j = ibounds(1)%beg, ibounds(1)%end
+@@ -616,7 +630,7 @@ contains
+                         do i = eqn_idx%species%beg, eqn_idx%species%end
+                             qK_prim_vf(i)%sf(j, k, l) = max(0._wp, qK_cons_vf(i)%sf(j, k, l)/rho_K)
+                         end do
+-                    else
++                    else if (.not. skip_cont) then
+                         ! Non-reacting: partial densities are directly primitive (alpha_i * rho_i)
+                         $:GPU_LOOP(parallelism='[seq]')
+                         do i = 1, eqn_idx%cont%end
+@@ -629,8 +643,8 @@ contains
+                     ! Recover velocity from momentum: u = rho*u / rho, and accumulate dynamic pressure 0.5*rho*|u|^2
+                     $:GPU_LOOP(parallelism='[seq]')
+                     do i = eqn_idx%mom%beg, eqn_idx%mom%end
+-                        qK_prim_vf(i)%sf(j, k, l) = qK_cons_vf(i)%sf(j, k, l)/rho_K
+-                        dyn_pres_K = dyn_pres_K + 5.e-1_wp*qK_cons_vf(i)%sf(j, k, l)*qK_prim_vf(i)%sf(j, k, l)
++                        u_K(i - eqn_idx%mom%beg + 1) = qK_cons_vf(i)%sf(j, k, l)/rho_K
++                        dyn_pres_K = dyn_pres_K + 5.e-1_wp*qK_cons_vf(i)%sf(j, k, l)*u_K(i - eqn_idx%mom%beg + 1)
+                     end do
+ 
+                     if (chemistry) then
+@@ -657,6 +671,10 @@ contains
+                     call s_compute_pressure(qK_cons_vf(eqn_idx%E)%sf(j, k, l), qK_cons_vf(eqn_idx%alf)%sf(j, k, l), dyn_pres_K, &
+                                             & pi_inf_K, gamma_K, rho_K, qv_K, rhoYks, pres, T, pres_mag=pres_mag)
+ 
++                    $:GPU_LOOP(parallelism='[seq]')
++                    do i = eqn_idx%mom%beg, eqn_idx%mom%end
++                        qK_prim_vf(i)%sf(j, k, l) = u_K(i - eqn_idx%mom%beg + 1)
++                    end do
+                     qK_prim_vf(eqn_idx%E)%sf(j, k, l) = pres
+ 
+                     if (chemistry) then
+@@ -737,7 +755,7 @@ contains
+                         end do
+                     end if
+ 
+-                    if (.not. igr .or. num_fluids > 1) then
++                    if ((.not. igr .or. num_fluids > 1) .and. .not. skip_adv) then
+                         $:GPU_LOOP(parallelism='[seq]')
+                         do i = eqn_idx%adv%beg, eqn_idx%adv%end
+                             qK_prim_vf(i)%sf(j, k, l) = qK_cons_vf(i)%sf(j, k, l)
