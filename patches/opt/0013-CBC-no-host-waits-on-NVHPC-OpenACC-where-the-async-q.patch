@@ -1,0 +1,74 @@
+From edcad435984545fdc9b177147f35f76a9416a118 Mon Sep 17 00:00:00 2001
+From: u1131128 <hipac1@lsalab.cs.nthu.edu.tw>
+Date: Sun, 1 Nov 2026 11:47:35 +0800
+Subject: [PATCH] CBC: no host waits on NVHPC OpenACC, where the async queue is
+ the synchronous stream
+
+s_cbc queues its kernels and scalar updates async and waited on the host three times per call: before the
+synchronous primitive-to-flux conversion and before returning to m_rhs. Since the default async queue runs on
+the synchronous stream on NVHPC (s_initialize_mpi_domain), the device already executes all of it in issue
+order; the waits only stopped the host from queueing the next kernels. A trace at 4 GPUs (664869) showed
+0.1-0.4 ms of GPU idle per stage in RHS-ADVECTION-SRC, largest on the rank with the most CBC faces, which the
+other ranks then wait for in the halo exchange. GPU_ASYNC_WAIT is GPU_WAIT except on NVHPC OpenACC. Bit-identical.
+---
+ src/common/include/parallel_macros.fpp | 12 ++++++++++++
+ src/simulation/m_cbc.fpp               |  6 +++---
+ 2 files changed, 15 insertions(+), 3 deletions(-)
+
+diff --git a/src/common/include/parallel_macros.fpp b/src/common/include/parallel_macros.fpp
+index b1382ec..08b539f 100644
+--- a/src/common/include/parallel_macros.fpp
++++ b/src/common/include/parallel_macros.fpp
+@@ -253,6 +253,18 @@
+ #:enddef
+ 
+ ! Synchronization barrier
++! Wait for work queued with 'async' before synchronous GPU work that consumes it. On NVHPC OpenACC the default async queue is
++! the synchronous stream (see GPU_ASYNC), so the device already runs both in issue order and the host need not wait.
++#:def GPU_ASYNC_WAIT()
++#:if USING_NVHPC
++#if !defined(MFC_OpenACC)
++    $:GPU_WAIT()
++#endif
++#:else
++    $:GPU_WAIT()
++#:endif
++#:enddef
++
+ #:def GPU_WAIT(extraAccArgs=None, extraOmpArgs=None)
+     #:set acc_code = ACC_WAIT(extraAccArgs=extraAccArgs)
+     #:set omp_code = OMP_WAIT(extraOmpArgs=extraOmpArgs)
+diff --git a/src/simulation/m_cbc.fpp b/src/simulation/m_cbc.fpp
+index c96e7a7..6e8344f 100644
+--- a/src/simulation/m_cbc.fpp
++++ b/src/simulation/m_cbc.fpp
+@@ -527,7 +527,7 @@ contains
+                 ! PI2 of flux_rs_vf and flux_src_rs_vf at j = 1/2
+                 if (weno_order == 3) then
+                     ! s_convert_primitive_to_flux_variables runs on the synchronous queue
+-                    $:GPU_WAIT()
++                    $:GPU_ASYNC_WAIT()
+                     call s_convert_primitive_to_flux_variables(q_prim_rs${XYZ}$_vf, F_rs${XYZ}$_vf, F_src_rs${XYZ}$_vf, is1, is2, &
+                         & is3, idwbuff(2)%beg, idwbuff(3)%beg, dir_idx, dir_flg, hll_u_interface)
+ 
+@@ -557,7 +557,7 @@ contains
+                 ! PI4 of flux_rs_vf and flux_src_rs_vf at j = 1/2, 3/2
+                 if (weno_order == 5) then
+                     ! s_convert_primitive_to_flux_variables runs on the synchronous queue
+-                    $:GPU_WAIT()
++                    $:GPU_ASYNC_WAIT()
+                     call s_convert_primitive_to_flux_variables(q_prim_rs${XYZ}$_vf, F_rs${XYZ}$_vf, F_src_rs${XYZ}$_vf, is1, is2, &
+                         & is3, idwbuff(2)%beg, idwbuff(3)%beg, dir_idx, dir_flg, hll_u_interface)
+ 
+@@ -918,7 +918,7 @@ contains
+         ! on selected CBC coordinate direction.
+         call s_finalize_cbc(flux_vf, flux_src_vf)
+         ! CBC kernels and updates above are queued async; flux_vf is read next by m_rhs
+-        $:GPU_WAIT()
++        $:GPU_ASYNC_WAIT()
+ 
+     end subroutine s_cbc
+ 
+-- 
+2.34.1
+
