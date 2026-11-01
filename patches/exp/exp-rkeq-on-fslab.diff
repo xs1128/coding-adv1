@@ -1,0 +1,99 @@
+diff --git a/src/simulation/m_rhs.fpp b/src/simulation/m_rhs.fpp
+index c770378..1d4da9a 100644
+--- a/src/simulation/m_rhs.fpp
++++ b/src/simulation/m_rhs.fpp
+@@ -2067,72 +2067,50 @@ contains
+              & 1:sys_size), intent(inout) :: q1, qs
+         real(wp), intent(in) :: c1, c2, c3, c4
+         logical, intent(in)  :: save_stor
+-        integer              :: j, jn, k, l, q, ns, ab, ae, sy, sz, uy, uz
+-        real(wp)             :: inv_dx, inv_dy, inv_dz, r, dux, duy, duz, dtl
+-        real(wp)             :: fx0, fx1, fy0, fy1, fz0, fz1, v1, vs
+-        real(wp)             :: nfx0, nfx1, nfy0, nfy1, nfz0, nfz1, nv1, nvs
++        integer              :: j, k, l, q, ns, ab, ae, sy, sz, uy, uz
++        real(wp)             :: inv_dx, inv_dy, inv_dz, r, dux, duy, duz, dtl, v1, vs
+ 
+         ! fx(:, :, :, j + (d - 1)*sys_size) is flux_n(d)%vf(j)%sf; fs(:, :, :, 1 + (d - 1)*(sys_size - adv%beg + 1)) is the face
+         ! velocity of direction d (flux_src_rsx_vf from adv%beg). The scalars are kernel arguments, not module reads.
+         ns = sys_size; ab = eqn_idx%adv%beg; ae = eqn_idx%adv%end; dtl = dt
+         sy = sys_size; sz = 2*sys_size; uy = 1 + (sys_size - ab + 1); uz = 1 + 2*(sys_size - ab + 1)
+ 
+-        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3, private='[j, jn, k, l, q, inv_dx, inv_dy, inv_dz, r, fx0, fx1, &
+-                            & fy0, fy1, fz0, fz1, v1, vs, nfx0, nfx1, nfy0, nfy1, nfz0, nfz1, nv1, nvs, dux, duy, duz]', &
+-                            & firstprivate='[ns, ab, ae, dtl, sy, sz, uy, uz]')
+-        do l = 0, p
+-            do k = 0, n
+-                do q = 0, m
+-                    inv_dx = 1._wp/dx(q)
+-                    inv_dy = 0._wp; inv_dz = 0._wp
+-                    if (n > 0) inv_dy = 1._wp/dy(k)
+-                    if (p > 0) inv_dz = 1._wp/dz(l)
+-                    nfy0 = 0._wp; nfy1 = 0._wp; nfz0 = 0._wp; nfz1 = 0._wp
+-                    duy = 0._wp; duz = 0._wp
+-                    nfx0 = fx(q - 1, k, l, 1); nfx1 = fx(q, k, l, 1)
+-                    dux = fs(q, k, l, 1) - fs(q - 1, k, l, 1)
+-                    if (n > 0) then
+-                        nfy0 = fx(q, k - 1, l, 1 + sy); nfy1 = fx(q, k, l, 1 + sy)
+-                        duy = fs(q, k, l, uy) - fs(q, k - 1, l, uy)
+-                    end if
+-                    if (p > 0) then
+-                        nfz0 = fx(q, k, l - 1, 1 + sz); nfz1 = fx(q, k, l, 1 + sz)
+-                        duz = fs(q, k, l, uz) - fs(q, k, l - 1, uz)
+-                    end if
+-                    nv1 = q1(q, k, l, 1); nvs = qs(q, k, l, 1)
+-                    $:GPU_LOOP(parallelism='[seq]')
+-                    do j = 1, ns
+-                        fx0 = nfx0; fx1 = nfx1; fy0 = nfy0; fy1 = nfy1; fz0 = nfz0; fz1 = nfz1; v1 = nv1; vs = nvs
+-                        if (j < ns) then
+-                            jn = j + 1
+-                            nfx0 = fx(q - 1, k, l, jn); nfx1 = fx(q, k, l, jn)
+-                            if (n > 0) then
+-                                nfy0 = fx(q, k - 1, l, jn + sy); nfy1 = fx(q, k, l, jn + sy)
+-                            end if
+-                            if (p > 0) then
+-                                nfz0 = fx(q, k, l - 1, jn + sz); nfz1 = fx(q, k, l, jn + sz)
+-                            end if
+-                            nv1 = q1(q, k, l, jn); nvs = qs(q, k, l, jn)
+-                        end if
+-                        r = inv_dx*(fx0 - fx1)
++        ! One thread per (cell, equation): the update is a stream over the slabs, so many light threads keep more loads in flight
++        ! than one thread per cell walking all equations. Same expressions in the same order, so bitwise the same q1.
++        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=4, private='[j, k, l, q, inv_dx, inv_dy, inv_dz, r, v1, vs, dux, &
++                            & duy, duz]', firstprivate='[ns, ab, ae, dtl, sy, sz, uy, uz]')
++        do j = 1, ns
++            do l = 0, p
++                do k = 0, n
++                    do q = 0, m
++                        inv_dx = 1._wp/dx(q)
++                        v1 = q1(q, k, l, j)
++                        r = inv_dx*(fx(q - 1, k, l, j) - fx(q, k, l, j))
+                         if (j >= ab .and. j <= ae) then
++                            dux = fs(q, k, l, 1) - fs(q - 1, k, l, 1)
+                             r = r + inv_dx*v1*dux
+                         end if
+                         if (n > 0) then
+-                            r = r + inv_dy*(fy0 - fy1)
++                            inv_dy = 1._wp/dy(k)
++                            r = r + inv_dy*(fx(q, k - 1, l, j + sy) - fx(q, k, l, j + sy))
+                             if (j >= ab .and. j <= ae) then
++                                duy = fs(q, k, l, uy) - fs(q, k - 1, l, uy)
+                                 r = r + inv_dy*v1*duy
+                             end if
+                         end if
+                         if (p > 0) then
+-                            r = r + inv_dz*(fz0 - fz1)
++                            inv_dz = 1._wp/dz(l)
++                            r = r + inv_dz*(fx(q, k, l - 1, j + sz) - fx(q, k, l, j + sz))
+                             if (j >= ab .and. j <= ae) then
++                                duz = fs(q, k, l, uz) - fs(q, k, l - 1, uz)
+                                 r = r + inv_dz*v1*duz
+                             end if
+                         end if
+                         if (save_stor) then
+                             qs(q, k, l, j) = v1
+                             vs = v1
++                        else
++                            vs = qs(q, k, l, j)
+                         end if
+                         q1(q, k, l, j) = (c1*v1 + c2*vs + c3*dtl*r)/c4
+                     end do
