@@ -7,6 +7,9 @@
 set -euo pipefail
 ROOT=/work/u1131128/coding-adv1
 source "$ROOT/scripts/env.sh"
+if nvidia-smi --query-gpu=clocks_event_reasons.hw_power_brake_slowdown --format=csv,noheader | grep -q '^Active'; then
+  echo "power brake active on $(hostname); not profiling (AGENT_LOG #16)" >&2; exit 3
+fi
 : "${LABEL:?}" "${CASE:?}" "${NGPU:=1}" "${BUILD:=generic}" "${MODE:=nsys}" "${CASE_ARGS:=}"
 : "${MPIRUN_ARGS:=}" "${RUN_ENV:=}" "${NCU_SKIP:=200}" "${NCU_COUNT:=120}" "${NCU_SET:=full}" "${NCU_KERNEL:=.*}"
 out=$ROOT/results/$LABEL
