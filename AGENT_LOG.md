@@ -67,3 +67,6 @@
   8-minute limit, so P11 has 2 reps, not 3, and there was no second round. The estimate counted only the timed reps
   (~19 s each). It missed the per-arm pre_process run, the compare-vs-ref step and the 8-rank start-up. Lesson: for
   8-GPU sets, budget from the elapsed time of an earlier job of the same shape (622306), not from rep wall time.
+- ncu job 667720 was submitted with CASE `-`, which only the A/B and test scripts accept. It held one GPU for 7.5 min
+  and then failed on `cp` (the slow part before that was node-side start-up). Cost: 7.5 GPU-min. submit.sh now rejects
+  a missing case file at submit time. submit_clean.sh also looped 6 times on an sbatch argument error; it now stops.
