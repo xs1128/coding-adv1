@@ -1,0 +1,2 @@
+romio_ds_write disable
+romio_cb_write disable
