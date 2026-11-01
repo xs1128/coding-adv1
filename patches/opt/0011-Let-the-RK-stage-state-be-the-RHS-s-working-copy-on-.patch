@@ -1,0 +1,99 @@
+From c552051702d24b2225c28f220cde43ff9d1c1018 Mon Sep 17 00:00:00 2001
+From: u1131128 <hipac1@lsalab.cs.nthu.edu.tw>
+Date: Sun, 1 Nov 2026 10:27:03 +0800
+Subject: [PATCH] Let the RK stage state be the RHS's working copy on the plain
+ path
+
+s_compute_rhs copied q_cons_ts(1) into q_cons_qp (all variables, ghost cells included) at every stage. The
+conversion writes the cont/adv entries back unchanged and reads the interior only, the halo fill then writes
+the ghost cells, and the RK update touches the interior only, so on the path where the RHS fluxes are already
+aliased (no viscous, bubbles, QBMM, chemistry, IBM, ...) and nothing reads the stage state's ghost cells
+(no probes, run-time info, continuum damage), q_cons_ts(1) now points at q_cons_qp and the copy is skipped.
+Unified-memory builds keep their own allocation. Bit-identical.
+---
+ src/simulation/m_rhs.fpp           | 13 +++++++++++--
+ src/simulation/m_time_steppers.fpp | 16 +++++++++++++---
+ 2 files changed, 24 insertions(+), 5 deletions(-)
+
+diff --git a/src/simulation/m_rhs.fpp b/src/simulation/m_rhs.fpp
+index 3390537..a1a3713 100644
+--- a/src/simulation/m_rhs.fpp
++++ b/src/simulation/m_rhs.fpp
+@@ -40,11 +40,19 @@ module m_rhs
+ 
+     implicit none
+ 
+-    private; public :: s_initialize_rhs_module, s_compute_rhs, s_finalize_rhs_module
++    private; public :: s_initialize_rhs_module, s_compute_rhs, s_finalize_rhs_module, q_cons_qp, rhs_input_aliasable, &
++        & rhs_input_aliased
+ 
+     type(vector_field) :: q_cons_qp  !< WENO-reconstructed cell-average conservative variables at quadrature points
+     $:GPU_DECLARE(create='[q_cons_qp]')
+ 
++    !> On the plain path the RK stage state is q_cons_qp itself (m_time_steppers points q_cons_ts(1) at it), so s_compute_rhs
++    !! skips the per-stage copy. The conversion writes the cont/adv entries back unchanged and reads the interior only; the halo
++    !! fill then writes the ghost cells, which the RK update never touches. Physics that change q_cons_qp in place, or read
++    !! the stage state's ghost cells, keep the copy.
++    logical :: rhs_input_aliasable = .false.  !< set here; m_time_steppers aliases only if this is true
++    logical :: rhs_input_aliased = .false.  !< set by m_time_steppers once q_cons_ts(1) is q_cons_qp
++
+     type(vector_field) :: q_prim_qp  !< Primitive variables at cell-interior quadrature points
+     $:GPU_DECLARE(create='[q_prim_qp]')
+ 
+@@ -216,6 +224,7 @@ contains
+             flux_aliased = .not. (qbmm .or. viscous .or. surface_tension .or. chemistry .or. hypoelasticity .or. cyl_coord &
+                                   & .or. ib .or. bubbles_euler .or. bubbles_lagrange .or. relativity) .and. &
+                                   & adv_src_mode == adv_src_mode_vel_iface .and. hypo_nc_mode /= hypo_nc_mode_dual_pass
++            rhs_input_aliasable = flux_aliased .and. .not. (probe_wrt .or. run_time_info .or. cont_damage)
+             adv_src_fused = adv_src_mode == adv_src_mode_vel_iface .and. .not. (alt_soundspeed .or. cyl_coord) .and. &
+                             & model_eqns /= model_eqns_6eq .and. hypo_nc_mode /= hypo_nc_mode_dual_pass
+             if (flux_aliased) then
+@@ -620,7 +629,7 @@ contains
+ 
+         call nvtxStartRange("COMPUTE-RHS")
+ 
+-        if (.not. igr) then
++        if (.not. (igr .or. rhs_input_aliased)) then
+             ! Association/Population of Working Variables
+             $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, private='[i, j, k, l]', collapse=3)
+             do l = idwbuff(3)%beg, idwbuff(3)%end
+diff --git a/src/simulation/m_time_steppers.fpp b/src/simulation/m_time_steppers.fpp
+index eff85c1..0315e0b 100644
+--- a/src/simulation/m_time_steppers.fpp
++++ b/src/simulation/m_time_steppers.fpp
+@@ -181,11 +181,17 @@ contains
+         !> @endcond
+         do i = 1, num_ts
+             do j = 1, sys_size
+-                @:ALLOCATE(q_cons_ts(i)%vf(j)%sf(idwbuff(1)%beg:idwbuff(1)%end, idwbuff(2)%beg:idwbuff(2)%end, &
+-                           & idwbuff(3)%beg:idwbuff(3)%end))
++                if (i == 1 .and. rhs_input_aliasable) then  ! the stage state is the RHS's working copy (see m_rhs)
++                    q_cons_ts(1)%vf(j)%sf => q_cons_qp%vf(j)%sf
++                    $:GPU_ENTER_DATA(attach='[q_cons_ts(1)%vf(j)%sf]')
++                else
++                    @:ALLOCATE(q_cons_ts(i)%vf(j)%sf(idwbuff(1)%beg:idwbuff(1)%end, idwbuff(2)%beg:idwbuff(2)%end, &
++                               & idwbuff(3)%beg:idwbuff(3)%end))
++                end if
+             end do
+             @:ACC_SETUP_VFs(q_cons_ts(i))
+         end do
++        rhs_input_aliased = rhs_input_aliasable
+         !> @cond
+ #endif
+         !> @endcond
+@@ -989,7 +995,11 @@ contains
+ #else
+         do i = 1, num_ts
+             do j = 1, sys_size
+-                @:DEALLOCATE(q_cons_ts(i)%vf(j)%sf)
++                if (i == 1 .and. rhs_input_aliased) then
++                    nullify (q_cons_ts(1)%vf(j)%sf)
++                else
++                    @:DEALLOCATE(q_cons_ts(i)%vf(j)%sf)
++                end if
+             end do
+         end do
+ #endif
+-- 
+2.34.1
+
