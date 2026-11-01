@@ -264,6 +264,12 @@ With P16 and 10 reps per arm on one node (669785, hgpn033, bitwise): wall median
 **4.828 s (4.70–5.13) with `UCX_TLS=self` (−13 %)**. Turning off the hcoll and ucc collective components
 (`OMPI_MCA_coll=^hcoll,ucc`) changes nothing, alone (5.588 s) or with `UCX_TLS=self` (4.907 s). In 669435 the
 `UCX_POSIX_USE_PROC_LINK=n` setting reached both arms (job-wide export), so that comparison isolates `UCX_TLS` only.
+Going further for a single rank, Open MPI's ob1 PML with the self and vader BTLs and without the UCX one-sided
+component (`OMPI_MCA_pml=ob1 OMPI_MCA_btl=self,vader OMPI_MCA_osc=^ucx`) keeps UCX from loading at all. Same node,
+10 reps per arm (669940, hgpn005, bitwise): wall median **4.300 s (4.10–4.48)** against 4.919 s (4.86–5.02) with
+`UCX_TLS=self`, consistent in both rounds. Adding `OMPI_MCA_coll=^hcoll,ucc` and `UCX_TLS=self` gives 4.453 s (no gain).
+From the default environment (5.556 s, 669785) that is −23 %. Configuration only, for single-rank runs; multi-GPU runs
+need a CUDA-aware transport (UCX, or ob1 with smcuda), not measured here.
 
 **Start-up and save on the host (trace 669826, P16, `UCX_TLS=self`, CPU sampling at ~1 kHz).** Outside MPI_Init, the
 largest host costs are Fortran array temporaries in the restart I/O: `MPI_IO_DATA%var(i)%sf` points at the

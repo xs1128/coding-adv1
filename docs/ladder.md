@@ -35,6 +35,7 @@ One row per experiment, newest last. Baseline: `results/base/official_1g` (job 6
 | 25 | hcoll/ucc off | `OMPI_MCA_coll=^hcoll,ucc` (environment) | 669785 (1g, 10 reps, hgpn033) | wall median 5.556 → 5.588 s alone, 4.828 → 4.907 s with `UCX_TLS=self` | bitwise ✓ | no |
 | 26 | iomem | MPI-IO of the restart interior in place through a memory subarray datatype (no compiler temporary) | 669871 (1g, 10 reps, hgpn025, `UCX_TLS=self`) | save 0.48–0.64 → 0.83–0.91 s; wall median 4.839 → 5.011 s | bitwise ✓ | no |
 | 27 | iobuf | MPI-IO of the restart interior staged through one persistent contiguous buffer (one copy per direction instead of a fresh temporary copied both ways) | 669917 (1g, 10 reps, hgpn026, `UCX_TLS=self`) | wall median 4.976 → 4.891 s, save 0.589 → 0.556 s; the two rounds disagree (round 1 B faster, round 2 A faster) | bitwise ✓ | no (within noise) |
+| 28 | ob1 (env) | Single rank without UCX: `OMPI_MCA_pml=ob1 OMPI_MCA_btl=self,vader OMPI_MCA_osc=^ucx` (configuration, disclosed) | 669940 (1g, 10 reps, hgpn005) | wall median 4.919 (`UCX_TLS=self`) → **4.300 s (−12.6 %)**; grind unchanged | bitwise ✓ | yes (1 rank, env) |
 | — | **suite** | **Full `./mfc.sh test` on the GPU build of P15** (`mfc-rkfuse` = v5.7.0 + 0001–0018, `--mpi --acc-gpu`) | 669500–669511 (8 shards, 1 GPU each) | 712 passed, 25 failed = 23 unique tests (shards 6 and 7 overlap by two tests), exactly the 23 in `harness/known_test_failures.txt`, which fail identically on pinned v5.7.0 | ✓ no new failure | — |
 
 ### K4 diagnosis (HLLC, 1.88–2.19 ms/call vs 1.46 in v4.9.3)
