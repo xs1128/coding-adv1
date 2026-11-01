@@ -1,0 +1,5 @@
+index, name, pci.bus_id, clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W], power.limit [W], temperature.gpu, utilization.gpu [%], memory.used [MiB], clocks_event_reasons.hw_power_brake_slowdown, clocks_event_reasons.hw_slowdown
+0, NVIDIA H200, 00000000:3A:00.0, 1980 MHz, 3201 MHz, 134.12 W, 700.00 W, 39, 0 %, 0 MiB, Not Active, Not Active
+1, NVIDIA H200, 00000000:4B:00.0, 1980 MHz, 3201 MHz, 132.82 W, 700.00 W, 39, 0 %, 0 MiB, Not Active, Not Active
+2, NVIDIA H200, 00000000:5C:00.0, 1980 MHz, 3201 MHz, 132.80 W, 700.00 W, 40, 0 %, 0 MiB, Not Active, Not Active
+3, NVIDIA H200, 00000000:9A:00.0, 1980 MHz, 3201 MHz, 129.98 W, 700.00 W, 39, 0 %, 0 MiB, Not Active, Not Active

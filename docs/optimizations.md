@@ -44,6 +44,7 @@ AGENT_LOG #16). Every arm is bitwise identical to v5.7.0.
 | **v5.7.0 → P14, chained same-node ratios** | **2.13×** | (P12: 2.10×) | |
 | **v5.7.0 → P16, direct same-node A/B** (2 rounds × 5 reps, hgpn065) | **77.06 → 36.23 ms: 2.13×**; grind 0.3968–0.3985 → 0.1872–0.1877 ns (2.12×); wall median 7.31 → 5.65 s (1.29×) | — | 669752 |
 | **v5.7.0 → P18, direct same-node A/B** (canonical tree 0001–0021, 2 rounds × 5 reps, hgpn005) | **76.75 / 76.74 → 34.39 / 34.30 ms: 2.24×**; grind 0.3963–0.3990 → 0.1768–0.1779 ns (2.24×) | — | 670158 |
+| **P11 → P18 at 4 / 8 GPUs** (`rdma_mpi`, same node, `UCX_TLS=self,sm,cuda_copy,cuda_ipc` both arms, 3 reps, hgpn034) | 4g **12.294 → 10.131 ms (−17.6 %)**, grind 0.0632 → 0.0525; 8g **7.344 → 6.115 ms (−16.7 %)**, grind 0.0376 → 0.0315; wall unchanged (start-up dominated); bitwise all 4 arms | — | 670516, 670540 |
 
 8 GPUs (`rdma_mpi`, 667577, hgpn029): P4 → P11 grind 0.0502 → 0.0376 ns (−25.2 %), bitwise; the P11 arm got 2 of 3
 reps (time limit, AGENT_LOG). P12 at 8 GPUs is not measured.

@@ -115,3 +115,7 @@
 - The p15_full watcher printed two "NEW" failures (2BA0324F, E8C7E354). Both are in the known list. Shards 6 and 7
   overlap and both ran them, and the watcher's `comm` over a list with duplicates reported the second copy as new.
   Recomputed with sets: 23 unique failures, all known, none new. Count suite failures by unique UUID.
+- verify.py was called with `results/<label>` instead of the label `<label>`. It looked for state under
+  `runs/results/...`, printed FAIL, and wrote FAIL verify.json files under `results/results/` (8-GPU A/B 670540, and
+  three t0 labels from an earlier session). Those were stray files, not results: deleted on both sides. Re-verified
+  by label: both 670540 arms PASS bitwise. Rule: verify.py takes the label (`p18/ab_8g_rdma/b1`), never a path.

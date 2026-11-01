@@ -231,9 +231,20 @@ Rung by rung, with every rejected variant, in `docs/ladder.md` (rows 9–28) and
 
 With P17 and P18 (below), one more same-node A/B of v5.7.0 against the canonical tree (v5.7.0 + 0001–0021, 2 rounds ×
 5 reps, hgpn005, job 670158): step **76.75 / 76.74 → 34.39 / 34.30 ms, 2.24×**; grind 0.3963–0.3990 → 0.1768–0.1779 ns
-(2.24×); bitwise. (Chaining the A/Bs gave 2.26×.) The 10-31 final (P4) was 1.27× at 1 GPU (§1). At 4 GPUs (`rdma_mpi`) P14 runs 10.56–10.69 ms per step (669420,
-669435) against 17.03 ms for P4 (664614) and 23.10 ms for v5.7.0 (606018, a different job: about 2.2×, not a
-same-node ratio). At 8 GPUs, P4 → P11 grind 0.0502 → 0.0376 ns (667577); P12–P16 are not measured at 8 GPUs.
+(2.24×); bitwise. (Chaining the A/Bs gave 2.26×.) The 10-31 final (P4) was 1.27× at 1 GPU (§1). Multi-GPU (`rdma_mpi`, same node, P11 against the canonical tree,
+`UCX_TLS=self,sm,cuda_copy,cuda_ipc` in both arms, 3 reps; bitwise in all 4 arms):
+
+| GPUs | P11 step | P18 step | | Grind P11 → P18 (ns) | Job |
+|---|---|---|---|---|---|
+| 4 | 12.294 ms | **10.131 ms** | −17.6 % | 0.0632 → 0.0525 | 670516 |
+| 8 | 7.344 ms | **6.115 ms** | −16.7 % | 0.0376 → 0.0315 | 670540 |
+
+The 1-GPU gain of P12–P18 carries over to 4 and 8 GPUs almost unchanged, since it is all inside the RHS. Wall time does
+not move (4 GPUs 7.7 s, 8 GPUs 13.0 s): a 30-step run is start-up dominated. Against 34.3 ms at 1 GPU (670158, a
+different job), P18's step-time strong-scaling efficiency is about 85 % at 4 GPUs and 70 % at 8. That is lower than
+P4's 89 % and 77 %, because the halo exchange did not shrink while the compute did. For scale, v5.7.0 at 4 GPUs ran 23.10
+ms per step (606018, a different job), so P18 is about 2.3× at 4 GPUs too, but not as a same-node ratio. The like-for-like
+v5.7.0 multi-GPU A/B was not run.
 
 **What changed** (one commit and one patch each; P7–P11 are summarised in `docs/optimizations.md`):
 
