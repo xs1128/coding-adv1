@@ -24,3 +24,91 @@ mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
   
      (  1/ 94)    3D -> Lagrange Bubbles -> Two-way Coupling -> a...   21.60    630E2099
      (  2/ 94)    3D -> Lagrange Bubbles -> Two-way Coupling -> a...   21.62    D64170CF
+     (  3/ 94)    3D -> 2 MPI Ranks                                    25.44    CE232828
+     (  4/ 94)    3D -> 2 MPI Ranks -> IBM Sphere                      26.54    AFBACA70
+     (  5/ 94)    3D -> Acoustic Source -> Planar -> support=3         16.43    D43B3BCD
+     (  6/ 94)    3D -> Acoustic Source -> Planar -> support=3 ->...   16.45    C74AFA56
+     (  7/ 94)    3D -> Acoustic Source -> Transducer Array -> su...   16.26    56AF3BE5
+     (  8/ 94)    3D -> Acoustic Source -> Transducer -> support=7     16.32    CDD62819
+     (  9/ 94)    3D -> Acoustic Source -> Transducer Array -> su...   15.87    A5B196F9
+     ( 10/ 94)    3D -> Bubbles -> Polytropic -> bubble_model=3        16.53    5B7A746F
+     ( 11/ 94)    3D -> Bubbles -> Polytropic -> bubble_model=2        18.61    DA54B209
+     ( 12/ 94)    3D -> Bubbles -> bubble_model=2                      18.29    6F35CD77
+     ( 13/ 94)    3D -> Bubbles -> nb=1                                17.21    FC3FE863
+     ( 14/ 94)    3D -> Bubbles -> adv_n=T                             17.59    B2310476
+     ( 15/ 94)    3D -> Bubbles -> artificial_Ma                       17.92    F3127A57
+     ( 16/ 94)    3D -> Bubbles -> adv_n=T -> adap_dt=T                18.69    7912AB81
+     ( 17/ 94)    3D -> Bubbles -> low_Mach=1                          18.28    9C3B986E
+     ( 18/ 94)    3D -> Bubbles -> low_Mach=2                          18.24    4EAA3C32
+     ( 19/ 94)    3D -> Bubbles -> QBMM                                25.25    C5205982
+     ( 20/ 94)    3D -> Bubbles -> QBMM -> Non-polytropic              28.56    D33BD146
+     ( 21/ 94)    3D -> Bubbles -> QBMM -> bubble_model=3              18.83    092A339C
+     ( 22/ 94)    3D -> Bubbles -> QBMM -> bubble_model=3 -> Non-...   22.05    41C830CC
+     ( 23/ 94)    3D -> Hypoelasticity -> 1 Fluid(s)                   15.70    7EFBCDAE
+     ( 24/ 94)    3D -> Hypoelasticity -> 1 Fluid(s) -> cont_damage    15.68    EF3E7C79
+     ( 25/ 94)    3D -> Hypoelasticity -> 1 Fluid(s) -> bc=-2          15.15    67A5ECF8
+     ( 26/ 94)    3D -> Hypoelasticity -> 2 Fluid(s)                   15.41    BDD3411B
+     ( 27/ 94)    3D -> Phase Change model 5 -> 2 Fluid(s) -> mod...   14.76    344FAA70
+     ( 28/ 94)    3D -> Phase Change model 5 -> 2 Fluid(s) -> mod...   15.04    60EE4401
+     ( 29/ 94)    3D -> Phase Change model 5 -> 3 Fluid(s) -> mod...   15.50    723DDBCF
+     ( 30/ 94)    3D -> Phase Change model 5 -> 3 Fluid(s) -> mod...   14.85    2486442D
+     ( 31/ 94)    3D -> Viscosity -> Bubbles -> Polytropic -> bub...   14.56    38533D07
+     ( 32/ 94)    3D -> Viscosity -> Bubbles -> Polytropic -> bub...   14.68    8B679445
+     ( 33/ 94)    3D -> Viscosity -> Bubbles -> bubble_model=2         15.33    541A30DB
+     ( 34/ 94)    3D -> Viscosity -> Bubbles -> nb=1                   14.94    DCB3BC6C
+     ( 35/ 94)    3D -> Viscosity -> Bubbles -> QBMM                   16.01    14975B87
+     ( 36/ 94)    3D -> Viscosity -> Bubbles -> QBMM -> bubble_mo...   15.45    48B9D0C4
+     ( 37/ 94)    3D -> Viscosity -> Bubbles -> QBMM -> bubble_mo...   15.55    07C54EDD
+     ( 38/ 94)    3D -> Viscosity -> Bubbles -> QBMM -> bubble_mo...   15.72    53A15FFC
+     ( 39/ 94)    3D -> Smoothing                                      13.77    8C1E22E4
+     ( 40/ 94)    3D -> Bodyforces                                     14.18    10041BB7
+     ( 41/ 94)    3D -> Bodyforces -> cfl_adap_dt=T                    14.12    B54BB9D8
+     ( 42/ 94)    3D -> synthetic_turbulence                           14.34    CB853530
+     ( 43/ 94)    3D -> mixlayer_perturb                               16.35    D13FDB23
+     ( 44/ 94)    3D -> BC Patches -> Circle -> X                      14.44    A9407C43
+     ( 45/ 94)    3D -> BC Patches -> Circle -> Y                      13.93    7F0B9738
+     ( 46/ 94)    3D -> BC Patches -> Circle -> Z                      13.75    2D6A2824
+     ( 47/ 94)    1D -> MHD -> HLL                                     13.07    85ACDBF3
+     ( 48/ 94)    1D -> MHD -> HLLD                                    12.91    8F78E60C
+     ( 49/ 94)    1D -> RMHD                                           13.66    E0015186
+     ( 50/ 94)    2D -> MHD -> HLL                                     13.63    2B114339
+     ( 51/ 94)    2D -> MHD -> HLLD                                    14.19    2ADA983F
+     ( 52/ 94)    2D -> MHD -> hyper_cleaning                          13.71    B4DC99F9
+     ( 53/ 94)    2D -> RMHD                                           14.49    33FA33BE
+     ( 54/ 94)    3D -> MHD                                            15.39    21983A82
+     ( 55/ 94)    3D -> RMHD                                           15.27    E0F1AA54
+     ( 56/ 94)    2D -> Hypoelasticity -> HLLD -> alt_soundspeed=F     13.16    879C490D
+     ( 57/ 94)    2D -> Hypoelasticity -> HLLD -> alt_soundspeed=T     12.89    6103FA4F
+     ( 58/ 94)    2D -> Hypoelasticity -> HLLD -> ADC -> alt_soun...   13.14    4FBA4023
+     ( 59/ 94)    2D -> Hypoelasticity -> HLLD -> ADC -> alt_soun...   12.77    891C8626
+     ( 60/ 94)    2D -> Hypoelasticity -> HLLC -> alt_soundspeed=F     13.09    34F3999B
+     ( 61/ 94)    2D -> Hypoelasticity -> HLLC -> alt_soundspeed=T     12.82    29C5D458
+     ( 62/ 94)    2D -> Hypoelasticity -> HLLC -> ADC -> alt_soun...   13.14    E04B6502
+     ( 63/ 94)    2D -> Hypoelasticity -> HLLC -> ADC -> alt_soun...   13.30    D222AFB8
+     ( 64/ 94)    2D -> Hypoelasticity -> HLL -> Interface RHS ->...   13.05    4E2849D9
+     ( 65/ 94)    2D -> Hypoelasticity -> HLL -> Interface RHS ->...   13.03    34336A1F
+     ( 66/ 94)    2D -> Hypoelasticity -> HLL -> u-interface -> I...   13.14    03EB2617
+     ( 67/ 94)    2D -> Hypoelasticity -> HLL -> u-interface -> I...   13.10    345BC486
+     ( 68/ 94)    2D -> Axisymmetric -> Hypoelasticity -> HLLD ->...   13.16    6AF90F3C
+     ( 69/ 94)    2D -> Axisymmetric -> Hypoelasticity -> HLLD ->...   13.19    421A6AD9
+     ( 70/ 94)    2D -> Axisymmetric -> Hypoelasticity -> HLLD ->...   13.20    F31EAABF
+     ( 71/ 94)    2D -> Axisymmetric -> Hypoelasticity -> HLLD ->...   13.11    17E2C6D1
+     ( 72/ 94)    2D -> Axisymmetric -> Hypoelasticity -> HLLC ->...   12.92    2097140E
+     ( 73/ 94)    2D -> Axisymmetric -> Hypoelasticity -> HLLC ->...   13.22    43CADBB8
+     ( 74/ 94)    2D -> Axisymmetric -> Hypoelasticity -> HLLC ->...   13.46    6BB67897
+     ( 75/ 94)    2D -> Axisymmetric -> Hypoelasticity -> HLLC ->...   13.25    5D536A45
+     ( 76/ 94)    2D -> Axisymmetric -> Hypoelasticity -> HLL -> ...   13.30    DA44D68D
+     ( 77/ 94)    2D -> Axisymmetric -> Hypoelasticity -> HLL -> ...   13.37    B76C4F04
+     ( 78/ 94)    2D -> Axisymmetric -> Hypoelasticity -> HLL -> ...   13.04    4E7B3DE0
+     ( 79/ 94)    3D -> Hypoelasticity -> HLLD -> alt_soundspeed=F     15.57    481CA4B4
+     ( 80/ 94)    3D -> Hypoelasticity -> HLLD -> alt_soundspeed=T     16.29    6736AFD0
+     ( 81/ 94)    3D -> Hypoelasticity -> HLLD -> ADC -> alt_soun...   16.15    D41FFB94
+     ( 82/ 94)    3D -> Hypoelasticity -> HLLD -> ADC -> alt_soun...   15.87    CF11AA56
+     ( 83/ 94)    3D -> Hypoelasticity -> HLLC -> alt_soundspeed=F     16.06    5D405BF9
+     ( 84/ 94)    3D -> Hypoelasticity -> HLLC -> alt_soundspeed=T     15.67    026AA23F
+     ( 85/ 94)    3D -> Hypoelasticity -> HLLC -> ADC -> alt_soun...   16.23    36DF737F
+     ( 86/ 94)    3D -> Hypoelasticity -> HLLC -> ADC -> alt_soun...   16.16    F5705D1B
+     ( 87/ 94)    3D -> Hypoelasticity -> HLL -> Interface RHS ->...   15.68    9AEC024A
+     ( 88/ 94)    3D -> Hypoelasticity -> HLL -> Interface RHS ->...   16.07    0648E422
+     ( 89/ 94)    3D -> Hypoelasticity -> HLL -> u-interface -> I...   16.40    19981E38
+     ( 90/ 94)    3D -> Hypoelasticity -> HLL -> u-interface -> I...   16.21    AB56B056

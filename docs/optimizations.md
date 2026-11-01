@@ -260,6 +260,10 @@ in these jobs) skips opening the node's InfiniBand adapters at start-up. At 4 GP
 10.7 / 13.5 s against 22.6 / 17.0 s, grind 0.0551-0.0556 against 0.0552-0.0554, bitwise. At 1 GPU `UCX_TLS=self`
 suffices: ~5.5 s against ~6.0 s (669410). Wall times on nano4 vary run to run, so these need more reps before a final
 claim. Multi-node runs must keep the default.
+With P16 and 10 reps per arm on one node (669785, hgpn033, bitwise): wall median 5.556 s (5.37–5.81) by default,
+**4.828 s (4.70–5.13) with `UCX_TLS=self` (−13 %)**. Turning off the hcoll and ucc collective components
+(`OMPI_MCA_coll=^hcoll,ucc`) changes nothing, alone (5.588 s) or with `UCX_TLS=self` (4.907 s). In 669435 the
+`UCX_POSIX_USE_PROC_LINK=n` setting reached both arms (job-wide export), so that comparison isolates `UCX_TLS` only.
 
 **P16: NaN check of the saved state on the device** (`patches/opt/0019`, wall time only). `s_save_data` scanned every
 saved value on the host with `ieee_is_nan`, single-threaded: 64 ms per variable at 201³ (trace 669407), half the
