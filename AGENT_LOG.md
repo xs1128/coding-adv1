@@ -119,3 +119,12 @@
   `runs/results/...`, printed FAIL, and wrote FAIL verify.json files under `results/results/` (8-GPU A/B 670540, and
   three t0 labels from an earlier session). Those were stray files, not results: deleted on both sides. Re-verified
   by label: both 670540 arms PASS bitwise. Rule: verify.py takes the label (`p18/ab_8g_rdma/b1`), never a path.
+- The P18 full suite (670591–670598) was first read as "no new failures" while 59 tests had not run: shard 6's
+  `--from A96DA754 --to 82A64F89` covered 14 tests at run time (94 in the P15 suite with the same range), shard 7
+  76 of 94. The checker printed pass/fail per shard but not whether each shard ran its whole list. Caught by
+  comparing the UUID sets run by P15 and P18 (713 vs 654). Made up by one shard with the 59 UUIDs (`--only`, 671033).
+  Fix: run_suite.sh now passes each shard its UUIDs with `--only`; rule: a suite is complete only when the union of
+  UUIDs run equals `./mfc.sh test -l`.
+- Inner MFC commits on nano4 are blocked on login node lgn01: the pre-commit hook's lint runs a `tar --zstd` round
+  trip and lgn01 has no zstd. Not bypassed (`--no-verify`); building zstd in user space was denied by the permission
+  layer. The experiment diffs are versioned here (`patches/exp/`) until a commit can run the hook.

@@ -1,0 +1,64 @@
+mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn021 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 2
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | 
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+oxidizer: T=1200.0 K rho=0.3855 c=630.7 m/s
+ Build | syscheck and pre_process
+
+
+ Build | syscheck and simulation
+
+
+ Build | syscheck and pre_process | Chemistry: h2o2.yaml
+
+
+ Build | syscheck and simulation | Chemistry: h2o2.yaml
+
+
+
+ Test pre_process and simulation | from A96DA754 to 82A64F89 (14 tests)
+  
+     Progress      Test Name                                        Time(s)   UUID
+  
+     (  1/ 14)    2D -> Hypoelasticity -> HLLD -> Shear guard -> ...   15.65    A96DA754
+     (  2/ 14)    2D -> Axisymmetric -> Hypoelasticity -> HLLD ->...   15.65    11DD3A5C
+     (  3/ 14)    2D -> Axisymmetric -> Hypoelasticity -> HLLD ->...   15.25    DC6D7467
+     (  4/ 14)    2D -> Hypoelasticity -> HLLD -> CBC uniform pre...   16.52    2274CB4E
+     (  5/ 14)    2D -> Axisymmetric -> Hypoelasticity -> HLLD ->...   16.67    7F964063
+     (  6/ 14)    2D -> Hypoelasticity -> HLLD -> WENO5 RK3            18.03    D58700BB
+     (  7/ 14)    1D -> Example -> brio_wu_hlld                        16.50    E7732AC5
+     (  8/ 14)    3D -> Example -> shockdroplet_muscl                  17.49    23573861
+     (  9/ 14)    1D -> Example -> acoustic_dipole                     14.40    0083C150
+     ( 10/ 14)    2D -> Example -> axisym_hypoelasticity               15.46    9C9B2CBC
+     ( 11/ 14)    1D -> Example -> brio_wu                             15.54    70832086
+     ( 12/ 14)    2D -> Example -> ibm_flameholder                     16.15    F200F862
+     ( 13/ 14)    2D -> Example -> mhd_magnetic_vortex                 15.78    A48CA601
+     ( 14/ 14)    2D -> Example -> shocktube_phasechange               15.23    82A64F89
+
+  
+
+╭──────────────────────────────── Test Summary ────────────────────────────────╮
+│                                                                              │
+│  ✓ ALL TESTS PASSED                                                          │
+│                                                                              │
+│      14 passed                                                               │
+│       0 failed                                                               │
+│     746 skipped                                                              │
+│    ────────────                                                              │
+│     760 total                                                                │
+│                                                                              │
+│    Time: 1m 53.8s                                                            │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+
+mfc: (venv) Exiting the Python virtual environment.
