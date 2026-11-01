@@ -1,0 +1,243 @@
+diff --git a/src/simulation/include/weno5_macros.fpp b/src/simulation/include/weno5_macros.fpp
+index 701f7cd..725dc39 100644
+--- a/src/simulation/include/weno5_macros.fpp
++++ b/src/simulation/include/weno5_macros.fpp
+@@ -5,50 +5,72 @@
+ !!
+ !! Names are passed in so each caller keeps its own private variables. XYZ is the sweep suffix (x/y/z) of the coefficient
+ !! tables, CELL the cell index along the sweep, DIR the sweep direction, DVD(-2:1) the undivided differences of the cell's
+-!! stencil, V0 its cell value. Needs m_weno's tables and uniform_grid in scope.
++!! stencil, V0 its cell value. Needs m_weno's tables and uniform_grid in scope. PACK (optional) names m_weno's per-cell packed copy
++!! of the tables (wcoef_x/y/z, see s_pack_weno5_coefficients) to read instead: same values, one contiguous run per cell.
+ 
+ !> Smoothness indicators BETA(0:2) of cell CELL
+-#:def WENO5_BETA(XYZ, CELL, DIR, DVD, BETA)
++#:def WENO5_BETA(XYZ, CELL, DIR, DVD, BETA, PACK=None)
+     if (uniform_grid(${DIR}$)) then
+         ${BETA}$ (0) = 13._wp/12._wp*(${DVD}$ (1) - ${DVD}$ (0))**2 + 0.25_wp*(${DVD}$ (1) - 3._wp*${DVD}$ (0))**2 + weno_eps
+         ${BETA}$ (1) = 13._wp/12._wp*(${DVD}$ (0) - ${DVD}$ (-1))**2 + 0.25_wp*(${DVD}$ (0) + ${DVD}$ (-1))**2 + weno_eps
+         ${BETA}$ (2) = 13._wp/12._wp*(${DVD}$ (-1) - ${DVD}$ (-2))**2 + 0.25_wp*(3._wp*${DVD}$ (-1) - ${DVD}$ (-2))**2 + weno_eps
+     else
+-        ${BETA}$ (0) = beta_coef_${XYZ}$ (${CELL}$, 0, 0)*${DVD}$ (1)*${DVD}$ (1) + beta_coef_${XYZ}$ (${CELL}$, 0, &
+-                  & 1)*${DVD}$ (1)*${DVD}$ (0) + beta_coef_${XYZ}$ (${CELL}$, 0, 2)*${DVD}$ (0)*${DVD}$ (0) + weno_eps
+-        ${BETA}$ (1) = beta_coef_${XYZ}$ (${CELL}$, 1, 0)*${DVD}$ (0)*${DVD}$ (0) + beta_coef_${XYZ}$ (${CELL}$, 1, &
+-                  & 1)*${DVD}$ (0)*${DVD}$ (-1) + beta_coef_${XYZ}$ (${CELL}$, 1, 2)*${DVD}$ (-1)*${DVD}$ (-1) + weno_eps
+-        ${BETA}$ (2) = beta_coef_${XYZ}$ (${CELL}$, 2, 0)*${DVD}$ (-1)*${DVD}$ (-1) + beta_coef_${XYZ}$ (${CELL}$, 2, &
+-                  & 1)*${DVD}$ (-1)*${DVD}$ (-2) + beta_coef_${XYZ}$ (${CELL}$, 2, 2)*${DVD}$ (-2)*${DVD}$ (-2) + weno_eps
++        #:if PACK
++            ${BETA}$ (0) = ${PACK}$ (0, ${CELL}$)*${DVD}$ (1)*${DVD}$ (1) + ${PACK}$ (1, &
++                      & ${CELL}$)*${DVD}$ (1)*${DVD}$ (0) + ${PACK}$ (2, ${CELL}$)*${DVD}$ (0)*${DVD}$ (0) + weno_eps
++            ${BETA}$ (1) = ${PACK}$ (3, ${CELL}$)*${DVD}$ (0)*${DVD}$ (0) + ${PACK}$ (4, &
++                      & ${CELL}$)*${DVD}$ (0)*${DVD}$ (-1) + ${PACK}$ (5, ${CELL}$)*${DVD}$ (-1)*${DVD}$ (-1) + weno_eps
++            ${BETA}$ (2) = ${PACK}$ (6, ${CELL}$)*${DVD}$ (-1)*${DVD}$ (-1) + ${PACK}$ (7, &
++                      & ${CELL}$)*${DVD}$ (-1)*${DVD}$ (-2) + ${PACK}$ (8, ${CELL}$)*${DVD}$ (-2)*${DVD}$ (-2) + weno_eps
++        #:else
++            ${BETA}$ (0) = beta_coef_${XYZ}$ (${CELL}$, 0, 0)*${DVD}$ (1)*${DVD}$ (1) + beta_coef_${XYZ}$ (${CELL}$, 0, &
++                      & 1)*${DVD}$ (1)*${DVD}$ (0) + beta_coef_${XYZ}$ (${CELL}$, 0, 2)*${DVD}$ (0)*${DVD}$ (0) + weno_eps
++            ${BETA}$ (1) = beta_coef_${XYZ}$ (${CELL}$, 1, 0)*${DVD}$ (0)*${DVD}$ (0) + beta_coef_${XYZ}$ (${CELL}$, 1, &
++                      & 1)*${DVD}$ (0)*${DVD}$ (-1) + beta_coef_${XYZ}$ (${CELL}$, 1, 2)*${DVD}$ (-1)*${DVD}$ (-1) + weno_eps
++            ${BETA}$ (2) = beta_coef_${XYZ}$ (${CELL}$, 2, 0)*${DVD}$ (-1)*${DVD}$ (-1) + beta_coef_${XYZ}$ (${CELL}$, 2, &
++                      & 1)*${DVD}$ (-1)*${DVD}$ (-2) + beta_coef_${XYZ}$ (${CELL}$, 2, 2)*${DVD}$ (-2)*${DVD}$ (-2) + weno_eps
++        #:endif
+     end if
+ #:enddef
+ 
+ !> OUT = the WENO5 value of cell CELL at its boundary CB ('cbL' or 'cbR'), from DVD, V0 and BETA. FIRST=False is the cell's second
+ !! boundary: WENO-Z's tau and TENO's cut-off delta depend on BETA only, so they are reused from the first.
+-#:def WENO5_SIDE(CB, XYZ, CELL, V0, DVD, BETA, POLY, ALPHA, OMEGA, TAU, DELTA, OUT, FIRST=True)
+-    ${POLY}$ (0) = ${V0}$ + poly_coef_${CB}$_${XYZ}$ (${CELL}$, 0, 0)*${DVD}$ (1) + poly_coef_${CB}$_${XYZ}$ (${CELL}$, 0, &
+-              & 1)*${DVD}$ (0)
+-    ${POLY}$ (1) = ${V0}$ + poly_coef_${CB}$_${XYZ}$ (${CELL}$, 1, 0)*${DVD}$ (0) + poly_coef_${CB}$_${XYZ}$ (${CELL}$, 1, &
+-              & 1)*${DVD}$ (-1)
+-    ${POLY}$ (2) = ${V0}$ + poly_coef_${CB}$_${XYZ}$ (${CELL}$, 2, 0)*${DVD}$ (-1) + poly_coef_${CB}$_${XYZ}$ (${CELL}$, 2, &
+-              & 1)*${DVD}$ (-2)
++#:def WENO5_SIDE(CB, XYZ, CELL, V0, DVD, BETA, POLY, ALPHA, OMEGA, TAU, DELTA, OUT, FIRST=True, PACK=None)
++    #:if PACK
++        #:set PO = 9 if CB == 'cbL' else 15
++        #:set DOFF = 21 if CB == 'cbL' else 24
++        #:set DCO = PACK + '(' + str(DOFF) + ' + q, ' + CELL + ')'
++    #:else
++        #:set DCO = 'd_' + CB + '_' + XYZ + '(q, ' + CELL + ')'
++    #:endif
++    #:if PACK
++        ${POLY}$ (0) = ${V0}$ + ${PACK}$ (${PO}$, ${CELL}$)*${DVD}$ (1) + ${PACK}$ (${PO + 1}$, ${CELL}$)*${DVD}$ (0)
++        ${POLY}$ (1) = ${V0}$ + ${PACK}$ (${PO + 2}$, ${CELL}$)*${DVD}$ (0) + ${PACK}$ (${PO + 3}$, ${CELL}$)*${DVD}$ (-1)
++        ${POLY}$ (2) = ${V0}$ + ${PACK}$ (${PO + 4}$, ${CELL}$)*${DVD}$ (-1) + ${PACK}$ (${PO + 5}$, ${CELL}$)*${DVD}$ (-2)
++    #:else
++        ${POLY}$ (0) = ${V0}$ + poly_coef_${CB}$_${XYZ}$ (${CELL}$, 0, 0)*${DVD}$ (1) + poly_coef_${CB}$_${XYZ}$ (${CELL}$, 0, &
++                  & 1)*${DVD}$ (0)
++        ${POLY}$ (1) = ${V0}$ + poly_coef_${CB}$_${XYZ}$ (${CELL}$, 1, 0)*${DVD}$ (0) + poly_coef_${CB}$_${XYZ}$ (${CELL}$, 1, &
++                  & 1)*${DVD}$ (-1)
++        ${POLY}$ (2) = ${V0}$ + poly_coef_${CB}$_${XYZ}$ (${CELL}$, 2, 0)*${DVD}$ (-1) + poly_coef_${CB}$_${XYZ}$ (${CELL}$, 2, &
++                  & 1)*${DVD}$ (-2)
++    #:endif
+ 
+     if (wenojs) then
+         $:GPU_LOOP(parallelism='[seq]')
+         do q = 0, weno_num_stencils
+-            ${ALPHA}$ (q) = d_${CB}$_${XYZ}$ (q, ${CELL}$)/(${BETA}$ (q)**2._wp)
++            ${ALPHA}$ (q) = ${DCO}$/(${BETA}$ (q)**2._wp)
+         end do
+     else if (mapped_weno) then
+         $:GPU_LOOP(parallelism='[seq]')
+         do q = 0, weno_num_stencils
+-            ${ALPHA}$ (q) = d_${CB}$_${XYZ}$ (q, ${CELL}$)/(${BETA}$ (q)**2._wp)
++            ${ALPHA}$ (q) = ${DCO}$/(${BETA}$ (q)**2._wp)
+         end do
+         ${OMEGA}$ = ${ALPHA}$/sum(${ALPHA}$)
+         $:GPU_LOOP(parallelism='[seq]')
+         do q = 0, weno_num_stencils
+-            ${ALPHA}$ (q) = (d_${CB}$_${XYZ}$ (q, ${CELL}$)*(1._wp + d_${CB}$_${XYZ}$ (q, &
+-                       & ${CELL}$) - 3._wp*${OMEGA}$ (q)) + ${OMEGA}$ (q)**2._wp)*(${OMEGA}$ (q)/(d_${CB}$_${XYZ}$ (q, &
+-                       & ${CELL}$)**2._wp + ${OMEGA}$ (q)*(1._wp - 2._wp*d_${CB}$_${XYZ}$ (q, ${CELL}$))))
++            ${ALPHA}$ (q) = (${DCO}$*(1._wp + ${DCO}$ - 3._wp*${OMEGA}$ (q)) + ${OMEGA}$ (q)**2._wp)*(${OMEGA}$ (q) &
++                       & /(${DCO}$**2._wp + ${OMEGA}$ (q)*(1._wp - 2._wp*${DCO}$)))
+         end do
+     else if (wenoz) then
+         ! Borges, et al. (2008)
+@@ -58,7 +80,7 @@
+         $:GPU_LOOP(parallelism='[seq]')
+         do q = 0, weno_num_stencils
+             ! Equation 28 (note: weno_eps was already added to beta)
+-            ${ALPHA}$ (q) = d_${CB}$_${XYZ}$ (q, ${CELL}$)*(1._wp + (${TAU}$/${BETA}$ (q)))
++            ${ALPHA}$ (q) = ${DCO}$*(1._wp + (${TAU}$/${BETA}$ (q)))
+         end do
+     else if (teno) then
+         #:if FIRST
+@@ -82,7 +104,7 @@
+         #:endif
+         $:GPU_LOOP(parallelism='[seq]')
+         do q = 0, weno_num_stencils
+-            ${ALPHA}$ (q) = ${DELTA}$ (q)*d_${CB}$_${XYZ}$ (q, ${CELL}$)  ! Equation 27
++            ${ALPHA}$ (q) = ${DELTA}$ (q)*${DCO}$  ! Equation 27
+         end do
+     end if
+ 
+diff --git a/src/simulation/m_riemann_solver_hllc.fpp b/src/simulation/m_riemann_solver_hllc.fpp
+index 02f5f04..4f934b7 100644
+--- a/src/simulation/m_riemann_solver_hllc.fpp
++++ b/src/simulation/m_riemann_solver_hllc.fpp
+@@ -23,7 +23,8 @@ module m_riemann_solver_hllc
+         & molecular_weights
+     use m_riemann_state
+     use m_weno, only: poly_coef_cbL_x, poly_coef_cbL_y, poly_coef_cbL_z, poly_coef_cbR_x, poly_coef_cbR_y, poly_coef_cbR_z, &
+-        & d_cbL_x, d_cbL_y, d_cbL_z, d_cbR_x, d_cbR_y, d_cbR_z, beta_coef_x, beta_coef_y, beta_coef_z, uniform_grid
++        & d_cbL_x, d_cbL_y, d_cbL_z, d_cbR_x, d_cbR_y, d_cbR_z, beta_coef_x, beta_coef_y, beta_coef_z, uniform_grid, wcoef_x, &
++        & wcoef_y, wcoef_z
+ 
+     implicit none
+ 
+@@ -981,9 +982,10 @@ contains
+                                                     w_dvd(0) = w_v(${o + 1}$) - w_v(${o}$)
+                                                     w_dvd(-1) = w_v(${o}$) - w_v(${o - 1}$)
+                                                     w_dvd(-2) = w_v(${o - 1}$) - w_v(${o - 2}$)
+-                                                    $:WENO5_BETA(XYZ, C, NORM_DIR, 'w_dvd', 'w_beta')
++                                                    $:WENO5_BETA(XYZ, C, NORM_DIR, 'w_dvd', 'w_beta', PACK='wcoef_' + XYZ)
+                                                     $:WENO5_SIDE(CB, XYZ, C, 'w_v(%d)' % o, 'w_dvd', 'w_beta', 'w_poly', &
+-                                                                 & 'w_alpha', 'w_omega', 'w_tau', 'w_delta', OUT + '(i)')
++                                                                 & 'w_alpha', 'w_omega', 'w_tau', 'w_delta', OUT + '(i)', &
++                                                                 & PACK='wcoef_' + XYZ)
+                                                 #:endfor
+                                             end do
+                                         #:endif
+diff --git a/src/simulation/m_weno.fpp b/src/simulation/m_weno.fpp
+index 2fac3ba..93276a6 100644
+--- a/src/simulation/m_weno.fpp
++++ b/src/simulation/m_weno.fpp
+@@ -17,7 +17,7 @@ module m_weno
+     ! The WENO5 coefficients and grid flag, for the Riemann solver that reconstructs in-kernel (recon_riemann_fused)
+     private; public :: s_initialize_weno_module, s_finalize_weno_module, s_weno, s_pack_weno_input_arr, poly_coef_cbL_x, &
+         & poly_coef_cbL_y, poly_coef_cbL_z, poly_coef_cbR_x, poly_coef_cbR_y, poly_coef_cbR_z, d_cbL_x, d_cbL_y, d_cbL_z, &
+-        & d_cbR_x, d_cbR_y, d_cbR_z, beta_coef_x, beta_coef_y, beta_coef_z, uniform_grid
++        & d_cbR_x, d_cbR_y, d_cbR_z, beta_coef_x, beta_coef_y, beta_coef_z, uniform_grid, wcoef_x, wcoef_y, wcoef_z
+ 
+     !> @name The cell-average variables that will be WENO-reconstructed unpacked into an array for performance
+     !> @{
+@@ -65,6 +65,12 @@ module m_weno
+     !> @}
+     $:GPU_DECLARE(create='[beta_coef_x, beta_coef_y, beta_coef_z]')
+ 
++    !> WENO5 only: the coefficients above, packed per cell (see s_pack_weno5_coefficients) so that a kernel reconstructing every
++    !! variable of a cell reads them as one contiguous run: (0:8) beta (3*q + r), (9:14) poly cbL and (15:20) poly cbR (2*q + r),
++    !! (21:23) d cbL and (24:26) d cbR (q).
++    real(wp), allocatable, dimension(:,:) :: wcoef_x, wcoef_y, wcoef_z
++    $:GPU_DECLARE(create='[wcoef_x, wcoef_y, wcoef_z]')
++
+     ! END: WENO Coefficients
+ 
+     integer :: v_size  !< Number of WENO-reconstructed cell-average variables
+@@ -890,12 +896,44 @@ contains
+             $:GPU_UPDATE(device='[poly_coef_cbL_z, poly_coef_cbR_z, d_cbL_z, d_cbR_z, beta_coef_z, uniform_grid]')
+         end if
+ 
++        if (weno_order == 5) call s_pack_weno5_coefficients(weno_dir)
++
+         ! Nullifying WENO coefficients and cell-boundary locations pointers
+ 
+         nullify (s_cb)
+ 
+     end subroutine s_compute_weno_coefficients
+ 
++    !> Copies direction weno_dir's WENO5 coefficients into wcoef_x/y/z (layout at their declaration). Exact copies.
++    impure subroutine s_pack_weno5_coefficients(weno_dir)
++
++        integer, intent(in) :: weno_dir
++        integer             :: j, q, r
++
++        #:for XYZ, D in [('x', 1), ('y', 2), ('z', 3)]
++            if (weno_dir == ${D}$) then
++                if (.not. allocated(wcoef_${XYZ}$)) then
++                    @:ALLOCATE(wcoef_${XYZ}$(0:26, lbound(beta_coef_${XYZ}$, 1):ubound(beta_coef_${XYZ}$, 1)))
++                end if
++                do j = lbound(beta_coef_${XYZ}$, 1), ubound(beta_coef_${XYZ}$, 1)
++                    do q = 0, 2
++                        do r = 0, 2
++                            wcoef_${XYZ}$(3*q + r, j) = beta_coef_${XYZ}$(j, q, r)
++                        end do
++                        do r = 0, 1
++                            wcoef_${XYZ}$(9 + 2*q + r, j) = poly_coef_cbL_${XYZ}$(j, q, r)
++                            wcoef_${XYZ}$(15 + 2*q + r, j) = poly_coef_cbR_${XYZ}$(j, q, r)
++                        end do
++                        wcoef_${XYZ}$(21 + q, j) = d_cbL_${XYZ}$(q, j)
++                        wcoef_${XYZ}$(24 + q, j) = d_cbR_${XYZ}$(q, j)
++                    end do
++                end do
++                $:GPU_UPDATE(device='[wcoef_${XYZ}$]')
++            end if
++        #:endfor
++
++    end subroutine s_pack_weno5_coefficients
++
+     !> Copy the cells the reconstruction reads into v_rs_weno: its range (is*_weno), widened by the stencil along weno_dir
+     subroutine s_pack_weno_input_arr(v_vf, weno_dir)
+ 
+@@ -1529,6 +1567,9 @@ contains
+         @:DEALLOCATE(poly_coef_cbL_x, poly_coef_cbR_x)
+         @:DEALLOCATE(d_cbL_x, d_cbR_x)
+         @:DEALLOCATE(beta_coef_x)
++        if (allocated(wcoef_x)) then
++            @:DEALLOCATE(wcoef_x)
++        end if
+ 
+         ! Deallocating WENO coefficients in y-direction
+         if (n == 0) return
+@@ -1536,6 +1577,9 @@ contains
+         @:DEALLOCATE(poly_coef_cbL_y, poly_coef_cbR_y)
+         @:DEALLOCATE(d_cbL_y, d_cbR_y)
+         @:DEALLOCATE(beta_coef_y)
++        if (allocated(wcoef_y)) then
++            @:DEALLOCATE(wcoef_y)
++        end if
+ 
+         ! Deallocating WENO coefficients in z-direction
+         if (p == 0) return
+@@ -1543,6 +1587,9 @@ contains
+         @:DEALLOCATE(poly_coef_cbL_z, poly_coef_cbR_z)
+         @:DEALLOCATE(d_cbL_z, d_cbR_z)
+         @:DEALLOCATE(beta_coef_z)
++        if (allocated(wcoef_z)) then
++            @:DEALLOCATE(wcoef_z)
++        end if
+ 
+     end subroutine s_finalize_weno_module
+ 
