@@ -1,0 +1,108 @@
+From 6f66a31690d73cbf6d5992a01aef506b83994da9 Mon Sep 17 00:00:00 2001
+From: u1131128 <hipac1@lsalab.cs.nthu.edu.tw>
+Date: Mon, 2 Nov 2026 01:13:34 +0800
+Subject: [PATCH] RHS: read the flux slabs directly in the fused RK update
+
+With flux_per_dir (implied by rhs_diff_deferred) flux_n(d)%vf(j)%sf points
+into flux_rsx_vf(:, :, :, j + (d - 1)*sys_size) and every adv entry of
+flux_src_n(d) into one face-velocity slab of flux_src_rsx_vf. The fused
+RK update now indexes those two arrays: one descriptor each instead of a
+walk through flux_n(d)%vf(j) for every load (static LDGs 159 -> 92). The
+face-velocity difference is the same for every adv equation, so it is
+formed once per cell. Same memory, same operations in the same order:
+bitwise.
+---
+ src/simulation/m_rhs.fpp | 36 ++++++++++++++++++++++++------------
+ 1 file changed, 24 insertions(+), 12 deletions(-)
+
+diff --git a/src/simulation/m_rhs.fpp b/src/simulation/m_rhs.fpp
+index b6762ce..b1d8c7b 100644
+--- a/src/simulation/m_rhs.fpp
++++ b/src/simulation/m_rhs.fpp
+@@ -1940,16 +1940,24 @@ contains
+         type(scalar_field), dimension(sys_size), intent(inout) :: q1_vf, qs_vf
+         real(wp), intent(in)                                   :: c1, c2, c3, c4
+         logical, intent(in)                                    :: save_stor
+-        integer                                                :: j, jn, k, l, q
+-        real(wp)                                               :: inv_dx, inv_dy, inv_dz, r
++        integer                                                :: j, jn, k, l, q, sy, sz, ux, uy, uz
++        real(wp)                                               :: inv_dx, inv_dy, inv_dz, r, dux, duy, duz
+         ! This equation's and (n*) the next equation's face fluxes, q1 and qs: equation j + 1's loads are issued before
+         ! equation j is computed and stored, so their latency overlaps the arithmetic. Each value equals an in-place read:
+         ! equation j does not write equation j + 1's fields.
+         real(wp) :: fx0, fx1, fy0, fy1, fz0, fz1, v1, vs
+         real(wp) :: nfx0, nfx1, nfy0, nfy1, nfz0, nfz1, nv1, nvs
+ 
++        ! The fluxes are read from the slabs that flux_n and flux_src_n point into (flux_per_dir, which rhs_diff_deferred implies;
++        ! see s_initialize_rhs_module): flux_n(d)%vf(j)%sf is flux_rsx_vf(:, :, :, j + (d - 1)*sys_size), and every adv entry
++        ! of flux_src_n(d) is the one face-velocity slab ux/uy/uz. Same memory, one array descriptor instead of a walk through
++        ! flux_n(d)%vf(j) per load. The face-velocity difference is the same for every adv equation, so it is formed once.
++        sy = sys_size; sz = 2*sys_size
++        ux = eqn_idx%adv%beg; uy = ux + (sys_size - eqn_idx%adv%beg + 1); uz = ux + 2*(sys_size - eqn_idx%adv%beg + 1)
++
+         $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3, private='[j, jn, k, l, q, inv_dx, inv_dy, inv_dz, r, fx0, fx1, &
+-                            & fy0, fy1, fz0, fz1, v1, vs, nfx0, nfx1, nfy0, nfy1, nfz0, nfz1, nv1, nvs]')
++                            & fy0, fy1, fz0, fz1, v1, vs, nfx0, nfx1, nfy0, nfy1, nfz0, nfz1, nv1, nvs, dux, duy, duz]', &
++                            & firstprivate='[sy, sz, ux, uy, uz]')
+         do l = 0, p
+             do k = 0, n
+                 do q = 0, m
+@@ -1958,12 +1966,16 @@ contains
+                     if (n > 0) inv_dy = 1._wp/dy(k)
+                     if (p > 0) inv_dz = 1._wp/dz(l)
+                     nfy0 = 0._wp; nfy1 = 0._wp; nfz0 = 0._wp; nfz1 = 0._wp
+-                    nfx0 = flux_n(1)%vf(1)%sf(q - 1, k, l); nfx1 = flux_n(1)%vf(1)%sf(q, k, l)
++                    duy = 0._wp; duz = 0._wp
++                    nfx0 = flux_rsx_vf(q - 1, k, l, 1); nfx1 = flux_rsx_vf(q, k, l, 1)
++                    dux = flux_src_rsx_vf(q, k, l, ux) - flux_src_rsx_vf(q - 1, k, l, ux)
+                     if (n > 0) then
+-                        nfy0 = flux_n(2)%vf(1)%sf(q, k - 1, l); nfy1 = flux_n(2)%vf(1)%sf(q, k, l)
++                        nfy0 = flux_rsx_vf(q, k - 1, l, 1 + sy); nfy1 = flux_rsx_vf(q, k, l, 1 + sy)
++                        duy = flux_src_rsx_vf(q, k, l, uy) - flux_src_rsx_vf(q, k - 1, l, uy)
+                     end if
+                     if (p > 0) then
+-                        nfz0 = flux_n(3)%vf(1)%sf(q, k, l - 1); nfz1 = flux_n(3)%vf(1)%sf(q, k, l)
++                        nfz0 = flux_rsx_vf(q, k, l - 1, 1 + sz); nfz1 = flux_rsx_vf(q, k, l, 1 + sz)
++                        duz = flux_src_rsx_vf(q, k, l, uz) - flux_src_rsx_vf(q, k, l - 1, uz)
+                     end if
+                     nv1 = q1_vf(1)%sf(q, k, l); nvs = qs_vf(1)%sf(q, k, l)
+                     $:GPU_LOOP(parallelism='[seq]')
+@@ -1971,29 +1983,29 @@ contains
+                         fx0 = nfx0; fx1 = nfx1; fy0 = nfy0; fy1 = nfy1; fz0 = nfz0; fz1 = nfz1; v1 = nv1; vs = nvs
+                         if (j < sys_size) then
+                             jn = j + 1
+-                            nfx0 = flux_n(1)%vf(jn)%sf(q - 1, k, l); nfx1 = flux_n(1)%vf(jn)%sf(q, k, l)
++                            nfx0 = flux_rsx_vf(q - 1, k, l, jn); nfx1 = flux_rsx_vf(q, k, l, jn)
+                             if (n > 0) then
+-                                nfy0 = flux_n(2)%vf(jn)%sf(q, k - 1, l); nfy1 = flux_n(2)%vf(jn)%sf(q, k, l)
++                                nfy0 = flux_rsx_vf(q, k - 1, l, jn + sy); nfy1 = flux_rsx_vf(q, k, l, jn + sy)
+                             end if
+                             if (p > 0) then
+-                                nfz0 = flux_n(3)%vf(jn)%sf(q, k, l - 1); nfz1 = flux_n(3)%vf(jn)%sf(q, k, l)
++                                nfz0 = flux_rsx_vf(q, k, l - 1, jn + sz); nfz1 = flux_rsx_vf(q, k, l, jn + sz)
+                             end if
+                             nv1 = q1_vf(jn)%sf(q, k, l); nvs = qs_vf(jn)%sf(q, k, l)
+                         end if
+                         r = inv_dx*(fx0 - fx1)
+                         if (j >= eqn_idx%adv%beg .and. j <= eqn_idx%adv%end) then
+-                            r = r + inv_dx*v1*(flux_src_n(1)%vf(j)%sf(q, k, l) - flux_src_n(1)%vf(j)%sf(q - 1, k, l))
++                            r = r + inv_dx*v1*dux
+                         end if
+                         if (n > 0) then
+                             r = r + inv_dy*(fy0 - fy1)
+                             if (j >= eqn_idx%adv%beg .and. j <= eqn_idx%adv%end) then
+-                                r = r + inv_dy*v1*(flux_src_n(2)%vf(j)%sf(q, k, l) - flux_src_n(2)%vf(j)%sf(q, k - 1, l))
++                                r = r + inv_dy*v1*duy
+                             end if
+                         end if
+                         if (p > 0) then
+                             r = r + inv_dz*(fz0 - fz1)
+                             if (j >= eqn_idx%adv%beg .and. j <= eqn_idx%adv%end) then
+-                                r = r + inv_dz*v1*(flux_src_n(3)%vf(j)%sf(q, k, l) - flux_src_n(3)%vf(j)%sf(q, k, l - 1))
++                                r = r + inv_dz*v1*duz
+                             end if
+                         end if
+                         if (save_stor) then
+-- 
+2.47.3
+

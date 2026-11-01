@@ -231,7 +231,8 @@ Rung by rung, with every rejected variant, in `docs/ladder.md` (rows 9–28) and
 
 With P17 and P18 (below), one more same-node A/B of v5.7.0 against the canonical tree (v5.7.0 + 0001–0021, 2 rounds ×
 5 reps, hgpn005, job 670158): step **76.75 / 76.74 → 34.39 / 34.30 ms, 2.24×**; grind 0.3963–0.3990 → 0.1768–0.1779 ns
-(2.24×); bitwise. (Chaining the A/Bs gave 2.26×.) The 10-31 final (P4) was 1.27× at 1 GPU (§1). Multi-GPU (`rdma_mpi`, same node, P11 against the canonical tree,
+(2.24×); bitwise. (Chaining the A/Bs gave 2.26×.) P19 then takes another 3.4 % off P18 (670619), about 2.31× chained; a
+direct v5.7.0 → P19 A/B has not been run. The 10-31 final (P4) was 1.27× at 1 GPU (§1). Multi-GPU (`rdma_mpi`, same node, P11 against P18,
 `UCX_TLS=self,sm,cuda_copy,cuda_ipc` in both arms, 3 reps; bitwise in all 4 arms):
 
 | GPUs | P11 step | P18 step | | Grind P11 → P18 (ns) | Job |
@@ -259,10 +260,11 @@ v5.7.0 multi-GPU A/B was not run.
 | P16 | 0019 | NaN check of the saved state on the device (the host scan was 64 ms per variable) | save 1.1–1.25 → 0.6–0.74 s | 669490 |
 | P17 | 0020 | Fused kernel: the next variable's WENO5 stencil is loaded one iteration ahead (12.5 % of its stalls were load latency) | 36.66 → 35.90 ms (−2.1 %) | 670011 |
 | P18 | 0021 | Fused RK update: the next equation's fluxes, `q1`, `qs` loaded before the current one is stored | 35.88 → 34.51 ms (−3.8 %) | 670088 |
+| P19 | 0022 | Fused RK update reads the flux slabs (`flux_rsx_vf`, `flux_src_rsx_vf`) directly: one descriptor instead of a three-level walk per load (static LDGs 159 → 92) | 34.27 → 33.12 ms (−3.4 %) | 670619 |
 
 **Correctness.** Full `./mfc.sh test` on the GPU build of P15 (v5.7.0 + 0001–0018, `--mpi --acc-gpu`, jobs
 669500–669511): 712 passed; the failures are exactly the 23 tests in `harness/known_test_failures.txt`, which fail
-identically on pinned v5.7.0. P16–P18 have their bitwise A/B runs but no suite run yet.
+identically on pinned v5.7.0. P16–P19 have their bitwise A/B runs; the full suite on P18 is running (p18_full), P19 has none yet.
 
 **Wall time (environment, disclosed; not a source change).** At 1 GPU most of the wall is outside the steps. The
 largest piece was MPI_Init, which on HPC-X opens UCX and the node's InfiniBand adapters even for one rank. Same node,
@@ -283,13 +285,15 @@ What remains (trace 669961): INIT 1.35 s (CUDA context, MPI-IO read, Fortran tem
 **Negative results added since 10-31 (all bitwise, all measured):** WENO kernel `collapse(4)` +15.7 %; register cap
 168/255 +7 %, 96 +0.8 %, 80 +6.8 % on the fused kernel; the fused RK update with `collapse(4)` +3.6 %, loads-then-stores
 +7.5 % (local memory), 4 cells per thread through local pointers +15 % (202 registers); MPI-IO through a memory
-datatype (save +70 %) or a staging buffer (within noise); ROMIO hints (no effect). Why the fused RK update stays as it
-is: it needs ~12 values per cell but issues ~66 loads, because each `x(j)%sf(q,k,l)` walks three levels of Fortran
-descriptors, and every fix we tried costs more in registers than it saves (`docs/optimizations.md`).
+datatype (save +70 %) or a staging buffer (within noise); ROMIO hints (no effect). The fused RK update
+needed ~12 values per cell but issued ~66 loads, because each `x(j)%sf(q,k,l)` walks three levels of Fortran
+descriptors; the fixes above cost more in registers than they saved. What worked (P19) was not a new pointer but the
+flux slabs that P13 already allocates as one array: indexing them directly removes the walk for 6 of the 8 loads per
+equation (`docs/optimizations.md`).
 
 **Where the time is now (1 GPU, per RK stage):** fused WENO5+HLLC 8.0 ms (FP64 pipe at 42 %, instruction-bound),
-fused flux difference + RK update ~1.9 ms after P18, cons→prim 0.63 ms, boundaries + CBC ~0.6 ms.
+fused flux difference + RK update ~1.9 ms after P18 and ~1.5 ms after P19 (estimated from the A/B, not profiled), cons→prim 0.63 ms, boundaries + CBC ~0.6 ms.
 
-**Reproduce.** `harness/reproduce.sh` applies `patches/opt/0001…0021`; the canonical nano4 tree is branch `p18`
-(worktree `mfc-p18`).
+**Reproduce.** `harness/reproduce.sh` applies `patches/opt/0001…0022`; the canonical nano4 tree is branch `p19`
+(worktree `mfc-rkb2`, reused from a rejected experiment); `p18` (worktree `mfc-p18`) is the tree under the full suite.
 

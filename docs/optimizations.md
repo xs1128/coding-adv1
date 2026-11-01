@@ -44,6 +44,7 @@ AGENT_LOG #16). Every arm is bitwise identical to v5.7.0.
 | **v5.7.0 → P14, chained same-node ratios** | **2.13×** | (P12: 2.10×) | |
 | **v5.7.0 → P16, direct same-node A/B** (2 rounds × 5 reps, hgpn065) | **77.06 → 36.23 ms: 2.13×**; grind 0.3968–0.3985 → 0.1872–0.1877 ns (2.12×); wall median 7.31 → 5.65 s (1.29×) | — | 669752 |
 | **v5.7.0 → P18, direct same-node A/B** (canonical tree 0001–0021, 2 rounds × 5 reps, hgpn005) | **76.75 / 76.74 → 34.39 / 34.30 ms: 2.24×**; grind 0.3963–0.3990 → 0.1768–0.1779 ns (2.24×) | — | 670158 |
+| **P18 → P19** (flux slabs read directly in the fused RK update; 2 rounds × 3 reps, hgpn021) | **34.27 / 34.28 → 33.14 / 33.10 ms (−3.4 %)**; grind 0.1777 → 0.1714 | — | 670619 |
 | **P11 → P18 at 4 / 8 GPUs** (`rdma_mpi`, same node, `UCX_TLS=self,sm,cuda_copy,cuda_ipc` both arms, 3 reps, hgpn034) | 4g **12.294 → 10.131 ms (−17.6 %)**, grind 0.0632 → 0.0525; 8g **7.344 → 6.115 ms (−16.7 %)**, grind 0.0376 → 0.0315; wall unchanged (start-up dominated); bitwise all 4 arms | — | 670516, 670540 |
 
 8 GPUs (`rdma_mpi`, 667577, hgpn029): P4 → P11 grind 0.0502 → 0.0376 ns (−25.2 %), bitwise; the P11 arm got 2 of 3
@@ -146,6 +147,25 @@ the arithmetic is unchanged. Unlike rk2p (arrays in local memory) and rkb2 (202 
 (76 → 94). Same node (670088, hgpn038, 2 rounds × 3 reps): 35.86 / 35.91 → 34.51 / 34.52 ms (−3.8 %), grind
 0.1858 → 0.1787, bitwise. The A/B binary predates the formatter's realignment of two declarations and a reworded
 comment.
+
+**P19: the fused RK update reads the flux slabs directly** (`patches/opt/0022`). Since P13 the fused path keeps one
+flux slab per direction in a single array: with `flux_per_dir` (which `rhs_diff_deferred` implies),
+`flux_n(d)%vf(j)%sf` points at `flux_rsx_vf(:, :, :, j + (d - 1)*sys_size)`, and every adv entry of `flux_src_n(d)` at
+one face-velocity slab of `flux_src_rsx_vf`. The kernel now indexes those two module arrays: one descriptor each, instead
+of the three-level walk `flux_n(d)` → `%vf(j)` → `%sf` for every load. The face-velocity difference is the same for each
+adv equation, so it is formed once per cell (same subtraction, same expression for each `r`). Static SASS of the
+kernel (`cuobjdump`, perf3d caseopt): LDG 159 → 92, DFMA/DADD/DMUL/MUFU unchanged (27/6/7/6), registers 94 → 108, no
+local memory. Same node (670619, hgpn021, 2 rounds × 3 reps): 34.27 / 34.28 → 33.14 / 33.10 ms (−3.4 %), grind
+0.1776–0.1779 → 0.1713–0.1715, bitwise in all 4 arms. `q1` and `qs` still go through `q_cons_ts(i)%vf(j)%sf` (a
+two-level walk); they are allocated one array per equation, so giving them the same treatment means allocating
+`q_cons_qp` and `q_cons_ts(2)` as slabs.
+
+*Fused HLLC kernel, SASS mix after P18* (670130, `--print-source sass`, one launch): DFMA 23.1 %, DMUL 13.0 %, DADD 4.6 %
+of warp instructions; integer address arithmetic (IMAD, IADD3, LEA) 22.5 %; branch bookkeeping (BRA, BSSY, BSYNC)
+9.6 %, most of it the slow-path guard of each correctly rounded FP64 division; MUFU 2.7 % (about 140 reciprocal seeds
+per face, i.e. the mapped-WENO divisions); LDL 3.0 %, STL 1.1 % (156 local loads per thread at the 128-register cap).
+Top stall reasons per issued instruction: wait 2.72 (fixed-latency FP64 dependencies), long scoreboard 1.34, not
+selected 0.60. The FP64 pipe is 43 % active at 24 % occupancy.
 
 *Fused kernel after P18* (ncu 670130, source page): WENO5 side 44.6 % of samples / 43.8 % of instructions, β 13.1 % /
 11.5 %, the prefetched stencil loads 8.0 % / 10.0 % (mostly address arithmetic); the stall at the first use of the
