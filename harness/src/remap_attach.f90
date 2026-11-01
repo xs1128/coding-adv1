@@ -17,10 +17,13 @@ program remap_attach
     !$acc declare create(buf)
 
     allocate (buf(-1:m, -1:n, -1:p, 1:nv))
-    allocate (fl(1:2)); !$acc enter data create(fl)
-    allocate (fl(1)%vf(1:nv)); !$acc enter data create(fl(1)%vf)
+    allocate (fl(1:2))
+    !$acc enter data create(fl)
+    allocate (fl(1)%vf(1:nv))
+    !$acc enter data create(fl(1)%vf)
     do l = 1, nv      ! the original, halo-sized allocation (as @:ALLOCATE does)
-        allocate (fl(1)%vf(l)%sf(-g:m + g, -g:n + g, -g:p + g)); !$acc enter data create(fl(1)%vf(l)%sf)
+        allocate (fl(1)%vf(l)%sf(-g:m + g, -g:n + g, -g:p + g))
+        !$acc enter data create(fl(1)%vf(l)%sf)
     end do
     do l = 1, nv      ! free it and alias the solver buffer instead
         !$acc exit data delete(fl(1)%vf(l)%sf)
