@@ -96,6 +96,6 @@
 - Also today: two watchers waited on mistyped job ids (no GPU cost). Job ids are now captured from submit output.
 - UCX transport A/B: `ENV_B=UCX_TLS=self,sm,cuda_copy,cuda_ipc` went through `sbatch --export`, which splits at
   commas, so both runs got `UCX_TLS=self` (env.txt). The 1-GPU wall gain (669410, ~6.0 -> ~5.5 s) is therefore
-  `UCX_TLS=self`, valid only for a single rank; commit 9b0... described it as the four-transport list. At 4 ranks
+  `UCX_TLS=self`, valid only for a single rank; commit d671af8 described it as the four-transport list. At 4 ranks
   `self` alone cannot reach peers and MPI_Init failed (669420 b1, ~1 GPU-min). ab.sbatch now maps '+' to ',' in
   ENV_* values.
