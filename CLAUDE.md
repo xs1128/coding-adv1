@@ -7,7 +7,7 @@ AP Research briefs (WRF + MFC): `ap-research/`. Plan: `PLAN.md`. Private notes: 
 ## App
 **MFC** v5.7.0 — https://github.com/MFlowCode/MFC, commit `0b3d56c8e1c9a3aa8d112681b72c87ab69fe5f13`.
 - `reference/MFC` — pinned submodule (read-only, for source reading/research).
-- nano4 `$ROOT/mfc` — working clone where builds happen; optimizations go on branch `p11` (worktree `mfc-p11` = v5.7.0 + 0001–0013; `p11fmt` adds 0014 = formatter only; `mfc-p4` = the 10-31 report state; one clean commit per optimization; experiments on side branches) and are
+- nano4 `$ROOT/mfc` — working clone where builds happen; optimizations go on branch `p12` (worktree `mfc-p12` = v5.7.0 + 0001–0015: `p11` = 0001–0013, `p11fmt` adds 0014 = formatter only, `p12` adds 0015 = fused WENO5+HLLC; `mfc-p4` = the 10-31 report state; one clean commit per optimization; experiments on side branches) and are
   exported as patches into `patches/` here (so the history of every source change lives in this repo).
 
 ## SC26 rules we follow (spirit of scientific computing)

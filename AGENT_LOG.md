@@ -76,3 +76,7 @@
 - 17:14-17:35: 667917 (correct arguments), 667932 and 667944 never wrote a Slurm output file and ran to their 10-min
   limits. About 100 jobs on nano4 were stuck in COMPLETING (18 nodes completing, 24 drained), so this was a
   cluster-side Slurm/epilog or filesystem fault. Cost: 30 GPU-min with no data. GPU submissions held until it cleared.
+- 4-GPU A/B 668370 (P11 vs P12, hgpn040) timed out at 7 min before the P12 arm ran. On that node the P11 arm's rep walls
+  were 94/45/32 s against 12 s for the same shape that morning (664895); grind was unchanged (0.0633). So the cause was
+  node-side multi-rank start-up, not the code. Concurrent 1-GPU reps elsewhere were normal. Cost: 28 GPU-min, P11 arm
+  only (kept as results/p12/ab_4g_rdma_timeout). Rerun as 668436 excluding hgpn040, with a 10-min limit.

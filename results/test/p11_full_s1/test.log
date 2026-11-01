@@ -90,3 +90,48 @@ mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
      ( 66/ 94)    2D -> weno_order=5                                   14.05    9EF5305B
      ( 67/ 94)    2D -> weno_order=5 -> wenoz=T                        13.50    31742FC7
      ( 68/ 94)    2D -> weno_order=5 -> teno=T                         13.56    E719C5F2
+     ( 69/ 94)    2D -> weno_order=5 -> mapped_weno=T                  14.21    D6415F48
+     ( 70/ 94)    2D -> weno_order=7                                   14.16    A72F7006
+     ( 71/ 94)    2D -> weno_order=7 -> teno=T                         14.20    B8BF00C9
+     ( 72/ 94)    2D -> weno_order=7 -> wenoz=T                        14.58    9E9DA539
+     ( 73/ 94)    2D -> muscl_order=2 -> muscl_lim=2                   13.32    F883F4EE
+     ( 74/ 94)    2D -> weno_order=7 -> mapped_weno=T                  14.09    448EA9A4
+     ( 75/ 94)    2D -> muscl_order=2 -> muscl_lim=4                   13.05    84A12B88
+     ( 76/ 94)    2D -> muscl_order=2 -> muscl_lim=3                   13.53    743D6D71
+     ( 77/ 94)    2D -> muscl_order=2 -> muscl_eps=0 -> muscl_lim=1    13.79    D68EDC50
+     ( 78/ 94)    2D -> muscl_order=2 -> muscl_lim=5                   13.94    6B227FF5
+     ( 79/ 94)    2D -> muscl_order=2 -> muscl_eps=0 -> muscl_lim=3    13.27    42848784
+     ( 80/ 94)    2D -> muscl_order=2 -> muscl_eps=0 -> muscl_lim=2    13.63    5EC347F2
+     ( 81/ 94)    2D -> muscl_order=2 -> muscl_eps=0 -> muscl_lim=4    13.51    374C9B16
+     ( 82/ 94)    2D -> muscl_order=2 -> muscl_eps=0 -> muscl_lim=5    13.63    347964C3
+     ( 83/ 94)    2D -> 1 Fluid(s) -> riemann_solver=1 -> mixture...   14.32    7374E266
+     ( 84/ 94)    2D -> 1 Fluid(s) -> riemann_solver=1 -> avg_sta...   13.92    3BFEAC19
+     ( 85/ 94)    2D -> 1 Fluid(s) -> riemann_solver=1 -> wave_sp...   13.23    FBF808BE
+     ( 86/ 94)    2D -> 1 Fluid(s) -> riemann_solver=1 -> avg_sta...   13.48    3154EC76
+     ( 87/ 94)    2D -> 1 Fluid(s) -> riemann_solver=5 -> mixture...   13.47    09DDCC0C
+     ( 88/ 94)    2D -> 1 Fluid(s) -> riemann_solver=2 -> mixture...   13.88    3B414AF0
+     ( 89/ 94)    2D -> 1 Fluid(s) -> riemann_solver=2 -> wave_sp...   14.97    345A94C0
+     ( 90/ 94)    2D -> 1 Fluid(s) -> riemann_solver=2 -> avg_sta...   16.00    3C00B89D
+     ( 91/ 94)    2D -> 1 Fluid(s) -> riemann_solver=2 -> avg_sta...   14.33    036E4F8E
+     ( 92/ 94)    2D -> 1 Fluid(s) -> riemann_solver=2 -> model_e...   14.45    043B535A
+     ( 93/ 94)    2D -> 1 Fluid(s) -> riemann_solver=2 -> low_Mach=1   14.21    126FF74F
+     ( 94/ 94)    2D -> 1 Fluid(s) -> riemann_solver=1 -> low_Mach=1   14.93    1A78D4CC
+
+  
+
+╭──────────────────────────────── Test Summary ────────────────────────────────╮
+│                                                                              │
+│  ✓ ALL TESTS PASSED                                                          │
+│                                                                              │
+│      94 passed                                                               │
+│       0 failed                                                               │
+│     666 skipped                                                              │
+│    ────────────                                                              │
+│     760 total                                                                │
+│                                                                              │
+│    Time: 10m 55.9s                                                           │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+
+mfc: (venv) Exiting the Python virtual environment.
