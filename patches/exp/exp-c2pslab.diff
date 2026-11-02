@@ -1,0 +1,150 @@
+diff --git a/src/common/m_variables_conversion.fpp b/src/common/m_variables_conversion.fpp
+index 34bd332..129bb10 100644
+--- a/src/common/m_variables_conversion.fpp
++++ b/src/common/m_variables_conversion.fpp
+@@ -24,13 +24,14 @@ module m_variables_conversion
+     public :: s_initialize_variables_conversion_module, s_initialize_pb, s_initialize_mv, s_convert_to_mixture_variables, &
+         & s_convert_mixture_to_mixture_variables, s_convert_species_to_mixture_variables, &
+         & s_convert_species_to_mixture_variables_kernel, s_convert_conservative_to_primitive_variables, &
+-        & s_convert_primitive_to_conservative_variables, s_convert_primitive_to_flux_variables, s_compute_pressure, &
+-        & s_compute_species_fraction, s_compute_mixture_coefficients, s_compute_energy, s_compute_speed_of_sound, f_bulk_modulus, &
+-        & f_pressure, s_phase_internal_energy, f_isentrope_exponent, f_isentrope_pressure, f_sg_thermal, &
+-        & s_compute_mixture_coefficients_dt, s_compute_speed_of_sound_avg, s_compute_fast_magnetosonic_speed, f_elastic_energy, &
+-        & f_hypoelastic_energy, f_relativistic_enthalpy, s_eos_coefficients, s_phase_coefficients, s_phase_pressure_on_isentrope, &
+-        & s_phase_temperature, f_is_state_dependent, s_phase_bulk_modulus, s_phase_density_on_isentrope, &
+-        & s_finalize_variables_conversion_module, gammas, isentrope_n, pi_infs, isentrope_B, cvs, qvs, qvps
++        & s_convert_conservative_to_primitive_slab, s_convert_primitive_to_conservative_variables, &
++        & s_convert_primitive_to_flux_variables, s_compute_pressure, s_compute_species_fraction, s_compute_mixture_coefficients, &
++        & s_compute_energy, s_compute_speed_of_sound, f_bulk_modulus, f_pressure, s_phase_internal_energy, f_isentrope_exponent, &
++        & f_isentrope_pressure, f_sg_thermal, s_compute_mixture_coefficients_dt, s_compute_speed_of_sound_avg, &
++        & s_compute_fast_magnetosonic_speed, f_elastic_energy, f_hypoelastic_energy, f_relativistic_enthalpy, s_eos_coefficients, &
++        & s_phase_coefficients, s_phase_pressure_on_isentrope, s_phase_temperature, f_is_state_dependent, s_phase_bulk_modulus, &
++        & s_phase_density_on_isentrope, s_finalize_variables_conversion_module, gammas, isentrope_n, pi_infs, isentrope_B, cvs, &
++        & qvs, qvps
+ 
+     real(wp), allocatable, dimension(:)   :: Gs_vc
+     integer, allocatable, dimension(:)    :: bubrs_vc
+@@ -767,6 +768,83 @@ contains
+ 
+     end subroutine s_convert_conservative_to_primitive_variables
+ 
++    !> s_convert_conservative_to_primitive_variables on the plain five-equation path, when the fields are the layers of one slab
++    !! (m_rhs q_slab: conservative field i in layer i, primitive velocities and pressure in layers sys_size + i, partial densities
++    !! and volume fractions shared). As an explicit-shape array the slab has one address and fixed strides, so no load walks a field
++    !! descriptor. Same operations in the same order as the general routine (with s_compute_species_fraction inlined), so results
++    !! are bitwise identical. m_rhs calls it only for model_eqns == 2 GPU builds without the extra physics below.
++    subroutine s_convert_conservative_to_primitive_slab(q, lb1, ub1, lb2, ub2, lb3, ub3, ibounds)
++
++        integer, intent(in)                                                      :: lb1, ub1, lb2, ub2, lb3, ub3
++        real(wp), dimension(lb1:ub1,lb2:ub2,lb3:ub3,1:2*sys_size), intent(inout) :: q
++        type(int_bounds_info), dimension(1:3), intent(in)                        :: ibounds
++
++        #:if USING_AMD and not MFC_CASE_OPTIMIZATION
++            real(wp), dimension(3) :: alpha_K, alpha_rho_K
++            real(wp)               :: rhoYks(1:10)
++        #:else
++            real(wp), dimension(num_fluids) :: alpha_K, alpha_rho_K
++            real(wp)                        :: rhoYks(1:num_species)
++        #:endif
++        real(wp), dimension(2) :: Re_K
++        real(wp)               :: rho_K, gamma_K, pi_inf_K, qv_K, dyn_pres_K, alpha_K_sum
++        real(wp)               :: pres, T, pres_mag
++        integer                :: i, j, k, l
++
++        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3, private='[alpha_K, alpha_rho_K, Re_K, rho_K, gamma_K, pi_inf_K, &
++                            & qv_K, dyn_pres_K, alpha_K_sum, rhoYks, pres, T, pres_mag, i]')
++        do l = ibounds(3)%beg, ibounds(3)%end
++            do k = ibounds(2)%beg, ibounds(2)%end
++                do j = ibounds(1)%beg, ibounds(1)%end
++                    dyn_pres_K = 0._wp
++
++                    ! s_compute_species_fraction
++                    if (num_fluids == 1) then
++                        alpha_rho_K(1) = q(j, k, l, eqn_idx%cont%beg)
++                        alpha_K(1) = q(j, k, l, eqn_idx%adv%beg)
++                    else
++                        $:GPU_LOOP(parallelism='[seq]')
++                        do i = 1, num_fluids
++                            alpha_rho_K(i) = q(j, k, l, i)
++                            alpha_K(i) = q(j, k, l, eqn_idx%adv%beg + i - 1)
++                        end do
++                    end if
++
++                    if (mpp_lim) then
++                        alpha_K_sum = 0._wp
++                        $:GPU_LOOP(parallelism='[seq]')
++                        do i = 1, num_fluids
++                            alpha_rho_K(i) = max(0._wp, alpha_rho_K(i))
++                            alpha_K(i) = min(max(0._wp, alpha_K(i)), 1._wp)
++                            alpha_K_sum = alpha_K_sum + alpha_K(i)
++                        end do
++                        alpha_K = alpha_K/max(alpha_K_sum, 1.e-16_wp)
++                    end if
++
++                    call s_convert_species_to_mixture_variables_kernel(rho_K, gamma_K, pi_inf_K, qv_K, alpha_K, alpha_rho_K, Re_K)
++
++                    if (enforce_density_floor_vc) rho_K = max(rho_K, sgm_eps)
++
++                    ! Recover velocity from momentum: u = rho*u / rho, and accumulate dynamic pressure 0.5*rho*|u|^2
++                    $:GPU_LOOP(parallelism='[seq]')
++                    do i = eqn_idx%mom%beg, eqn_idx%mom%end
++                        q(j, k, l, sys_size + i) = q(j, k, l, i)/rho_K
++                        dyn_pres_K = dyn_pres_K + 5.e-1_wp*q(j, k, l, i)*q(j, k, l, sys_size + i)
++                    end do
++
++                    pres_mag = 0._wp
++
++                    call s_compute_pressure(q(j, k, l, eqn_idx%E), q(j, k, l, eqn_idx%alf), dyn_pres_K, pi_inf_K, gamma_K, rho_K, &
++                                            & qv_K, rhoYks, pres, T, pres_mag=pres_mag)
++
++                    q(j, k, l, sys_size + eqn_idx%E) = pres
++                end do
++            end do
++        end do
++        $:END_GPU_PARALLEL_LOOP()
++
++    end subroutine s_convert_conservative_to_primitive_slab
++
+     !> Convert primitives (rho, u, p, alpha) to conserved variables (rho*alpha, rho*u, E, alpha).
+     impure subroutine s_convert_primitive_to_conservative_variables(q_prim_vf, q_cons_vf)
+ 
+diff --git a/src/simulation/m_rhs.fpp b/src/simulation/m_rhs.fpp
+index c770378..65c939b 100644
+--- a/src/simulation/m_rhs.fpp
++++ b/src/simulation/m_rhs.fpp
+@@ -57,6 +57,9 @@ module m_rhs
+     integer, allocatable, dimension(:)                :: qp_layer
+     $:GPU_DECLARE(create='[q_slab, q_stor_slab, qp_layer]')
+     logical :: rk_slabs = .false.
++    !> The conversion to primitives reads and writes q_slab directly (s_convert_conservative_to_primitive_slab): GPU builds of the
++    !! plain five-equation model, where the primitive partial densities and volume fractions are the conservative ones
++    logical :: c2p_slab = .false.
+ 
+     !> On the plain path the RK stage state is q_cons_qp itself (m_time_steppers points q_cons_ts(1) at it), so s_compute_rhs skips
+     !! the per-stage copy. The conversion writes the cont/adv entries back unchanged and reads the interior only; the halo fill then
+@@ -247,6 +250,11 @@ contains
+             $:GPU_UPDATE(device='[qp_layer]')
+         end if
+ 
++#ifdef MFC_GPU
++        c2p_slab = .not. igr .and. model_eqns == 2 .and. .not. (relativity .or. chemistry .or. mhd .or. bubbles_euler &
++            & .or. hypoelasticity .or. cont_damage .or. surface_tension .or. hyper_cleaning .or. bubbles_lagrange .or. qbmm)
++#endif
++
+         if (.not. igr) then
+             ! On the plain inviscid path the fluxes are read only by the flux differences and CBC, inside (-1:m, -1:n, -1:p).
+             ! There flux_n and flux_src_n(adv%beg) point straight at the Riemann solver's output buffers, which are (x, y, z)
+@@ -736,7 +744,12 @@ contains
+         end if
+         if (.not. igr) then
+             call nvtxStartRange("RHS-CONVERT")
+-            call s_convert_conservative_to_primitive_variables(q_cons_qp%vf, q_T_sf, q_prim_qp%vf, idwint)
++            if (c2p_slab) then
++                call s_convert_conservative_to_primitive_slab(q_slab, idwbuff(1)%beg, idwbuff(1)%end, idwbuff(2)%beg, &
++                    & idwbuff(2)%end, idwbuff(3)%beg, idwbuff(3)%end, idwint)
++            else
++                call s_convert_conservative_to_primitive_variables(q_cons_qp%vf, q_T_sf, q_prim_qp%vf, idwint)
++            end if
+             call nvtxEndRange
+ 
+             call nvtxStartRange("RHS-COMMUNICATION")

@@ -1,0 +1,16 @@
+{
+ "label": "exp/c2pslab_1g/a1",
+ "ref": "ref/perf3d_201_30",
+ "checks": {
+  "state": {
+   "status": "FAIL",
+   "bitwise": null,
+   "max_rel": null,
+   "l2_rel": null,
+   "nonfinite": null,
+   "step": 30,
+   "reason": "size mismatch 64964808 vs 30452736"
+  }
+ },
+ "status": "FAIL"
+}

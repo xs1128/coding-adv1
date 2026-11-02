@@ -1,0 +1,8 @@
+{
+ "a": "/work/u1131128/coding-adv1/runs/ref/perf3d_201_30/restart_data/lustre_30.dat",
+ "b": "/work/u1131128/coding-adv1/runs/exp/c2pslab_1g/a1/restart_data/lustre_30.dat",
+ "step": 30,
+ "n": 64964808,
+ "status": "FAIL",
+ "reason": "size mismatch 64964808 vs 30452736"
+}
