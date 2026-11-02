@@ -63,7 +63,7 @@ it saves another 1.6 % (jobs 681650 and 683029, bitwise) and passes all 34 CBC t
 boundary-condition tests give 45 passes and the 4 known failures, unchanged from P20 (684975, 685001).
 On 4 GPUs the three of them make each step 5.4 % faster than P20 (8.99 → 8.52 ms, job 685059, bitwise).
 0028 runs the small boundary (CBC) kernels on a second GPU queue next to the main solver kernel: −0.7 % more at 1 GPU
-(685237, bitwise); the 5 tests that use it pass (685267).
+(685237, bitwise), −2.8 % at 4 GPUs (685274); the 5 tests that use it pass (685267).
 
 **Run settings (disclosed, no code change):** at 1 GPU, Open MPI without UCX (`ob1`) and a run directory in node-local
 memory (`/dev/shm`) cut the wall time of a whole run, start-up and save included, to about 3.8 s (job 684750).
