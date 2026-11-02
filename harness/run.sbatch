@@ -16,7 +16,7 @@ run=$ROOT/runs/$LABEL            # bulky outputs (D/, restart_data/, silo) live 
 # node-local memory (/dev/shm) instead of Lustre; after the timed reps the final state is copied to runs/ for verify.
 keep=$run
 if [[ $RUNLOCAL == 1 ]]; then
-  run=/dev/shm/${USER}_${SLURM_JOB_ID}/$LABEL
+  run=/dev/shm/${USER}_${SLURM_JOB_ID}_run/$LABEL   # not the STEPPROF TMPDIR, which is deleted after its rep
   rm -rf "$run"; mkdir -p "$keep"
 fi
 mkdir -p "$out" "$run"
@@ -85,6 +85,6 @@ if [[ $KEEP_OUTPUT != 1 ]]; then   # keep only the final state for verify
   rm -rf "$run"/D "$run"/p_all "$run"/silo_hdf5 "$run"/steps_rank*.csv
 fi
 if [[ $RUNLOCAL == 1 ]]; then   # untimed: bring the run (final state, inputs, logs) back to runs/ and free the RAM
-  rm -rf "$keep"; mkdir -p "$(dirname "$keep")"; cp -r "$run" "$keep"; rm -rf "/dev/shm/${USER}_${SLURM_JOB_ID}"
+  rm -rf "$keep"; mkdir -p "$(dirname "$keep")"; cp -r "$run" "$keep"; rm -rf "/dev/shm/${USER}_${SLURM_JOB_ID}_run"
 fi
 cat "$out/summary.tsv"; cat "$out/steps.tsv" 2>/dev/null || true
