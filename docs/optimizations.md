@@ -262,6 +262,11 @@ measured); multi-node runs must keep the default.
 
 **Where the 1-GPU wall goes (669961).** Start-up 1.35 s, 30 steps 1.11 s, save 0.59 s.
 
+**Run directory in node-local memory (setting, disclosed; 684750).** A CPU-sampling profile (684723) showed start-up
+spent in reading the initial state from Lustre and the save in a pageable copy plus the Lustre write. Running the case
+directory in `/dev/shm` and copying it back afterwards (`RUNLOCAL=1`) cut wall time 4.039 → 3.810 s (−5.7 %, 3 rounds
+× 5 reps, both arms with `ob1`); final state bitwise. A bigger OpenACC copy buffer for the save was slower (684697).
+
 **Save experiments.** ROMIO hints from [research-env-tuning.md](background/research-env-tuning.md) §4: no change
 (669396). Restart I/O makes temporary array copies. Two fixes were rejected: *iomem*
 (wall +3.5 %, 669871) and *iobuf* (rounds disagree, 669917; not worth 70 lines).
