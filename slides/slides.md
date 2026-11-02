@@ -334,7 +334,7 @@ class: dark
 
 <div class="grid grid-cols-4 gap-6 my-10 text-center">
 <div><div class="big">13</div>days</div>
-<div><div class="big">210</div>commits</div>
+<div><div class="big">200+</div>commits</div>
 <div><div class="big">256</div>GPU jobs</div>
 <div><div class="big">24</div>patches</div>
 </div>
@@ -346,7 +346,7 @@ class: dark
 <div class="foot" style="color:#b9c3d6">Repo: [GitHub link] · report.md · docs/optimizations.md · AGENT_LOG.md</div>
 
 <!--
-To sum up: 13 days, 210 commits, 256 GPU jobs, 24 patches. Most of the speed came from moving less data. Every claim
+To sum up: 13 days, over 200 commits, 256 GPU jobs, 24 patches. Most of the speed came from moving less data. Every claim
 is measured on one node and checked bit for bit, and failures are kept. And an AI agent is a fast engineer, but it
 needs rules, a budget and checks it can't talk its way around. Thanks, happy to take questions.
 -->
