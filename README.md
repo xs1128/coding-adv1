@@ -61,6 +61,7 @@ boundary step instead of waiting for it, and 0026 fills the edge ("ghost") cells
 they save another 1.1 %. 0027 stops the boundary code (CBC) from copying data that its own kernels overwrite anyway;
 it saves another 1.6 % (jobs 681650 and 683029, bitwise) and passes all 34 CBC tests (682349). With all three, the 49
 boundary-condition tests give 45 passes and the 4 known failures, unchanged from P20 (684975, 685001).
+On 4 GPUs the three of them make each step 5.4 % faster than P20 (8.99 → 8.52 ms, job 685059, bitwise).
 
 **Run settings (disclosed, no code change):** at 1 GPU, Open MPI without UCX (`ob1`) and a run directory in node-local
 memory (`/dev/shm`) cut the wall time of a whole run, start-up and save included, to about 3.8 s (job 684750).
