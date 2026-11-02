@@ -238,6 +238,12 @@ opens the network cards even for one rank. Not loading UCX at all
 **4.300 s** (669940). With P16, 1-GPU wall goes from 7.31 s (v5.7.0) to about 4.3 s, about 1.7× (different jobs). This
 is for one rank only; multi-GPU runs need a GPU-aware transport, which we did not compare.
 
+**Run directory in node-local memory (setting, disclosed; 2026-11-03).** With `ob1` on, a CPU-sampling profile
+(684723) showed what is left of start-up is reading the 520 MB initial state from Lustre, and the save is a slow
+pageable copy plus the Lustre write. Running the case directory in `/dev/shm` and copying it back afterwards, untimed,
+cut the median wall time from 4.039 to **3.810 s (−5.7 %)** on the exp-cbcdead binary (684750: 3 rounds × 5 reps,
+every round agrees; final state bitwise). A bigger OpenACC copy buffer for the save made it slower (684697).
+
 **What did not work (all bitwise, all measured):** WENO kernel `collapse(4)` +15.7 %; other register caps on the
 merged kernel (+0.8 % to +7 %); RK update variants (+3.6 %, +7.5 %, +15 %); saving through an MPI-IO memory datatype
 (+70 %), a staging buffer or ROMIO hints (no gain); packed WENO coefficients (no gain, 670870); RK update per (cell,
