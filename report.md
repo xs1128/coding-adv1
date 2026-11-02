@@ -195,6 +195,9 @@ run on them yet. The first try of this job (680922) stopped itself in 4 s: its n
 back, so it no longer copies the fluxes in, and copies back only the layers it changed. Job 681650 (hgpn011):
 29.501 / 29.501 → 29.021 / 29.014 ms; job 683029 (hgpn001): 29.265 / 29.252 → 28.807 / 28.802 ms; −1.6 % both times,
 every arm bitwise. All 34 CBC tests pass (682349). Multiplying the two A/Bs gives about 29.0 ms, about 2.68×.
+On 4 GPUs (`rdma_mpi`, same node, job 685059) the three pending patches take P20's step from 8.989 / 9.032 to
+8.529 / 8.504 ms (−5.4 %, bitwise), twice their 1-GPU gain, because boundary work is a bigger share there. The 49
+boundary-condition tests give 45 passes and the 4 known failures, unchanged from P20 (684975, 685001).
 
 **Several GPUs** (`rdma_mpi`, same node, P11 vs P18; bitwise):
 
