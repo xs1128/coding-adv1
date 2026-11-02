@@ -1,0 +1,139 @@
+mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn019 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 1
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | --targets pre_process and simulation
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Acquiring /work/u1131128/coding-adv1/runs/exp/hlltile_1g/b1/case.py...
+ Acquiring /work/u1131128/coding-adv1/runs/exp/hlltile_1g/b1/case.py...
+ Build | syscheck, syscheck, pre_process, and simulation | Case Optimized: /work/u1131128/coding-adv1/runs/exp/hlltile_1g/b1/case.py
+
+
+ Run
+   Using queue system Interactive.
+   Using baked-in template for default.
+   Generating input files for syscheck...
+     Generating syscheck.inp:
+       INFO: Forwarded 0/91 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
+   Generating input files for pre_process...
+     Generating pre_process.inp:
+       INFO: Forwarded 73/91 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
+   Generating input files for simulation...
+     Generating simulation.inp:
+       INFO: Forwarded 36/91 parameters.
+    
+     Generating case.fpp.
+       Case optimization is enabled.
+       Writing a (new) custom case.fpp file.
++-----------------------------------------------------------------------------------------------------------+ 
+| MFC case # MFC @ /work/u1131128/coding-adv1/runs/exp/hlltile_1g/b1/case.py:                               |
++-----------------------------------------------------------------------------------------------------------+ 
+| * Start-time     05:21:52                            * Start-date     05:21:52                            |
+| * Partition      N/A                                 * Walltime       01:00:00                            |
+| * Account        N/A                                 * Nodes          1                                   |
+| * Job Name       MFC                                 * Engine         interactive                         |
+| * QoS            N/A                                 * Binary         mpirun                              |
+| * Queue System   Interactive                         * Email          N/A                                 |
++-----------------------------------------------------------------------------------------------------------+ 
+
+mfc: WARNING > This is the default template.
+mfc: WARNING > It is not intended to support all systems and execution engines.
+mfc: WARNING > Consider using a different template via the --computer option if you encounter problems.
+mfc: OK > :) Selected MPI launcher mpirun. Use --binary to override.
+mfc: OK > :) Running syscheck:
+
++ mpirun -np 1 /work/u1131128/coding-adv1/mfc-hlltile/build/install/gpu-acc-869e78ff84/bin/syscheck
+ [TEST] MPI: call mpi_init(ierr)
+ [TEST] MPI: call mpi_comm_rank(MPI_COMM_WORLD, rank, ierr)
+ [TEST] MPI: call mpi_barrier(MPI_COMM_WORLD, ierr)
+ [TEST] MPI: call assert(rank >= 0)
+ [TEST] MPI: call mpi_comm_size(MPI_COMM_WORLD, nRanks, ierr)
+ [TEST] MPI: call assert(nRanks > 0 .and. rank < nRanks)
+ [TEST] ACC: devtype = acc_get_device_type()
+ [TEST] ACC: num_devices = acc_get_num_devices(devtype)
+ [TEST] ACC: call assert(num_devices > 0)
+ [TEST] ACC: call acc_set_device_num(mod(rank, num_devices), devtype)
+ [TEST] ACC: allocate(arr(1:N))
+ [TEST] ACC: !$acc enter data create(arr(1:N))
+ [TEST] ACC: !$acc parallel loop
+ [TEST] ACC: !$acc update host(arr(1:N))
+ [TEST] ACC: call assert(nint(sum(arr)) == N*(N + 1)/2)
+ [TEST] ACC: !$acc exit data delete(arr)
+ [SKIP] OMP: num_devices = omp_get_num_devices()
+ [SKIP] OMP: call assert(num_devices > 0)
+ [SKIP] OMP: call omp_set_default_device(mod(rank, num_devices))
+ [SKIP] OMP: allocate(arr(1:N))
+ [SKIP] OMP: !$omp target enter data map(alloc: arr(1:N))
+ [SKIP] OMP: !$omp target teams distribute parallel do
+ [SKIP] OMP: !$omp target update from(arr(1:N))
+ [SKIP] OMP: call assert(nint(sum(arr)) == N*(N + 1)/2)
+ [SKIP] OMP: !$omp target exit data map(delete: arr(1:N))
+ [TEST] MPI: call mpi_barrier(MPI_COMM_WORLD, ierr)
+ [TEST] MPI: call mpi_finalize(ierr)
+ 
+ Syscheck: PASSED.
+
+mfc: OK > :) Running pre_process:
+
++ mpirun -np 1 /work/u1131128/coding-adv1/mfc-hlltile/build/install/gpu-acc-7d1e32e277/bin/pre_process
+ Pre-processing a 200x200x200 case on 1 rank(s)
+ Processing patch            1
+ Processing patch            2
+ Elapsed Time    7.073047876358032     
+
+mfc: OK > :) Running simulation:
+
++ mpirun -np 1 /work/u1131128/coding-adv1/mfc-hlltile/build/install/gpu-acc-3b50febf95/bin/simulation
+ Simulating a case-optimized 200x200x200 case on 1 rank(s) with OpenACC offloading.
+ [  0%] step 1 of 31 (t_step 0) t/step  0.00E+00s (avg  0.00E+00s) ETA 0:00:00
+ [  4%] step 2 of 31 (t_step 1) t/step  3.60E-02s (avg  0.00E+00s) ETA 0:00:00
+ [  7%] step 3 of 31 (t_step 2) t/step  3.02E-02s (avg  0.00E+00s) ETA 0:00:00
+ [ 10%] step 4 of 31 (t_step 3) t/step  3.02E-02s (avg  3.02E-02s) ETA 0:00:00
+ [ 13%] step 5 of 31 (t_step 4) t/step  3.02E-02s (avg  3.02E-02s) ETA 0:00:00
+ [ 17%] step 6 of 31 (t_step 5) t/step  3.02E-02s (avg  3.02E-02s) ETA 0:00:00
+ [ 20%] step 7 of 31 (t_step 6) t/step  3.02E-02s (avg  3.02E-02s) ETA 0:00:00
+ [ 23%] step 8 of 31 (t_step 7) t/step  3.02E-02s (avg  3.02E-02s) ETA 0:00:00
+ [ 26%] step 9 of 31 (t_step 8) t/step  3.02E-02s (avg  3.02E-02s) ETA 0:00:00
+ [ 30%] step 10 of 31 (t_step 9) t/step  3.02E-02s (avg  3.02E-02s) ETA 0:00:00
+ [ 33%] step 11 of 31 (t_step 10) t/step  3.02E-02s (avg  3.02E-02s) ETA 0:00:00
+ [ 36%] step 12 of 31 (t_step 11) t/step  3.03E-02s (avg  3.02E-02s) ETA 0:00:00
+ [ 39%] step 13 of 31 (t_step 12) t/step  3.02E-02s (avg  3.02E-02s) ETA 0:00:00
+ [ 42%] step 14 of 31 (t_step 13) t/step  3.02E-02s (avg  3.02E-02s) ETA 0:00:00
+ [ 46%] step 15 of 31 (t_step 14) t/step  3.02E-02s (avg  3.02E-02s) ETA 0:00:00
+ [ 49%] step 16 of 31 (t_step 15) t/step  3.02E-02s (avg  3.02E-02s) ETA 0:00:00
+ [ 52%] step 17 of 31 (t_step 16) t/step  3.02E-02s (avg  3.02E-02s) ETA 0:00:00
+ [ 55%] step 18 of 31 (t_step 17) t/step  3.02E-02s (avg  3.02E-02s) ETA 0:00:00
+ [ 59%] step 19 of 31 (t_step 18) t/step  3.02E-02s (avg  3.02E-02s) ETA 0:00:00
+ [ 62%] step 20 of 31 (t_step 19) t/step  3.02E-02s (avg  3.02E-02s) ETA 0:00:00
+ [ 65%] step 21 of 31 (t_step 20) t/step  3.02E-02s (avg  3.02E-02s) ETA 0:00:00
+ [ 68%] step 22 of 31 (t_step 21) t/step  3.02E-02s (avg  3.02E-02s) ETA 0:00:00
+ [ 71%] step 23 of 31 (t_step 22) t/step  3.02E-02s (avg  3.02E-02s) ETA 0:00:00
+ [ 75%] step 24 of 31 (t_step 23) t/step  3.02E-02s (avg  3.02E-02s) ETA 0:00:00
+ [ 78%] step 25 of 31 (t_step 24) t/step  3.02E-02s (avg  3.02E-02s) ETA 0:00:00
+ [ 81%] step 26 of 31 (t_step 25) t/step  3.02E-02s (avg  3.02E-02s) ETA 0:00:00
+ [ 84%] step 27 of 31 (t_step 26) t/step  3.02E-02s (avg  3.02E-02s) ETA 0:00:00
+ [ 88%] step 28 of 31 (t_step 27) t/step  3.02E-02s (avg  3.02E-02s) ETA 0:00:00
+ [ 91%] step 29 of 31 (t_step 28) t/step  3.02E-02s (avg  3.02E-02s) ETA 0:00:00
+ [ 94%] step 30 of 31 (t_step 29) t/step  3.02E-02s (avg  3.02E-02s) ETA 0:00:00
+ Performance:   0.1558437500000000      ns/gp/eq/rhs
+
++-----------------------------------------------------------------------------------------------------------+ 
+| Finished MFC:                                                                                             |
+| * Total-time:    20s                                 * Exit Code:     0                                   |
+| * End-time:      05:22:12                            * End-date:      05:22:12                            |
++-----------------------------------------------------------------------------------------------------------+ 
+
+mfc: (venv) Exiting the Python virtual environment.
