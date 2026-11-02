@@ -13,7 +13,7 @@ index 73c8abd..9f18b61 100644
      real(wp), allocatable, dimension(:)   :: Gs_vc
      integer, allocatable, dimension(:)    :: bubrs_vc
 diff --git a/src/simulation/m_rhs.fpp b/src/simulation/m_rhs.fpp
-index c770378..e02282a 100644
+index c770378..9fe87bf 100644
 --- a/src/simulation/m_rhs.fpp
 +++ b/src/simulation/m_rhs.fpp
 @@ -15,7 +15,7 @@ module m_rhs
@@ -29,10 +29,10 @@ index c770378..e02282a 100644
      !> With flux_per_dir, nothing after the sweeps adds to rhs (no IB, acoustic, bubble, chemistry, burn, damage or
      !! hypoelastic-interface term): the time stepper may then fuse the flux differences into its stage update.
      logical :: rk_diff_fusable = .false.
-+    !> c2p_in_rk: the fused RK update (s_add_flux_differences_rk_update_slabs) also writes the primitive velocities and pressure
-+    !! of every interior cell from the state it has just stored, exactly as s_convert_conservative_to_primitive_variables
-+    !! would; the primitive fields it does not write alias the conservative ones. prim_fresh: the last RK update did so, and
-+    !! nothing has touched q_cons_qp since (rhs_diff_deferred), so the next s_compute_rhs skips its conversion once.
++    !> c2p_in_rk: the fused RK update (s_add_flux_differences_rk_update_slabs) also writes the primitive velocities and pressure of
++    !! every interior cell from the state it has just stored, exactly as s_convert_conservative_to_primitive_variables would; the
++    !! primitive fields it does not write alias the conservative ones. prim_fresh: the last RK update did so, and nothing has
++    !! touched q_cons_qp since (rhs_diff_deferred), so the next s_compute_rhs skips its conversion once.
 +    logical :: c2p_in_rk = .false., prim_fresh = .false.
      !> Set by the time stepper for one s_compute_rhs call: leave the flux differences to s_add_flux_differences_rk_update
      logical :: rhs_diff_deferred = .false.
@@ -86,7 +86,7 @@ index c770378..e02282a 100644
              return
          end if
          sy = sys_size; sz = 2*sys_size
-@@ -2058,15 +2087,29 @@ contains
+@@ -2058,28 +2087,46 @@ contains
      !! q_cons_qp), qs is q_stor_slab, and the fluxes are the slabs fx and fs. As explicit-shape dummies their bounds are fixed at
      !! entry, so the kernel indexes them from scalars instead of reloading array descriptors after every store. Same loads, same
      !! operations in the same order per cell as the general version, so bitwise the same q1 and qs.
@@ -97,6 +97,7 @@ index c770378..e02282a 100644
          real(wp), dimension(-1:m,-1:n,-1:p,1:(sys_size - eqn_idx%adv%beg + 1)*num_dims), intent(in) :: fs
  
 +        ! q1 is all of q_slab: the primitive layers sys_size + 1:2*sys_size are written when do_c2p
++
 +        real(wp), dimension(idwbuff(1)%beg:idwbuff(1)%end,idwbuff(2)%beg:idwbuff(2)%end,idwbuff(3)%beg:idwbuff(3)%end, &
 +             & 1:2*sys_size), intent(inout) :: q1
          real(wp), dimension(idwbuff(1)%beg:idwbuff(1)%end,idwbuff(2)%beg:idwbuff(2)%end,idwbuff(3)%beg:idwbuff(3)%end, &
@@ -104,6 +105,10 @@ index c770378..e02282a 100644
 +             & 1:sys_size), intent(inout) :: qs
          real(wp), intent(in) :: c1, c2, c3, c4
 -        logical, intent(in)  :: save_stor
+-        integer              :: j, jn, k, l, q, ns, ab, ae, sy, sz, uy, uz
+-        real(wp)             :: inv_dx, inv_dy, inv_dz, r, dux, duy, duz, dtl
+-        real(wp)             :: fx0, fx1, fy0, fy1, fz0, fz1, v1, vs
+-        real(wp)             :: nfx0, nfx1, nfy0, nfy1, nfz0, nfz1, nv1, nvs
 +        logical, intent(in)  :: save_stor, do_c2p
 +        ! the conversion's per-cell variables (as in s_convert_conservative_to_primitive_variables)
 +        #:if USING_AMD and not MFC_CASE_OPTIMIZATION
@@ -116,10 +121,12 @@ index c770378..e02282a 100644
 +        real(wp)               :: rho_K, gamma_K, pi_inf_K, qv_K, dyn_pres_K, pres, T, pres_mag, alpha_K_sum
 +        integer                :: i, nf, mb, me, eE, eA
 +        logical                :: floor_rho
-         integer              :: j, jn, k, l, q, ns, ab, ae, sy, sz, uy, uz
-         real(wp)             :: inv_dx, inv_dy, inv_dz, r, dux, duy, duz, dtl
-         real(wp)             :: fx0, fx1, fy0, fy1, fz0, fz1, v1, vs
-@@ -2076,10 +2119,14 @@ contains
++        integer                :: j, jn, k, l, q, ns, ab, ae, sy, sz, uy, uz
++        real(wp)               :: inv_dx, inv_dy, inv_dz, r, dux, duy, duz, dtl
++        real(wp)               :: fx0, fx1, fy0, fy1, fz0, fz1, v1, vs
++        real(wp)               :: nfx0, nfx1, nfy0, nfy1, nfz0, nfz1, nv1, nvs
+ 
+         ! fx(:, :, :, j + (d - 1)*sys_size) is flux_n(d)%vf(j)%sf; fs(:, :, :, 1 + (d - 1)*(sys_size - adv%beg + 1)) is the face
          ! velocity of direction d (flux_src_rsx_vf from adv%beg). The scalars are kernel arguments, not module reads.
          ns = sys_size; ab = eqn_idx%adv%beg; ae = eqn_idx%adv%end; dtl = dt
          sy = sys_size; sz = 2*sys_size; uy = 1 + (sys_size - ab + 1); uz = 1 + 2*(sys_size - ab + 1)
@@ -130,9 +137,8 @@ index c770378..e02282a 100644
 -                            & fy0, fy1, fz0, fz1, v1, vs, nfx0, nfx1, nfy0, nfy1, nfz0, nfz1, nv1, nvs, dux, duy, duz]', &
 -                            & firstprivate='[ns, ab, ae, dtl, sy, sz, uy, uz]')
 +                            & fy0, fy1, fz0, fz1, v1, vs, nfx0, nfx1, nfy0, nfy1, nfz0, nfz1, nv1, nvs, dux, duy, duz, i, &
-+                            & alpha_K, alpha_rho_K, rhoYks, Re_K, rho_K, gamma_K, pi_inf_K, qv_K, dyn_pres_K, pres, T, &
-+                            & pres_mag, alpha_K_sum]', firstprivate='[ns, ab, ae, dtl, sy, sz, uy, uz, nf, mb, me, eE, eA, &
-+                            & floor_rho, do_c2p]')
++                            & alpha_K, alpha_rho_K, rhoYks, Re_K, rho_K, gamma_K, pi_inf_K, qv_K, dyn_pres_K, pres, T, pres_mag, &
++                            & alpha_K_sum]', firstprivate='[ns, ab, ae, dtl, sy, sz, uy, uz, nf, mb, me, eE, eA, floor_rho, do_c2p]')
          do l = 0, p
              do k = 0, n
                  do q = 0, m

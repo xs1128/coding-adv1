@@ -1,0 +1,3 @@
+rank	steps	first_ms	step_med_ms	step_min_ms	step_max_ms	rhs_med_ms	comm_med_ms
+0	30	38.259	29.676	29.649	29.781	7.812	0.034
+all	30	38.259	29.676	29.649	29.781	7.812	0.034
