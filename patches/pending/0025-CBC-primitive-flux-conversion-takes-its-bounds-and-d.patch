@@ -1,0 +1,170 @@
+From 0f6b5b03e090d4970d4976ea77f6383fefcb8a8b Mon Sep 17 00:00:00 2001
+From: xs1128 <ooixinsheng@gmail.com>
+Date: Mon, 2 Nov 2026 13:41:19 +0800
+Subject: [PATCH 25/26] CBC: primitive->flux conversion takes its bounds and
+ direction map as firstprivate scalars and runs async, so the host no longer
+ waits for each Riemann solve
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ src/common/m_variables_conversion.fpp | 60 +++++++++++++++------------
+ src/simulation/m_cbc.fpp              |  4 +-
+ 2 files changed, 35 insertions(+), 29 deletions(-)
+
+diff --git a/src/common/m_variables_conversion.fpp b/src/common/m_variables_conversion.fpp
+index 73c8abd..34bd332 100644
+--- a/src/common/m_variables_conversion.fpp
++++ b/src/common/m_variables_conversion.fpp
+@@ -37,9 +37,6 @@ module m_variables_conversion
+     real(wp), allocatable, dimension(:,:) :: Res_vc
+     $:GPU_DECLARE(create='[bubrs_vc, Gs_vc, Res_vc]')
+ 
+-    integer :: is1b, is2b, is3b, is1e, is2e, is3e
+-    $:GPU_DECLARE(create='[is1b, is2b, is3b, is1e, is2e, is3e]')
+-
+     logical :: enforce_density_floor_vc = .false.
+     logical :: preserve_qbmm_number_vc = .false.
+     integer :: lagrange_beta_index_vc = 0
+@@ -265,7 +262,6 @@ contains
+         lagrange_beta_index_vc = 0
+         if (present(lagrange_beta_index)) lagrange_beta_index_vc = lagrange_beta_index
+ 
+-        $:GPU_ENTER_DATA(copyin='[is1b, is1e, is2b, is2e, is3b, is3e]')
+         $:GPU_UPDATE(device='[enforce_density_floor_vc, preserve_qbmm_number_vc, lagrange_beta_index_vc]')
+ 
+         @:ALLOCATE(gammas (1:num_fluids))
+@@ -1055,21 +1051,33 @@ contains
+         real(wp)               :: blkmod1_K, blkmod2_K, K_K
+         real(wp)               :: T_K, mix_mol_weight, R_gas
+         integer                :: i, j, k, l  !< Generic loop iterators
+-
+-        is1b = is1%beg; is1e = is1%end
+-        is2b = is2%beg; is2e = is2%end
+-        is3b = is3%beg; is3e = is3%end
+-
+-        $:GPU_UPDATE(device='[is1b, is2b, is3b, is1e, is2e, is3e]')
++        ! The loop bounds and the direction map reach the kernel as firstprivate scalars: no device update and no data clause,
++        ! so the kernel queues behind the Riemann solve (GPU_ASYNC) instead of making the host wait for it. dK/fK rebuild
++        ! dir_idx_in/dir_flg_in per thread.
++        integer                :: lb1, le1, lb2, le2, lb3, le3, di1, di2, di3
++        real(wp)               :: df1, df2, df3
++        logical                :: hllu
++        integer, dimension(3)  :: dK
++        real(wp), dimension(3) :: fK
++
++        lb1 = is1%beg; le1 = is1%end
++        lb2 = is2%beg; le2 = is2%end
++        lb3 = is3%beg; le3 = is3%end
++        di1 = dir_idx_in(1); di2 = dir_idx_in(2); di3 = dir_idx_in(3)
++        df1 = dir_flg_in(1); df2 = dir_flg_in(2); df3 = dir_flg_in(3)
++        hllu = hll_u_interface_in
+ 
+         ! Computing the flux variables from the primitive variables, without accounting for the contribution of either viscosity or
+         ! capillarity
+-        $:GPU_PARALLEL_LOOP(collapse=3, private='[alpha_rho_K, vel_K, alpha_K, Re_K, Y_K, rho_K, vel_K_sum, pres_K, E_K, gamma_K, &
+-                            & pi_inf_K, qv_K, G_K, blkmod1_K, blkmod2_K, K_K, T_K, mix_mol_weight, R_gas]', copyin='[dir_idx_in, &
+-                            & dir_flg_in, hll_u_interface_in]')
+-        do l = is3b, is3e
+-            do k = is2b, is2e
+-                do j = is1b, is1e
++        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3, private='[alpha_rho_K, vel_K, alpha_K, Re_K, Y_K, rho_K, &
++                            & vel_K_sum, pres_K, E_K, gamma_K, pi_inf_K, qv_K, G_K, blkmod1_K, blkmod2_K, K_K, T_K, &
++                            & mix_mol_weight, R_gas, dK, fK]', firstprivate='[lb1, le1, lb2, le2, lb3, le3, di1, di2, di3, df1, &
++                            & df2, df3, hllu]')
++        do l = lb3, le3
++            do k = lb2, le2
++                do j = lb1, le1
++                    dK(1) = di1; dK(2) = di2; dK(3) = di3
++                    fK(1) = df1; fK(2) = df2; fK(3) = df3
+                     $:GPU_LOOP(parallelism='[seq]')
+                     do i = 1, eqn_idx%cont%end
+                         alpha_rho_K(i) = qK_prim_vf(j, k, l, i)
+@@ -1121,24 +1129,22 @@ contains
+                     ! mass flux, this should be \alpha_i \rho_i u_i
+                     $:GPU_LOOP(parallelism='[seq]')
+                     do i = 1, eqn_idx%cont%end
+-                        FK_vf(j, k, l, i) = alpha_rho_K(i)*vel_K(dir_idx_in(1))
++                        FK_vf(j, k, l, i) = alpha_rho_K(i)*vel_K(dK(1))
+                     end do
+ 
+                     $:GPU_LOOP(parallelism='[seq]')
+                     do i = 1, num_vels
+-                        FK_vf(j, k, l, &
+-                              & eqn_idx%cont%end + dir_idx_in(i)) = rho_K*vel_K(dir_idx_in(1))*vel_K(dir_idx_in(i)) &
+-                              & + pres_K*dir_flg_in(dir_idx_in(i))
++                        FK_vf(j, k, l, eqn_idx%cont%end + dK(i)) = rho_K*vel_K(dK(1))*vel_K(dK(i)) + pres_K*fK(dK(i))
+                     end do
+ 
+                     ! energy flux, u(E+p)
+-                    FK_vf(j, k, l, eqn_idx%E) = vel_K(dir_idx_in(1))*(E_K + pres_K)
++                    FK_vf(j, k, l, eqn_idx%E) = vel_K(dK(1))*(E_K + pres_K)
+ 
+                     ! Species advection Flux, \rho*u*Y
+                     if (chemistry) then
+                         $:GPU_LOOP(parallelism='[seq]')
+                         do i = 1, num_species
+-                            FK_vf(j, k, l, i - 1 + eqn_idx%species%beg) = vel_K(dir_idx_in(1))*(rho_K*Y_K(i))
++                            FK_vf(j, k, l, i - 1 + eqn_idx%species%beg) = vel_K(dK(1))*(rho_K*Y_K(i))
+                         end do
+                     end if
+ 
+@@ -1168,8 +1174,8 @@ contains
+                                 FK_vf(j, k, l, i) = 0._wp
+                                 FK_src_vf(j, k, l, i) = 0._wp
+                             end do
+-                            FK_vf(j, k, l, eqn_idx%adv%beg) = -K_K*vel_K(dir_idx_in(1))
+-                            FK_vf(j, k, l, eqn_idx%adv%end) = K_K*vel_K(dir_idx_in(1))
++                            FK_vf(j, k, l, eqn_idx%adv%beg) = -K_K*vel_K(dK(1))
++                            FK_vf(j, k, l, eqn_idx%adv%end) = K_K*vel_K(dK(1))
+                         else
+                             $:GPU_LOOP(parallelism='[seq]')
+                             do i = eqn_idx%adv%beg, eqn_idx%adv%end
+@@ -1177,7 +1183,7 @@ contains
+                                 FK_src_vf(j, k, l, i) = alpha_K(i - eqn_idx%E)
+                             end do
+                         end if
+-                    else if (riemann_solver == riemann_solver_hll .and. .not. hll_u_interface_in) then
++                    else if (riemann_solver == riemann_solver_hll .and. .not. hllu) then
+                         $:GPU_LOOP(parallelism='[seq]')
+                         do i = eqn_idx%adv%beg, eqn_idx%adv%end
+                             FK_vf(j, k, l, i) = 0._wp
+@@ -1187,12 +1193,12 @@ contains
+                         ! Could be bubbles_euler!
+                         $:GPU_LOOP(parallelism='[seq]')
+                         do i = eqn_idx%adv%beg, eqn_idx%adv%end
+-                            FK_vf(j, k, l, i) = vel_K(dir_idx_in(1))*alpha_K(i - eqn_idx%E)
++                            FK_vf(j, k, l, i) = vel_K(dK(1))*alpha_K(i - eqn_idx%E)
+                         end do
+ 
+                         $:GPU_LOOP(parallelism='[seq]')
+                         do i = eqn_idx%adv%beg, eqn_idx%adv%end
+-                            FK_src_vf(j, k, l, i) = vel_K(dir_idx_in(1))
++                            FK_src_vf(j, k, l, i) = vel_K(dK(1))
+                         end do
+                     end if
+                 end do
+diff --git a/src/simulation/m_cbc.fpp b/src/simulation/m_cbc.fpp
+index 6e8344f..23c16f3 100644
+--- a/src/simulation/m_cbc.fpp
++++ b/src/simulation/m_cbc.fpp
+@@ -526,7 +526,7 @@ contains
+             if (cbc_dir == ${CBC_DIR}$ .and. recon_type == recon_type_weno) then
+                 ! PI2 of flux_rs_vf and flux_src_rs_vf at j = 1/2
+                 if (weno_order == 3) then
+-                    ! s_convert_primitive_to_flux_variables runs on the synchronous queue
++                    ! s_convert_primitive_to_flux_variables runs on the synchronous queue where GPU_ASYNC is not 'async'
+                     $:GPU_ASYNC_WAIT()
+                     call s_convert_primitive_to_flux_variables(q_prim_rs${XYZ}$_vf, F_rs${XYZ}$_vf, F_src_rs${XYZ}$_vf, is1, is2, &
+                         & is3, idwbuff(2)%beg, idwbuff(3)%beg, dir_idx, dir_flg, hll_u_interface)
+@@ -556,7 +556,7 @@ contains
+ 
+                 ! PI4 of flux_rs_vf and flux_src_rs_vf at j = 1/2, 3/2
+                 if (weno_order == 5) then
+-                    ! s_convert_primitive_to_flux_variables runs on the synchronous queue
++                    ! s_convert_primitive_to_flux_variables runs on the synchronous queue where GPU_ASYNC is not 'async'
+                     $:GPU_ASYNC_WAIT()
+                     call s_convert_primitive_to_flux_variables(q_prim_rs${XYZ}$_vf, F_rs${XYZ}$_vf, F_src_rs${XYZ}$_vf, is1, is2, &
+                         & is3, idwbuff(2)%beg, idwbuff(3)%beg, dir_idx, dir_flg, hll_u_interface)
+-- 
+2.47.3
+

@@ -1,0 +1,95 @@
+From 5d84895e5693419e58f51eec75a94027cab10a07 Mon Sep 17 00:00:00 2001
+From: xs1128 <ooixinsheng@gmail.com>
+Date: Tue, 3 Nov 2026 00:26:53 +0800
+Subject: [PATCH 26/26] Boundaries: extrapolation and reflective ghost cells of
+ plain-fluid runs filled by one thread per ghost value
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ src/common/m_boundary_common.fpp | 53 ++++++++++++++++++++++++++++++--
+ 1 file changed, 50 insertions(+), 3 deletions(-)
+
+diff --git a/src/common/m_boundary_common.fpp b/src/common/m_boundary_common.fpp
+index bdd5e1c..972d68c 100644
+--- a/src/common/m_boundary_common.fpp
++++ b/src/common/m_boundary_common.fpp
+@@ -127,6 +127,9 @@ contains
+         type(scalar_field), optional, intent(inout) :: q_T_sf
+         integer :: bc_edge, k_beg, k_end, l_beg, l_end
+         integer :: bc_code, k, l
++        integer :: i, j, e, iflip
++        real(stp) :: v
++        logical :: bc_fast
+ 
+         if (bc_loc == -1) then
+             bc_edge = bc_bounds%beg
+@@ -148,7 +151,51 @@ contains
+             k_beg = -buff_size; k_end = m + buff_size; l_beg = -buff_size; l_end = n + buff_size
+         end if
+ 
+-        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, private='[l, k, bc_code]', collapse=2)
++        ! Ghost-cell extrapolation and reflective cells of a plain-fluid run are copies (the reflective normal velocity negated):
++        ! the first kernel fills them with one thread per ghost value, ordered so that consecutive threads store consecutive
++        ! addresses, instead of one thread per boundary cell looping over every field and ghost layer. The per-cell kernel below
++        ! then skips those cells. Same values, so bitwise. With chemistry, hypoelasticity or QBMM the per-cell routines also
++        ! fill T, flip stresses or copy pb/mv, so everything stays in the per-cell kernel.
++        bc_fast = .not. (chemistry .or. hypoelasticity .or. qbmm)
++        if (bc_fast) then
++            if (bc_loc == -1) then
++                e = 0
++            else if (bc_dir == 1) then
++                e = m
++            else if (bc_dir == 2) then
++                e = n
++            else
++                e = p
++            end if
++            iflip = eqn_idx%mom%beg + bc_dir - 1
++            #:for DIR, LOOPS, G, S, X, CODE in [ &
++                & (1, 'lkij', 'e + bc_loc*j, k, l', 'e - bc_loc*(j - 1), k, l', 'e, k, l', '0, k, l'), &
++                & (2, 'lijk', 'k, e + bc_loc*j, l', 'k, e - bc_loc*(j - 1), l', 'k, e, l', 'k, 0, l'), &
++                & (3, 'ijlk', 'k, l, e + bc_loc*j', 'k, l, e - bc_loc*(j - 1)', 'k, l, e', 'k, l, 0')]
++                #:set BND = {'l': 'l_beg, l_end', 'k': 'k_beg, k_end', 'i': '1, sys_size', 'j': '1, buff_size'}
++                if (bc_dir == ${DIR}$) then
++                    $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, private='[i, j, k, l, bc_code, v]', collapse=4, firstprivate='[e, &
++                                        & iflip, bc_loc]')
++                    #:for L in LOOPS
++                        do ${L}$ = ${BND[L]}$
++                        #:endfor
++                        bc_code = int(bc_type_edge%sf(${CODE}$))
++                        if (bc_code >= BC_CHAR_SUP_OUTFLOW .and. bc_code <= BC_GHOST_EXTRAP) then
++                            q_prim_vf(i)%sf(${G}$) = q_prim_vf(i)%sf(${X}$)
++                        else if (bc_code == BC_REFLECTIVE) then
++                            v = q_prim_vf(i)%sf(${S}$)
++                            if (i == iflip) v = -v
++                            q_prim_vf(i)%sf(${G}$) = v
++                        end if
++                        #:for L in LOOPS
++                        end do
++                    #:endfor
++                    $:END_GPU_PARALLEL_LOOP()
++                end if
++            #:endfor
++        end if
++
++        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, private='[l, k, bc_code]', collapse=2, firstprivate='[bc_fast]')
+         do l = l_beg, l_end
+             do k = k_beg, k_end
+                 if (bc_dir == 1) then
+@@ -161,11 +208,11 @@ contains
+ 
+                 select case (bc_code)
+                 case (BC_CHAR_SUP_OUTFLOW:BC_GHOST_EXTRAP)
+-                    call s_ghost_cell_extrapolation(q_prim_vf, bc_dir, bc_loc, k, l, q_T_sf)
++                    if (.not. bc_fast) call s_ghost_cell_extrapolation(q_prim_vf, bc_dir, bc_loc, k, l, q_T_sf)
+                 case (BC_AXIS)
+                     if (bc_dir == 2 .and. bc_loc == -1) call s_axis(q_prim_vf, pb_in, mv_in, k, l)
+                 case (BC_REFLECTIVE)
+-                    call s_symmetry(q_prim_vf, bc_dir, bc_loc, k, l, pb_in, mv_in, q_T_sf)
++                    if (.not. bc_fast) call s_symmetry(q_prim_vf, bc_dir, bc_loc, k, l, pb_in, mv_in, q_T_sf)
+                 case (BC_PERIODIC)
+                     call s_periodic(q_prim_vf, bc_dir, bc_loc, k, l, pb_in, mv_in, q_T_sf)
+                 case (BC_SLIP_WALL)
+-- 
+2.47.3
+

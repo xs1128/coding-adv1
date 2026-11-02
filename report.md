@@ -8,8 +8,10 @@ Every number cites a Slurm job (a numbered batch job). Our changes are patches i
 10-31 report (`0001…0006`), §11 the later work P7–P20. Every rejected idea: `docs/ladder.md`. Agent mistakes:
 `AGENT_LOG.md`.
 
-**Update (2026-11-01, after the deadline):** at 1 GPU, P16 is **2.13×** faster than v5.7.0 in one same-node A/B, and
-P18 **2.24×** (job 670158). The full GPU test suite is clean on P15 (§11).
+**Update (2026-11-03, after the deadline):** at 1 GPU, in one same-node A/B (job 680943, every run bitwise identical),
+v5.7.0 takes 77.79 ms per step and P20 (patches 0001–0024) takes **29.83 ms: 2.61× faster**. The full GPU test suite on
+P20 shows only the 23 failures that v5.7.0 also has. Two more patches, still waiting for their full suite, bring it to
+29.49 ms (2.64×). Details in §11.
 
 ## 1. Result
 
@@ -154,7 +156,7 @@ Per-kernel profile (ncu 600146 vs 606033, P3; clocks locked, so times are longer
 ## 10. Reproduce
 On nano4, from this repository mirrored to `/work/u1131128/coding-adv1`:
 ```
-bash harness/reproduce.sh build    # v5.7.0 + patches/opt/0001-0006, case-opt + generic builds
+bash harness/reproduce.sh build    # v5.7.0 + every patch in patches/opt/ (0001-0024), case-opt + generic builds
 bash harness/reproduce.sh run      # the final 1/4/8-GPU same-node sets (harness/specs/final_*g.tsv)
 bash harness/reproduce.sh verify   # bitwise gate + median step per run
 ```
@@ -174,8 +176,19 @@ Same rules: every run bitwise identical to v5.7.0, A/B on one node against the r
 | Wall, default setup | 7.31 s | 5.65 s | 1.29× |
 
 v5.7.0 vs P18 (job 670158): step **76.75 / 76.74 → 34.39 / 34.30 ms, 2.24×**; bitwise. P19 takes another 3.4 % off
-(670619) and P20 another 10.5 % (671002): about 2.59× if the A/Bs are multiplied. A direct v5.7.0 → P20 A/B has not
-been run.
+(670619) and P20 another 10.5 % (671002): about 2.59× if the A/Bs are multiplied.
+
+**Direct check, v5.7.0 vs P20 (2026-11-03, same node, 2 rounds × 3 runs, job 680943; all bitwise):**
+
+| | v5.7.0 | P20 | + 0025 | + 0025 + 0026 |
+|---|---|---|---|---|
+| Step | 77.806 / 77.778 ms | 29.837 / 29.815 ms | 29.635 / 29.636 ms | **29.511 / 29.460 ms** |
+| vs v5.7.0 | 1× | **2.61×** | 2.62× | 2.64× |
+| Grind (ns, first run) | 0.4027 | 0.1538–0.1539 | 0.1527 | 0.1519 |
+
+0025 runs the CBC primitive-to-flux conversion on the GPU queue instead of making the CPU wait; 0026 fills each ghost
+value with its own GPU thread. Both are in `patches/pending/`, not `patches/opt/`, because the full test suite has not
+run on them yet. The first try of this job (680922) stopped itself in 4 s: its node had the power brake on.
 
 **Several GPUs** (`rdma_mpi`, same node, P11 vs P18; bitwise):
 
@@ -227,5 +240,5 @@ equation) (+1.7 ms, 670933); delayed velocity stores in cons→prim (slower, 671
 **Where the time is now** (P20, 1 GPU, per RK stage, nsys 670902): merged WENO5+HLLC 6.87 ms (68 %), RK update
 1.50 ms (15 %), cons→prim 0.63 ms, boundaries 0.25 ms.
 
-**Reproduce.** `harness/reproduce.sh` applies `patches/opt/0001…0022`; the canonical nano4 tree is branch `p19`
-(worktree `mfc-rkb2`); `p18` (worktree `mfc-p18`) passed the full suite (all failures known).
+**Reproduce.** `harness/reproduce.sh` applies every patch in `patches/opt/` (0001–0024). The canonical nano4 tree
+is branch `p20` (worktree `mfc-p20`); its full suite shows only the known failures.

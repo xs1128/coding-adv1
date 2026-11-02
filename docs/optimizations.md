@@ -232,8 +232,9 @@ WENO5 (about a dozen divisions per side) and the HLLC body.
 
 **Idle GPU (nsys 670902, P20 candidate).** 331–370 µs per stage (3.7 %) with no kernel running. Causes: ~48 tiny
 copies and ~30 tiny memsets per stage, each ~2–3 µs even when queued; a CBC-only conversion that runs synchronously;
-and slow ghost-cell filling (241 µs per stage). Two fixes await their A/B: `patches/exp/exp-p2fasync-on-p20.diff` and
-`patches/exp/exp-bcfast-on-p2fasync.diff`.
+and slow ghost-cell filling (241 µs per stage). Two fixes for the last two, measured in one A/B (680943, all arms bitwise): the CBC conversion on the
+GPU queue, 29.83 → 29.64 ms (−0.6 %), and one thread per ghost value, → 29.49 ms (−1.1 % in total vs P20). They are
+`patches/pending/0025` and `0026`: kept apart from `patches/opt/` until the full test suite has run on them.
 
 ## Multi-GPU (201³ split over 4 GPUs)
 - Step time: sc26 25.72 ms with halos through the CPU (602770); 18.81 ms with `rdma_mpi=T` (604560); 17.71 ms with P3;
