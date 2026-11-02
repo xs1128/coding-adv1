@@ -1,0 +1,426 @@
+From 39c96b3300de7b2df59f953e09e2a2c8b72fe00f Mon Sep 17 00:00:00 2001
+From: xs1128 <ooixinsheng@gmail.com>
+Date: Tue, 3 Nov 2026 01:12:11 +0800
+Subject: [PATCH] CBC: skip the flux copy-in when the PI and FD kernels
+ overwrite every copied-back value, and copy back only the changed layers
+
+With WENO3/5, PI2/PI4 write flux layers 0(..1) of every CBC flux and advection source and the FD kernel writes layer -1
+of every continuity, momentum, energy, advection and species flux before anything reads them, so copying all
+-1..buff_size layers in was dead work. s_finalize_cbc now copies back only layers -1..(weno_order-3)/2; the others were
+returned unchanged (x*s*s with s = +-1 is exact). Any other configuration keeps the full copies.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ src/simulation/m_cbc.fpp | 224 ++++++++++++++++++++++-----------------
+ 1 file changed, 128 insertions(+), 96 deletions(-)
+
+diff --git a/src/simulation/m_cbc.fpp b/src/simulation/m_cbc.fpp
+index 23c16f3..228f8ad 100644
+--- a/src/simulation/m_cbc.fpp
++++ b/src/simulation/m_cbc.fpp
+@@ -71,6 +71,11 @@ module m_cbc
+     $:GPU_DECLARE(create='[dj]')
+     $:GPU_DECLARE(create='[cbc_dir, cbc_loc, flux_cbc_index]')
+ 
++    !> True when the PI and FD kernels in s_cbc write every flux value that s_finalize_cbc copies back, so s_initialize_cbc need not
++    !! copy the fluxes in. s_cbc only changes flux layers -1..cbc_flux_jend; the rest are copied back unchanged.
++    logical :: cbc_flux_overwritten
++    integer :: cbc_flux_jend
++
+     ! GRCBC inputs for subsonic inflow and outflow conditions consisting of inflow velocities, pressure, density and void fraction
+     ! as well as outflow velocities and pressure
+ 
+@@ -97,6 +102,20 @@ contains
+         end if
+         $:GPU_UPDATE(device='[flux_cbc_index]')
+ 
++        ! WENO3 (PI2) writes flux layer 0 and WENO5 (PI4) layers 0..1 of every flux and advection source; the FD kernel then
++        ! writes layer -1 of the continuity, momentum, energy, advection and (with chemistry) species fluxes.
++        cbc_flux_overwritten = recon_type == recon_type_weno .and. (weno_order == 3 .or. weno_order == 5)
++        do i = 1, flux_cbc_index
++            if (.not. (i <= eqn_idx%cont%end .or. (i >= eqn_idx%mom%beg .and. i <= eqn_idx%mom%end) .or. i == eqn_idx%E &
++                & .or. (i >= eqn_idx%adv%beg .and. i <= eqn_idx%adv%end) .or. (chemistry .and. i >= eqn_idx%species%beg &
++                & .and. i <= eqn_idx%species%end))) cbc_flux_overwritten = .false.
++        end do
++        if (cbc_flux_overwritten) then
++            cbc_flux_jend = (weno_order - 3)/2
++        else
++            cbc_flux_jend = buff_size
++        end if
++
+         call s_any_cbc_boundaries(is_cbc)
+ 
+         if (is_cbc .eqv. .false.) return
+@@ -975,51 +994,55 @@ contains
+             end do
+             $:END_GPU_PARALLEL_LOOP()
+ 
+-            $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[i, j, k, r]', collapse=4)
+-            do i = 1, flux_cbc_index
+-                do r = is3%beg, is3%end
+-                    do k = is2%beg, is2%end
+-                        do j = -1, buff_size
+-                            flux_rsx_vf_l(j, k, r, i) = flux_vf(i)%sf(dj*((m - 1) - 2*j) + j, k, r)*sign(1._wp, -1._wp*cbc_loc)
+-                        end do
+-                    end do
+-                end do
+-            end do
+-            $:END_GPU_PARALLEL_LOOP()
+-
+-            $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[j, k, r]', collapse=3)
+-            do r = is3%beg, is3%end
+-                do k = is2%beg, is2%end
+-                    do j = -1, buff_size
+-                        flux_rsx_vf_l(j, k, r, eqn_idx%mom%beg) = flux_vf(eqn_idx%mom%beg)%sf(dj*((m - 1) - 2*j) + j, k, r)
+-                    end do
+-                end do
+-            end do
+-            $:END_GPU_PARALLEL_LOOP()
+-
+-            if (riemann_solver == riemann_solver_hll .and. .not. hll_u_interface) then
++            ! Not needed when the PI and FD kernels in s_cbc overwrite every layer s_finalize_cbc copies back
++            if (.not. cbc_flux_overwritten) then
+                 $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[i, j, k, r]', collapse=4)
+-                do i = eqn_idx%adv%beg, eqn_idx%adv%end
++                do i = 1, flux_cbc_index
+                     do r = is3%beg, is3%end
+                         do k = is2%beg, is2%end
+                             do j = -1, buff_size
+-                                flux_src_rsx_vf_l(j, k, r, i) = flux_src_vf(i)%sf(dj*((m - 1) - 2*j) + j, k, r)
++                                flux_rsx_vf_l(j, k, r, i) = flux_vf(i)%sf(dj*((m - 1) - 2*j) + j, k, r)*sign(1._wp, -1._wp*cbc_loc)
+                             end do
+                         end do
+                     end do
+                 end do
+                 $:END_GPU_PARALLEL_LOOP()
+-            else
++
+                 $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[j, k, r]', collapse=3)
+                 do r = is3%beg, is3%end
+                     do k = is2%beg, is2%end
+                         do j = -1, buff_size
+-                            flux_src_rsx_vf_l(j, k, r, eqn_idx%adv%beg) = flux_src_vf(eqn_idx%adv%beg)%sf(dj*((m - 1) - 2*j) + j, &
+-                                              & k, r)*sign(1._wp, -1._wp*cbc_loc)
++                            flux_rsx_vf_l(j, k, r, eqn_idx%mom%beg) = flux_vf(eqn_idx%mom%beg)%sf(dj*((m - 1) - 2*j) + j, k, r)
+                         end do
+                     end do
+                 end do
+                 $:END_GPU_PARALLEL_LOOP()
++
++                if (riemann_solver == riemann_solver_hll .and. .not. hll_u_interface) then
++                    $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[i, j, k, r]', collapse=4)
++                    do i = eqn_idx%adv%beg, eqn_idx%adv%end
++                        do r = is3%beg, is3%end
++                            do k = is2%beg, is2%end
++                                do j = -1, buff_size
++                                    flux_src_rsx_vf_l(j, k, r, i) = flux_src_vf(i)%sf(dj*((m - 1) - 2*j) + j, k, r)
++                                end do
++                            end do
++                        end do
++                    end do
++                    $:END_GPU_PARALLEL_LOOP()
++                else
++                    $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[j, k, r]', collapse=3)
++                    do r = is3%beg, is3%end
++                        do k = is2%beg, is2%end
++                            do j = -1, buff_size
++                                flux_src_rsx_vf_l(j, k, r, &
++                                                  & eqn_idx%adv%beg) = flux_src_vf(eqn_idx%adv%beg)%sf(dj*((m - 1) - 2*j) + j, k, &
++                                                  & r)*sign(1._wp, -1._wp*cbc_loc)
++                            end do
++                        end do
++                    end do
++                    $:END_GPU_PARALLEL_LOOP()
++                end if
+             end if
+ 
+             ! END: Reshaping Inputted Data in x-direction
+@@ -1049,51 +1072,55 @@ contains
+             end do
+             $:END_GPU_PARALLEL_LOOP()
+ 
+-            $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[i, j, k, r]', collapse=4)
+-            do i = 1, flux_cbc_index
+-                do r = is3%beg, is3%end
+-                    do k = is2%beg, is2%end
+-                        do j = -1, buff_size
+-                            flux_rsy_vf_l(j, k, r, i) = flux_vf(i)%sf(k, dj*((n - 1) - 2*j) + j, r)*sign(1._wp, -1._wp*cbc_loc)
+-                        end do
+-                    end do
+-                end do
+-            end do
+-            $:END_GPU_PARALLEL_LOOP()
+-
+-            $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[j, k, r]', collapse=3)
+-            do r = is3%beg, is3%end
+-                do k = is2%beg, is2%end
+-                    do j = -1, buff_size
+-                        flux_rsy_vf_l(j, k, r, eqn_idx%mom%beg + 1) = flux_vf(eqn_idx%mom%beg + 1)%sf(k, dj*((n - 1) - 2*j) + j, r)
+-                    end do
+-                end do
+-            end do
+-            $:END_GPU_PARALLEL_LOOP()
+-
+-            if (riemann_solver == riemann_solver_hll .and. .not. hll_u_interface) then
++            ! Not needed when the PI and FD kernels in s_cbc overwrite every layer s_finalize_cbc copies back
++            if (.not. cbc_flux_overwritten) then
+                 $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[i, j, k, r]', collapse=4)
+-                do i = eqn_idx%adv%beg, eqn_idx%adv%end
++                do i = 1, flux_cbc_index
+                     do r = is3%beg, is3%end
+                         do k = is2%beg, is2%end
+                             do j = -1, buff_size
+-                                flux_src_rsy_vf_l(j, k, r, i) = flux_src_vf(i)%sf(k, dj*((n - 1) - 2*j) + j, r)
++                                flux_rsy_vf_l(j, k, r, i) = flux_vf(i)%sf(k, dj*((n - 1) - 2*j) + j, r)*sign(1._wp, -1._wp*cbc_loc)
+                             end do
+                         end do
+                     end do
+                 end do
+                 $:END_GPU_PARALLEL_LOOP()
+-            else
++
+                 $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[j, k, r]', collapse=3)
+                 do r = is3%beg, is3%end
+                     do k = is2%beg, is2%end
+                         do j = -1, buff_size
+-                            flux_src_rsy_vf_l(j, k, r, eqn_idx%adv%beg) = flux_src_vf(eqn_idx%adv%beg)%sf(k, &
+-                                              & dj*((n - 1) - 2*j) + j, r)*sign(1._wp, -1._wp*cbc_loc)
++                            flux_rsy_vf_l(j, k, r, eqn_idx%mom%beg + 1) = flux_vf(eqn_idx%mom%beg + 1)%sf(k, &
++                                          & dj*((n - 1) - 2*j) + j, r)
+                         end do
+                     end do
+                 end do
+                 $:END_GPU_PARALLEL_LOOP()
++
++                if (riemann_solver == riemann_solver_hll .and. .not. hll_u_interface) then
++                    $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[i, j, k, r]', collapse=4)
++                    do i = eqn_idx%adv%beg, eqn_idx%adv%end
++                        do r = is3%beg, is3%end
++                            do k = is2%beg, is2%end
++                                do j = -1, buff_size
++                                    flux_src_rsy_vf_l(j, k, r, i) = flux_src_vf(i)%sf(k, dj*((n - 1) - 2*j) + j, r)
++                                end do
++                            end do
++                        end do
++                    end do
++                    $:END_GPU_PARALLEL_LOOP()
++                else
++                    $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[j, k, r]', collapse=3)
++                    do r = is3%beg, is3%end
++                        do k = is2%beg, is2%end
++                            do j = -1, buff_size
++                                flux_src_rsy_vf_l(j, k, r, eqn_idx%adv%beg) = flux_src_vf(eqn_idx%adv%beg)%sf(k, &
++                                                  & dj*((n - 1) - 2*j) + j, r)*sign(1._wp, -1._wp*cbc_loc)
++                            end do
++                        end do
++                    end do
++                    $:END_GPU_PARALLEL_LOOP()
++                end if
+             end if
+ 
+             ! END: Reshaping Inputted Data in y-direction
+@@ -1123,51 +1150,54 @@ contains
+             end do
+             $:END_GPU_PARALLEL_LOOP()
+ 
+-            $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[i, j, k, r]', collapse=4)
+-            do i = 1, flux_cbc_index
+-                do r = is3%beg, is3%end
+-                    do k = is2%beg, is2%end
+-                        do j = -1, buff_size
+-                            flux_rsz_vf_l(j, k, r, i) = flux_vf(i)%sf(r, k, dj*((p - 1) - 2*j) + j)*sign(1._wp, -1._wp*cbc_loc)
+-                        end do
+-                    end do
+-                end do
+-            end do
+-            $:END_GPU_PARALLEL_LOOP()
+-
+-            $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[j, k, r]', collapse=3)
+-            do r = is3%beg, is3%end
+-                do k = is2%beg, is2%end
+-                    do j = -1, buff_size
+-                        flux_rsz_vf_l(j, k, r, eqn_idx%mom%end) = flux_vf(eqn_idx%mom%end)%sf(r, k, dj*((p - 1) - 2*j) + j)
+-                    end do
+-                end do
+-            end do
+-            $:END_GPU_PARALLEL_LOOP()
+-
+-            if (riemann_solver == riemann_solver_hll .and. .not. hll_u_interface) then
++            ! Not needed when the PI and FD kernels in s_cbc overwrite every layer s_finalize_cbc copies back
++            if (.not. cbc_flux_overwritten) then
+                 $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[i, j, k, r]', collapse=4)
+-                do i = eqn_idx%adv%beg, eqn_idx%adv%end
++                do i = 1, flux_cbc_index
+                     do r = is3%beg, is3%end
+                         do k = is2%beg, is2%end
+                             do j = -1, buff_size
+-                                flux_src_rsz_vf_l(j, k, r, i) = flux_src_vf(i)%sf(r, k, dj*((p - 1) - 2*j) + j)
++                                flux_rsz_vf_l(j, k, r, i) = flux_vf(i)%sf(r, k, dj*((p - 1) - 2*j) + j)*sign(1._wp, -1._wp*cbc_loc)
+                             end do
+                         end do
+                     end do
+                 end do
+                 $:END_GPU_PARALLEL_LOOP()
+-            else
++
+                 $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[j, k, r]', collapse=3)
+                 do r = is3%beg, is3%end
+                     do k = is2%beg, is2%end
+                         do j = -1, buff_size
+-                            flux_src_rsz_vf_l(j, k, r, eqn_idx%adv%beg) = flux_src_vf(eqn_idx%adv%beg)%sf(r, k, &
+-                                              & dj*((p - 1) - 2*j) + j)*sign(1._wp, -1._wp*cbc_loc)
++                            flux_rsz_vf_l(j, k, r, eqn_idx%mom%end) = flux_vf(eqn_idx%mom%end)%sf(r, k, dj*((p - 1) - 2*j) + j)
+                         end do
+                     end do
+                 end do
+                 $:END_GPU_PARALLEL_LOOP()
++
++                if (riemann_solver == riemann_solver_hll .and. .not. hll_u_interface) then
++                    $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[i, j, k, r]', collapse=4)
++                    do i = eqn_idx%adv%beg, eqn_idx%adv%end
++                        do r = is3%beg, is3%end
++                            do k = is2%beg, is2%end
++                                do j = -1, buff_size
++                                    flux_src_rsz_vf_l(j, k, r, i) = flux_src_vf(i)%sf(r, k, dj*((p - 1) - 2*j) + j)
++                                end do
++                            end do
++                        end do
++                    end do
++                    $:END_GPU_PARALLEL_LOOP()
++                else
++                    $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[j, k, r]', collapse=3)
++                    do r = is3%beg, is3%end
++                        do k = is2%beg, is2%end
++                            do j = -1, buff_size
++                                flux_src_rsz_vf_l(j, k, r, eqn_idx%adv%beg) = flux_src_vf(eqn_idx%adv%beg)%sf(r, k, &
++                                                  & dj*((p - 1) - 2*j) + j)*sign(1._wp, -1._wp*cbc_loc)
++                            end do
++                        end do
++                    end do
++                    $:END_GPU_PARALLEL_LOOP()
++                end if
+             end if
+         end if
+         ! END: Reshaping Inputted Data in z-direction
+@@ -1182,8 +1212,10 @@ contains
+ 
+         type(scalar_field), dimension(sys_size), intent(inout) :: flux_vf, flux_src_vf
+         integer                                                :: i, j, k, r  !< Generic loop iterators
++        integer                                                :: jend
+         ! Determining the indicial shift based on CBC location
+ 
++        jend = cbc_flux_jend
+         dj = max(0, cbc_loc)
+         $:GPU_UPDATE(device='[dj]', extraAccArgs='async')
+ 
+@@ -1193,7 +1225,7 @@ contains
+             do i = 1, flux_cbc_index
+                 do r = is3%beg, is3%end
+                     do k = is2%beg, is2%end
+-                        do j = -1, buff_size
++                        do j = -1, jend
+                             flux_vf(i)%sf(dj*((m - 1) - 2*j) + j, k, r) = flux_rsx_vf_l(j, k, r, i)*sign(1._wp, -1._wp*cbc_loc)
+                         end do
+                     end do
+@@ -1203,7 +1235,7 @@ contains
+             $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[j, k, r]', collapse=3)
+             do r = is3%beg, is3%end
+                 do k = is2%beg, is2%end
+-                    do j = -1, buff_size
++                    do j = -1, jend
+                         flux_vf(eqn_idx%mom%beg)%sf(dj*((m - 1) - 2*j) + j, k, r) = flux_rsx_vf_l(j, k, r, eqn_idx%mom%beg)
+                     end do
+                 end do
+@@ -1215,7 +1247,7 @@ contains
+                 do i = eqn_idx%adv%beg, eqn_idx%adv%end
+                     do r = is3%beg, is3%end
+                         do k = is2%beg, is2%end
+-                            do j = -1, buff_size
++                            do j = -1, jend
+                                 flux_src_vf(i)%sf(dj*((m - 1) - 2*j) + j, k, r) = flux_src_rsx_vf_l(j, k, r, i)
+                             end do
+                         end do
+@@ -1226,7 +1258,7 @@ contains
+                 $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[j, k, r]', collapse=3)
+                 do r = is3%beg, is3%end
+                     do k = is2%beg, is2%end
+-                        do j = -1, buff_size
++                        do j = -1, jend
+                             flux_src_vf(eqn_idx%adv%beg)%sf(dj*((m - 1) - 2*j) + j, k, r) = flux_src_rsx_vf_l(j, k, r, &
+                                         & eqn_idx%adv%beg)*sign(1._wp, -1._wp*cbc_loc)
+                         end do
+@@ -1242,7 +1274,7 @@ contains
+             do i = 1, flux_cbc_index
+                 do r = is3%beg, is3%end
+                     do k = is2%beg, is2%end
+-                        do j = -1, buff_size
++                        do j = -1, jend
+                             flux_vf(i)%sf(k, dj*((n - 1) - 2*j) + j, r) = flux_rsy_vf_l(j, k, r, i)*sign(1._wp, -1._wp*cbc_loc)
+                         end do
+                     end do
+@@ -1253,7 +1285,7 @@ contains
+             $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[j, k, r]', collapse=3)
+             do r = is3%beg, is3%end
+                 do k = is2%beg, is2%end
+-                    do j = -1, buff_size
++                    do j = -1, jend
+                         flux_vf(eqn_idx%mom%beg + 1)%sf(k, dj*((n - 1) - 2*j) + j, r) = flux_rsy_vf_l(j, k, r, eqn_idx%mom%beg + 1)
+                     end do
+                 end do
+@@ -1265,7 +1297,7 @@ contains
+                 do i = eqn_idx%adv%beg, eqn_idx%adv%end
+                     do r = is3%beg, is3%end
+                         do k = is2%beg, is2%end
+-                            do j = -1, buff_size
++                            do j = -1, jend
+                                 flux_src_vf(i)%sf(k, dj*((n - 1) - 2*j) + j, r) = flux_src_rsy_vf_l(j, k, r, i)
+                             end do
+                         end do
+@@ -1276,7 +1308,7 @@ contains
+                 $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[j, k, r]', collapse=3)
+                 do r = is3%beg, is3%end
+                     do k = is2%beg, is2%end
+-                        do j = -1, buff_size
++                        do j = -1, jend
+                             flux_src_vf(eqn_idx%adv%beg)%sf(k, dj*((n - 1) - 2*j) + j, r) = flux_src_rsy_vf_l(j, k, r, &
+                                         & eqn_idx%adv%beg)*sign(1._wp, -1._wp*cbc_loc)
+                         end do
+@@ -1293,7 +1325,7 @@ contains
+             do i = 1, flux_cbc_index
+                 do r = is3%beg, is3%end
+                     do k = is2%beg, is2%end
+-                        do j = -1, buff_size
++                        do j = -1, jend
+                             flux_vf(i)%sf(r, k, dj*((p - 1) - 2*j) + j) = flux_rsz_vf_l(j, k, r, i)*sign(1._wp, -1._wp*cbc_loc)
+                         end do
+                     end do
+@@ -1304,7 +1336,7 @@ contains
+             $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[j, k, r]', collapse=3)
+             do r = is3%beg, is3%end
+                 do k = is2%beg, is2%end
+-                    do j = -1, buff_size
++                    do j = -1, jend
+                         flux_vf(eqn_idx%mom%end)%sf(r, k, dj*((p - 1) - 2*j) + j) = flux_rsz_vf_l(j, k, r, eqn_idx%mom%end)
+                     end do
+                 end do
+@@ -1316,7 +1348,7 @@ contains
+                 do i = eqn_idx%adv%beg, eqn_idx%adv%end
+                     do r = is3%beg, is3%end
+                         do k = is2%beg, is2%end
+-                            do j = -1, buff_size
++                            do j = -1, jend
+                                 flux_src_vf(i)%sf(r, k, dj*((p - 1) - 2*j) + j) = flux_src_rsz_vf_l(j, k, r, i)
+                             end do
+                         end do
+@@ -1327,7 +1359,7 @@ contains
+                 $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[j, k, r]', collapse=3)
+                 do r = is3%beg, is3%end
+                     do k = is2%beg, is2%end
+-                        do j = -1, buff_size
++                        do j = -1, jend
+                             flux_src_vf(eqn_idx%adv%beg)%sf(r, k, dj*((p - 1) - 2*j) + j) = flux_src_rsz_vf_l(j, k, r, &
+                                         & eqn_idx%adv%beg)*sign(1._wp, -1._wp*cbc_loc)
+                         end do
+-- 
+2.47.3
+
