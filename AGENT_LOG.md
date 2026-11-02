@@ -131,3 +131,9 @@
   Resolved 11-02: the user built zstd 1.5.6 into `~/.local/bin` on nano4 themselves (a first paste broke the URL
   across lines). With `PATH=$HOME/.local/bin:$PATH` the hook passes; P20 committed in `mfc-p20` (1673013, 6611288)
   with the full precheck, exported as `patches/opt/0023`–`0024`.
+- 11-02: a register-cap sweep script reused worktree names (`mfc-r96`, `mfc-r255`) that already existed from earlier
+  experiments, because it only created a worktree "if the directory is missing". Its `sed -i` rewrote `mfc-r96`'s
+  CMakeLists.txt without changing its content (line 184 held no cap there), which updated the mtime and triggered a
+  rebuild of that old tree; I stopped the script before it reached `mfc-r255`. The sweep also repeated
+  ladder row 17 (caps 168/255 on the fused kernel, +7 %), which I had not checked first.
+  Rule: experiment scripts refuse an existing directory, and check the ladder before planning a sweep.
