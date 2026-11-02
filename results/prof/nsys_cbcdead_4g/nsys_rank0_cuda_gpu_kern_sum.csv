@@ -1,0 +1,27 @@
+Time (%),Total Time (ns),Instances,Avg (ns),Med (ns),Min (ns),Max (ns),StdDev (ns),Name
+23.8,18072858,30,602428.6,602159.0,600574,605407,1155.3,m_riemann_solver_hllc_s_hllc_riemann_solver_952_gpu_1
+23.3,17673626,30,589120.9,589071.0,587391,590943,996.3,m_riemann_solver_hllc_s_hllc_riemann_solver_952_gpu_2
+22.7,17256282,30,575209.4,575343.0,573439,576703,748.4,m_riemann_solver_hllc_s_hllc_riemann_solver_952_gpu
+15.4,11705545,30,390184.8,372496.0,370463,428031,26112.7,m_rhs_s_add_flux_differences_rk_update_slabs_2080_gpu
+5.3,4036985,30,134566.2,134463.5,133568,136832,706.2,m_variables_conversion_s_convert_conservative_to_primitive_variables_504_gpu
+2.4,1844668,1,1844668.0,1844668.0,1844668,1844668,0.0,m_rhs_s_initialize_rhs_module_551_gpu
+1.1,840318,30,28010.6,28064.0,24800,28928,789.7,m_cbc_s_cbc_618_gpu_2
+0.8,630173,120,5251.4,5392.0,3488,8480,1697.2,m_boundary_common_s_populate_bc_direction_198_gpu
+0.6,425376,30,14179.2,14096.0,13824,15296,344.7,m_boundary_common_s_populate_bc_direction_177_gpu
+0.6,422559,30,14085.3,14048.0,13632,14848,314.3,m_mpi_common_s_mpi_sendrecv_variables_buffers_639_gpu
+0.5,382558,30,12751.9,12576.0,12160,13888,468.3,m_mpi_common_s_mpi_sendrecv_variables_buffers_697_gpu
+0.5,382335,60,6372.3,6416.0,5760,7168,465.8,m_boundary_common_s_populate_bc_direction_177_gpu__2
+0.4,330016,30,11000.5,10944.0,10784,11456,175.4,m_boundary_common_s_populate_bc_direction_177_gpu__1
+0.4,278527,30,9284.2,9248.0,8928,10496,288.8,m_mpi_common_s_mpi_sendrecv_variables_buffers_861_gpu
+0.3,247712,30,8257.1,8192.0,8064,9056,201.4,m_mpi_common_s_mpi_sendrecv_variables_buffers_931_gpu
+0.3,208416,1,208416.0,208416.0,208416,208416,0.0,m_start_up_s_save_data_741_gpu
+0.3,208416,30,6947.2,6912.0,6688,7424,180.3,m_variables_conversion_s_convert_primitive_to_flux_variables_1072_gpu
+0.3,191007,30,6366.9,6320.0,6176,6976,184.4,m_cbc_s_initialize_cbc_1129_gpu
+0.2,172798,30,5759.9,5728.0,5600,6176,135.0,m_cbc_s_finalize_cbc_1323_gpu
+0.2,147072,1,147072.0,147072.0,147072,147072,0.0,m_start_up_s_save_data_760_gpu
+0.2,132160,30,4405.3,4352.0,4224,5024,169.2,m_cbc_s_cbc_583_gpu_2
+0.1,84544,30,2818.1,2816.0,2528,3296,192.7,m_cbc_s_cbc_599_gpu_2
+0.1,80959,1,80959.0,80959.0,80959,80959,0.0,m_start_up_s_save_data_760_gpu__red
+0.1,72159,30,2405.3,2368.0,2304,2624,88.1,m_cbc_s_finalize_cbc_1358_gpu
+0.1,70720,30,2357.3,2336.0,2304,2848,108.4,m_cbc_s_initialize_cbc_1141_gpu
+0.1,66560,30,2218.7,2240.0,2144,2272,37.0,m_cbc_s_finalize_cbc_1335_gpu
