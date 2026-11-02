@@ -1,0 +1,81 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index c773ef5..3db5023 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -187,6 +187,11 @@ if (MFC_SIMULATION)
+         # this file at 128 doubles that for a few L1-resident spills (best of 168/128/96 on H200).
+         set_source_files_properties("${CMAKE_BINARY_DIR}/fypp/simulation/m_weno.fpp.f90"
+                                     PROPERTIES COMPILE_OPTIONS "-gpu=maxregcount:128")
++
++        # The fused RK stage update (s_add_flux_differences_rk_update_slabs) is bound by memory traffic but compiles to 148
++        # registers: 3 blocks of 128 threads per SM. A cap of 128 gives it more resident warps to keep loads in flight.
++        set_source_files_properties("${CMAKE_BINARY_DIR}/fypp/simulation/m_rhs.fpp.f90"
++                                    PROPERTIES COMPILE_OPTIONS "-gpu=maxregcount:128")
+     endif()
+ 
+     MFC_SETUP_TARGET(TARGET  simulation
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index c773ef5..5b4706e 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -187,6 +187,11 @@ if (MFC_SIMULATION)
+         # this file at 128 doubles that for a few L1-resident spills (best of 168/128/96 on H200).
+         set_source_files_properties("${CMAKE_BINARY_DIR}/fypp/simulation/m_weno.fpp.f90"
+                                     PROPERTIES COMPILE_OPTIONS "-gpu=maxregcount:128")
++
++        # The fused RK stage update (s_add_flux_differences_rk_update_slabs) is bound by memory traffic but compiles to 148
++        # registers: 3 blocks of 128 threads per SM. A cap of 96 gives it more resident warps to keep loads in flight.
++        set_source_files_properties("${CMAKE_BINARY_DIR}/fypp/simulation/m_rhs.fpp.f90"
++                                    PROPERTIES COMPILE_OPTIONS "-gpu=maxregcount:96")
+     endif()
+ 
+     MFC_SETUP_TARGET(TARGET  simulation
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index c773ef5..d4b1cc1 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -187,6 +187,11 @@ if (MFC_SIMULATION)
+         # this file at 128 doubles that for a few L1-resident spills (best of 168/128/96 on H200).
+         set_source_files_properties("${CMAKE_BINARY_DIR}/fypp/simulation/m_weno.fpp.f90"
+                                     PROPERTIES COMPILE_OPTIONS "-gpu=maxregcount:128")
++
++        # The fused RK stage update (s_add_flux_differences_rk_update_slabs) is bound by memory traffic but compiles to 148
++        # registers: 3 blocks of 128 threads per SM. A cap of 64 gives it more resident warps to keep loads in flight.
++        set_source_files_properties("${CMAKE_BINARY_DIR}/fypp/simulation/m_rhs.fpp.f90"
++                                    PROPERTIES COMPILE_OPTIONS "-gpu=maxregcount:64")
+     endif()
+ 
+     MFC_SETUP_TARGET(TARGET  simulation
+diff --git a/src/simulation/m_rhs.fpp b/src/simulation/m_rhs.fpp
+index c770378..fff43cf 100644
+--- a/src/simulation/m_rhs.fpp
++++ b/src/simulation/m_rhs.fpp
+@@ -2099,7 +2099,13 @@ contains
+                         nfz0 = fx(q, k, l - 1, 1 + sz); nfz1 = fx(q, k, l, 1 + sz)
+                         duz = fs(q, k, l, uz) - fs(q, k, l - 1, uz)
+                     end if
+-                    nv1 = q1(q, k, l, 1); nvs = qs(q, k, l, 1)
++                    ! A first stage (save_stor) overwrites qs with q1 before using it, so its old values are not loaded.
++                    nv1 = q1(q, k, l, 1)
++                    if (save_stor) then
++                        nvs = nv1
++                    else
++                        nvs = qs(q, k, l, 1)
++                    end if
+                     $:GPU_LOOP(parallelism='[seq]')
+                     do j = 1, ns
+                         fx0 = nfx0; fx1 = nfx1; fy0 = nfy0; fy1 = nfy1; fz0 = nfz0; fz1 = nfz1; v1 = nv1; vs = nvs
+@@ -2112,7 +2118,12 @@ contains
+                             if (p > 0) then
+                                 nfz0 = fx(q, k, l - 1, jn + sz); nfz1 = fx(q, k, l, jn + sz)
+                             end if
+-                            nv1 = q1(q, k, l, jn); nvs = qs(q, k, l, jn)
++                            nv1 = q1(q, k, l, jn)
++                            if (save_stor) then
++                                nvs = nv1
++                            else
++                                nvs = qs(q, k, l, jn)
++                            end if
+                         end if
+                         r = inv_dx*(fx0 - fx1)
+                         if (j >= ab .and. j <= ae) then

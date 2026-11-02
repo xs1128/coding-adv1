@@ -1,0 +1,16 @@
+{
+ "label": "exp/rkreg_qs_1g/e2",
+ "ref": "ref/perf3d_201_30",
+ "checks": {
+  "state": {
+   "status": "PASS",
+   "bitwise": true,
+   "max_rel": 0.0,
+   "l2_rel": 0.0,
+   "nonfinite": 0,
+   "step": 30,
+   "reason": null
+  }
+ },
+ "status": "PASS"
+}
