@@ -114,7 +114,7 @@ Every experiment we ran, oldest first. Each kept change is the starting point fo
   portably; the runtime's own pinning settings were slower (row 54). Stopped here.
 
 ### What the fused kernel's local-memory traffic is (machine code of exp-cbcdead, no GPU run)
-- `cuobjdump -sass` of the x-sweep kernel: 248 local loads (209 of them 64-bit) and 52 local stores against 158 global
+- `cuobjdump -sass` of the x-sweep kernel: 257 local loads (210 of them 64-bit) and 52 local stores against 158 global
   loads; 86 `CALL`s. The relocation table names the calls: 71 × `__cuda_sm20_dblrcp_rn_slowpath_v3` and 13 ×
   `__cuda_sm20_dsqrt_rn_f64_mediumpath_v1`, the correctly rounded FP64 division and square-root fallbacks, taken only for
   rare inputs (subnormals and the like). They are what keeps results bitwise and cannot go.
