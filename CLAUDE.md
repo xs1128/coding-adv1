@@ -6,8 +6,10 @@ AP Research briefs (WRF + MFC): `ap-research/`. Plan: `PLAN.md`. Private notes: 
 
 ## App
 **MFC** v5.7.0 — https://github.com/MFlowCode/MFC, commit `0b3d56c8e1c9a3aa8d112681b72c87ab69fe5f13`.
-- `reference/MFC` — pinned submodule (read-only, for source reading/research).
-- nano4 `$ROOT/mfc` — working clone where builds happen; optimizations go on branch `p12` (worktree `mfc-p12` = v5.7.0 + 0001–0015: `p11` = 0001–0013, `p11fmt` adds 0014 = formatter only, `p12` adds 0015 = fused WENO5+HLLC, `p13` 0016, `p14` 0017, `p15` 0018 (worktree `mfc-rkfuse`, full GPU suite clean), `p16full` 0019 (worktree `mfc-p16`), `p17` 0020 (worktree `mfc-p17`), `p18` 0021 (worktree `mfc-p18` = v5.7.0 + 0001–0021, under the full suite), `p19` 0022 (**canonical**: worktree `mfc-rkb2`, reused from a rejected experiment, = v5.7.0 + 0001–0022; `p17ab`/`mfc-wpf` and `p18ab`/`mfc-rkpf` are the same without 0018, used for the A/Bs; `exp-savenan`/`mfc-savenan` is the same without 0018, used for the A/B runs); `mfc-p4` = the 10-31 report state; one clean commit per optimization; experiments on side branches) and are
+- `reference/MFC` — listed as a pinned submodule, but this checkout has none (no `.gitmodules`); to read the source
+  offline, apply `patches/opt/` to a v5.7.0 worktree of any local MFC clone (`git am --keep-cr`).
+- nano4 `$ROOT/mfc` — working clone where builds happen; optimizations go on branch `p12` (worktree `mfc-p12` = v5.7.0 + 0001–0015: `p11` = 0001–0013, `p11fmt` adds 0014 = formatter only, `p12` adds 0015 = fused WENO5+HLLC, `p13` 0016, `p14` 0017, `p15` 0018 (worktree `mfc-rkfuse`, full GPU suite clean), `p16full` 0019 (worktree `mfc-p16`), `p17` 0020 (worktree `mfc-p17`), `p18` 0021 (worktree `mfc-p18` = v5.7.0 + 0001–0021, under the full suite), `p19` 0022 (**canonical**: worktree `mfc-rkb2`, reused from a rejected experiment, = v5.7.0 + 0001–0022; `p17ab`/`mfc-wpf` and `p18ab`/`mfc-rkpf` are the same without 0018, used for the A/Bs; `exp-savenan`/`mfc-savenan` is the same without 0018, used for the A/B runs); `p20` 0023–0024 (worktree `mfc-p20` = v5.7.0 + 0001–0024, −10.5 % vs P19 at 1 GPU, bitwise;
+  full suite 672459–672470 pending, canonical once it passes); `mfc-p4` = the 10-31 report state; one clean commit per optimization; experiments on side branches) and are
   exported as patches into `patches/` here (so the history of every source change lives in this repo).
 
 ## SC26 rules we follow (spirit of scientific computing)
