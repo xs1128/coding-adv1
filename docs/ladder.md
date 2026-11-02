@@ -89,3 +89,10 @@ Every experiment we ran, oldest first. Each kept change is the starting point fo
   warps) was already tried in row 45 and lost (spills cost more than the extra warps help), and the one-thread-per-
   equation split (row 38) redoes shared work. No cheap win left here; the next idea would be explicit prefetch
   through shared memory, which OpenACC/OpenMP macros cannot express portably.
+
+### Where a stage goes after 0027 (nsys job 683428, exp-cbcdead, 1 GPU, 10 steps)
+- `results/prof/nsys_cbcdead_1g`: per RK stage the fused WENO5+HLLC sweeps take 2.23 / 2.32 / 2.32 ms (x / y / z, 70 %
+  of kernel time), the fused RK update 1.50 ms (15 %), the conversion to primitives 0.50 ms (5 %); everything else is a
+  few percent. The GPU is idle only ~0.02 ms per stage. Only the HLLC sweeps are big enough to matter now.
+- ncu of the fused kernel (`results/prof/ncu_fslab_fused`): 128 registers (the cap), 25 % occupancy, local-memory
+  traffic 26 % of all memory traffic. Raising the cap was last tried on P13 (row 17), before fusion and the slabs.
