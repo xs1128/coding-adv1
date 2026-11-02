@@ -23,6 +23,7 @@ All runs in one job on one node, taking turns (job 680943, 2026-11-03). Every ru
 | MFC v5.7.0 (original) | 77.8 ms | 1× |
 | **Ours: v5.7.0 + patches 0001–0024 ("P20")** | **29.8 ms** | **2.61×** |
 | Ours + 2 newer patches (0025–0026, still waiting for the full test suite) | 29.5 ms | 2.64× |
+| Ours + 3 newer patches (0025–0027, same; 0027 measured in a second A/B, so this is an estimate) | about 29.0 ms | about 2.68× |
 
 For comparison, the 10-31 report ("P4", patches 0001–0006) was 1.27× faster at 1 GPU (60.38 ms vs 76.74 ms, two
 chained A/Bs). On 4 and 8 GPUs the 10-31 numbers are 1.35× and 2.23×; later multi-GPU results are in [`report.md`](report.md) §11.
@@ -57,7 +58,8 @@ attempt, including the ones that failed.
 
 **Waiting for the full test suite** ([`patches/pending/`](patches/pending/)): 0025 lets the CPU queue one more
 boundary step instead of waiting for it, and 0026 fills the edge ("ghost") cells with one GPU thread per value. Together
-they save another 1.1 %.
+they save another 1.1 %. 0027 stops the boundary code (CBC) from copying data that its own kernels overwrite anyway;
+it saves another 1.6 % (jobs 681650 and 683029, bitwise) and passes all 34 CBC tests (682349).
 
 **Since the 10-31 report**, the time per step at 1 GPU went from ~60 ms to ~30 ms (see [`report.md`](report.md) §11).
 
@@ -68,7 +70,7 @@ they save another 1.1 %.
 | [`report.md`](report.md) | The full write-up (also built as `dist/report.pdf` by `tools/build_pdf.py`) |
 | [`slides/`](slides/) | Slides for the 11-11 talk ([Slidev](https://sli.dev)): `cd slides && npm install && npm run dev`; `npm run export` writes `dist/slides.pdf` |
 | [`patches/opt/`](patches/opt/) | Our 24 changes to MFC, one per file |
-| [`patches/pending/`](patches/pending/) | Two newer changes that are faster and give the same answers, but have not had the full test suite yet |
+| [`patches/pending/`](patches/pending/) | Three newer changes that are faster and give the same answers, but have not had the full test suite yet |
 | [`patches/exp/`](patches/exp/) | Experiments we tried, most of them rejected |
 | [`docs/`](docs/) | Explanations: each optimization, the ladder of attempts, how the test harness works, the code layout |
 | [`docs/background/`](docs/background/) | Research notes and papers we read |

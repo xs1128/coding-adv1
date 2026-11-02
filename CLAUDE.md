@@ -13,7 +13,8 @@ Private notes: `JOURNEY.md` (gitignored).
   - `mfc` = plain v5.7.0, `mfc-p4` = the 10-31 report state.
   - `mfc-p20` = **canonical** (v5.7.0 + 0001–0024, full test suite clean apart from the 23 known failures).
     `mfc-iomem` has the same source and is the A/B baseline.
-  - `mfc-p2fa` (branch `exp-p2fasync`) and `mfc-bcfast` (branch `exp-bcfast`) = newest candidates on top of P20.
+  - `mfc-p2fa` (branch `exp-p2fasync`), `mfc-bcfast` (`exp-bcfast`) and `mfc-cbcdead` (`exp-cbcdead`) = the pending
+    patches 0025, 0025–0026 and 0025–0027 on top of P20. `mfc-c2pslab` (`exp-c2pslab`, on cbcdead) was not adopted.
   - Older stages (`mfc-p12` … `mfc-p18`, `mfc-rkb2`, …) are kept only so old results can be rebuilt.
 
 ## SC26 rules we follow
@@ -44,6 +45,7 @@ Private notes: `JOURNEY.md` (gitignored).
 - Alias `nano4-u1131128` (the user's own account; needs OTP). Never use `*-chwang` or other people's aliases.
 - Compute nodes `25a-hgpn*`: 8× H200 (141 GB), 2× Xeon 8480+ (112 cores), Slurm. Login nodes rotate and have
   different GPUs, so never benchmark on them.
+- `/work/u1131128` is a 700 GB quota shared with the user's other projects; `harness/submit.sh` refuses below 10 GB free.
 - Toolchain: `source scripts/env.sh` loads NVHPC 26.3 (CUDA 13.1, HPC-X Open MPI, CUDA-aware) and cmake 4.0.0. nsys and ncu are in the NVHPC bin dir.
   `/work` has ~60 GB free, so keep outputs small.
 - `hpc <host> '<cmd>'` runs a single argument through the remote shell; use `bash -lc` when the command needs modules.

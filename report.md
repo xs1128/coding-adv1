@@ -11,7 +11,8 @@ Every number cites a Slurm job (a numbered batch job). Our changes are patches i
 **Update (2026-11-03, after the deadline):** at 1 GPU, in one same-node A/B (job 680943, every run bitwise identical),
 v5.7.0 takes 77.79 ms per step and P20 (patches 0001–0024) takes **29.83 ms: 2.61× faster**. The full GPU test suite on
 P20 shows only the 23 failures that v5.7.0 also has. Two more patches, still waiting for their full suite, bring it to
-29.49 ms (2.64×). Details in §11.
+29.49 ms (2.64×). A third (0027, CBC skips a copy its own kernels overwrite) takes another 1.6 % off in a second
+same-node A/B (683029), about 29.0 ms or 2.68× if the two A/Bs are multiplied. Details in §11.
 
 ## 1. Result
 
@@ -189,6 +190,11 @@ v5.7.0 vs P18 (job 670158): step **76.75 / 76.74 → 34.39 / 34.30 ms, 2.24×**;
 0025 runs the CBC primitive-to-flux conversion on the GPU queue instead of making the CPU wait; 0026 fills each ghost
 value with its own GPU thread. Both are in `patches/pending/`, not `patches/opt/`, because the full test suite has not
 run on them yet. The first try of this job (680922) stopped itself in 4 s: its node had the power brake on.
+
+0027 (also in `patches/pending/`): with WENO3/5 the CBC kernels overwrite every flux value the boundary routine copies
+back, so it no longer copies the fluxes in, and copies back only the layers it changed. Job 681650 (hgpn011):
+29.501 / 29.501 → 29.021 / 29.014 ms; job 683029 (hgpn001): 29.265 / 29.252 → 28.807 / 28.802 ms; −1.6 % both times,
+every arm bitwise. All 34 CBC tests pass (682349). Multiplying the two A/Bs gives about 29.0 ms, about 2.68×.
 
 **Several GPUs** (`rdma_mpi`, same node, P11 vs P18; bitwise):
 

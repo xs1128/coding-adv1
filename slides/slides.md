@@ -78,14 +78,14 @@ class: dark text-center
 
 <div class="grid grid-cols-3 gap-6 mt-12 text-left text-[15px]">
 <div>10-31 report (P4):<br><strong>1.27×</strong></div>
-<div>+ 2 newer patches, suite pending:<br><strong>2.64×</strong></div>
+<div>+ 3 newer patches, suite pending:<br><strong>≈2.68×</strong></div>
 <div>Full test suite on P20:<br><strong>same 23 failures as v5.7.0</strong></div>
 </div>
 
 <!--
 This is the headline. Original and optimized builds ran in the same job on the same node, taking turns, so the
 comparison is fair: 77.8 ms per step versus 29.8, 2.61 times faster. At the 10-31 report we were at 1.27 times. Two
-newer patches reach 2.64 times but haven't had the full test suite yet, so they are kept separate. The full suite
+newer patches reach 2.64 times, and a third one about 2.68, but they haven't had the full test suite yet, so they are kept separate. The full suite
 on the final version fails exactly the 23 tests that already fail on the original.
 -->
 
