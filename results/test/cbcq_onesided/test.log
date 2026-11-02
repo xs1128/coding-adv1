@@ -1,0 +1,48 @@
+mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn011 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 2
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | 
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Build | syscheck and pre_process
+
+
+ Build | syscheck and simulation
+
+
+
+ Test pre_process and simulation | Only C0127FD0, B85C5AB6, 7A9F4EF4, 3E400FBF, and 9C9B2CBC (5 tests)
+  
+     Progress      Test Name                                        Time(s)   UUID
+  
+     (  1/  5)    2D -> Example -> acoustic_support6_axisym            15.16    C0127FD0
+     (  2/  5)    2D -> Example -> axisym_shockwatercavity             15.16    3E400FBF
+     (  3/  5)    2D -> Example -> acoustic_support10_axisym           15.31    B85C5AB6
+     (  4/  5)    2D -> Example -> axisym_shockbubble                  15.36    7A9F4EF4
+     (  5/  5)    2D -> Example -> axisym_hypoelasticity               14.20    9C9B2CBC
+
+  
+
+╭──────────────────────────────── Test Summary ────────────────────────────────╮
+│                                                                              │
+│  ✓ ALL TESTS PASSED                                                          │
+│                                                                              │
+│       5 passed                                                               │
+│       0 failed                                                               │
+│     755 skipped                                                              │
+│    ────────────                                                              │
+│     760 total                                                                │
+│                                                                              │
+│    Time: 45.7s                                                               │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+
+mfc: (venv) Exiting the Python virtual environment.
