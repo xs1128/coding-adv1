@@ -128,3 +128,6 @@
 - Inner MFC commits on nano4 are blocked on login node lgn01: the pre-commit hook's lint runs a `tar --zstd` round
   trip and lgn01 has no zstd. Not bypassed (`--no-verify`); building zstd in user space was denied by the permission
   layer. The experiment diffs are versioned here (`patches/exp/`) until a commit can run the hook.
+  Resolved 11-02: the user built zstd 1.5.6 into `~/.local/bin` on nano4 themselves (a first paste broke the URL
+  across lines). With `PATH=$HOME/.local/bin:$PATH` the hook passes; P20 committed in `mfc-p20` (1673013, 6611288)
+  with the full precheck, exported as `patches/opt/0023`–`0024`.
