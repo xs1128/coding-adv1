@@ -100,3 +100,10 @@ Every experiment we ran, oldest first. Each kept change is the starting point fo
   few percent. The GPU is idle only ~0.02 ms per stage. Only the HLLC sweeps are big enough to matter now.
 - ncu of the fused kernel (`results/prof/ncu_fslab_fused`): 128 registers (the cap), 25 % occupancy, local-memory
   traffic 26 % of all memory traffic. Raising the cap was last tried on P13 (row 17), before fusion and the slabs.
+
+### What is left of a 1-GPU run with `ob1` and `/dev/shm` (nsys 684808, CPU sampling + OS runtime)
+- The simulation process takes ~2.87 s: MPI start-up 0.66 s (mostly the CUDA driver setting up: 207 ms of `ioctl`),
+  reading modules and the initial state 0.55 s (115 ms of `pread` from RAM plus a CPU copy into the arrays), GPU set-up
+  0.07 s, time loop 0.89 s, save 0.48 s (the 311 ms pageable device-to-host copy plus 180 ms of `pwrite`), finish 0.07 s.
+- The one sizeable piece left is that copy. Fixing it needs pinned host buffers, which OpenACC/OpenMP cannot allocate
+  portably; the runtime's own pinning settings were slower (row 54). Stopped here.
