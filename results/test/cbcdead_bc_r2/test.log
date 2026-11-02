@@ -1,0 +1,199 @@
+mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn011 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 2
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | 
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Build | syscheck and pre_process
+
+
+ Build | syscheck and simulation
+
+
+ Build | syscheck and pre_process | Chemistry: h2o2.yaml
+
+
+ Build | syscheck and simulation | Chemistry: h2o2.yaml
+
+
+
+ Test pre_process and simulation | Only 1843DA80, 7F70E665, 0E240AD7, 8D8F6424, 8BCBAED8, 9DCBE54F, 28D037A7, 43A1D3C6, 5173E637, A1B2B963, 32DD0363, 0387594F, 7DCA9229, 1E62093F, 6ED50013, 8339878C, 408BF558, BFAA7587, 67A5ECF8, 8E56ACC1, and 4587725A (21 tests)
+  
+     Progress      Test Name                                        Time(s)   UUID
+  
+  
+     ✗ FAILED: 2D -> 1 Fluid(s) -> Viscous -> IBM -> Circle ->...
+       UUID: 1843DA80
+       Attempts: 1
+       Error: Test tests/1843DA80: 2D -> 1 Fluid(s) -> Viscous -> IBM -> Circle -> slip -> model_eqns=3 -> eos=mie_gruneisen: Variable n°1 (1-indexed) in D/cons.6.00.000050.dat is not within tolerance:
+  - Candidate:   3.87298334620744
+  - Golden:      2.5
+  - Error:       abs: 1.37E+00, rel: 5.49E-01
+  - Tolerance:   abs: 1.00E-10, rel: 1.00E-10
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.6.00.000050.dat
+ - Variable n°42
+ - Candidate: 10.74611523435182
+ - Golden: 2.8203125
+ - Absolute Error: 7.93E+00
+ - Relative Error: 2.81E+00
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.6.00.000050.dat
+ - Variable n°42
+ - Candidate: 10.74611523435182
+ - Golden: 2.8203125
+ - Relative Error: 2.81E+00
+ - Absolute Error: 7.93E+00
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+  
+     ✗ FAILED: 2D -> 1 Fluid(s) -> Viscous -> IBM -> model_eqn...
+       UUID: 7F70E665
+       Attempts: 1
+       Error: Test tests/7F70E665: 2D -> 1 Fluid(s) -> Viscous -> IBM -> model_eqns=3 -> slip: Variable n°1 (1-indexed) in D/cons.6.00.000050.dat is not within tolerance:
+  - Candidate:   2.95803989154996
+  - Golden:      2.5
+  - Error:       abs: 4.58E-01, rel: 1.83E-01
+  - Tolerance:   abs: 1.00E-10, rel: 1.00E-10
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.6.00.000050.dat
+ - Variable n°41
+ - Candidate: 2.95803995254323
+ - Golden: 0.25000001320108
+ - Absolute Error: 2.71E+00
+ - Relative Error: 1.08E+01
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.6.00.000050.dat
+ - Variable n°41
+ - Candidate: 2.95803995254323
+ - Golden: 0.25000001320108
+ - Relative Error: 1.08E+01
+ - Absolute Error: 2.71E+00
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+  
+     ✗ FAILED: 2D -> 2 Fluid(s) -> Viscous -> IBM -> Circle ->...
+       UUID: 0E240AD7
+  
+       Attempts: 1
+     ✗ FAILED: 2D -> 2 Fluid(s) -> Viscous -> IBM -> model_eqn...
+       Error: Test tests/0E240AD7: 2D -> 2 Fluid(s) -> Viscous -> IBM -> Circle -> slip -> model_eqns=3 -> eos=mie_gruneisen: Variable n°5 (1-indexed) in D/cons.6.00.000050.dat is not within tolerance:
+  - Candidate:   0.89999999886745
+  - Golden:      0.89999999970756
+  - Error:       abs: 8.40E-10, rel: 9.33E-10
+  - Tolerance:   abs: 1.00E-10, rel: 1.00E-10
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.8.00.000050.dat
+ - Variable n°1
+ - Candidate: 0.657
+ - Golden: 2.4795
+ - Absolute Error: 1.82E+00
+ - Relative Error: 7.35E-01
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.9.00.000050.dat
+ - Variable n°1
+ - Candidate: 0.0475
+ - Golden: 0.25
+ - Relative Error: 8.10E-01
+ - Absolute Error: 2.03E-01
+
+       UUID: 8D8F6424
+       Hint: Consider --generate to update golden files or check tolerances
+       Attempts: 1
+  
+       Error: Test tests/8D8F6424: 2D -> 2 Fluid(s) -> Viscous -> IBM -> model_eqns=3 -> slip: Variable n°6 (1-indexed) in D/cons.6.00.000050.dat is not within tolerance:
+  - Candidate:   0.50000000673073
+  - Golden:      0.50000000379261
+  - Error:       abs: 2.94E-09, rel: 5.88E-09
+  - Tolerance:   abs: 1.00E-10, rel: 1.00E-10
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.8.00.000050.dat
+ - Variable n°1
+ - Candidate: 0.4275
+ - Golden: 2.25
+ - Absolute Error: 1.82E+00
+ - Relative Error: 8.10E-01
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.8.00.000050.dat
+ - Variable n°1
+ - Candidate: 0.4275
+ - Golden: 2.25
+ - Relative Error: 8.10E-01
+ - Absolute Error: 1.82E+00
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+     (  1/ 21)    3D -> bc=-16                                         16.91    8BCBAED8
+     (  2/ 21)    3D -> bc=-17                                         16.86    9DCBE54F
+     (  3/ 21)    3D -> 1 Fluid(s) -> IBM -> Cuboid -> slip            17.88    43A1D3C6
+     (  4/ 21)    3D -> 1 Fluid(s) -> IBM -> Sphere -> slip            17.94    28D037A7
+     (  5/ 21)    3D -> 1 Fluid(s) -> IBM -> Cylinder -> slip          17.17    5173E637
+     (  6/ 21)    3D -> 1 Fluid(s) -> Viscous -> IBM -> Sphere ->...   17.12    A1B2B963
+     (  7/ 21)    3D -> 1 Fluid(s) -> Viscous -> IBM -> Cuboid ->...   21.49    32DD0363
+     (  8/ 21)    3D -> 1 Fluid(s) -> Viscous -> IBM -> Cylinder ...   21.45    0387594F
+     (  9/ 21)    3D -> 2 Fluid(s) -> IBM -> Cuboid -> slip            18.71    1E62093F
+     ( 10/ 21)    3D -> 2 Fluid(s) -> IBM -> Sphere -> slip            18.78    7DCA9229
+     ( 11/ 21)    3D -> 2 Fluid(s) -> Viscous -> IBM -> Sphere ->...   17.63    8339878C
+     ( 12/ 21)    3D -> 2 Fluid(s) -> IBM -> Cylinder -> slip          17.70    6ED50013
+     ( 13/ 21)    3D -> 2 Fluid(s) -> Viscous -> IBM -> Cuboid ->...   22.15    408BF558
+     ( 14/ 21)    3D -> 2 Fluid(s) -> Viscous -> IBM -> Cylinder ...   22.12    BFAA7587
+     ( 15/ 21)    3D -> Hypoelasticity -> 1 Fluid(s) -> bc=-2          18.27    67A5ECF8
+     ( 16/ 21)    1D -> Chemistry -> Dual Isothermal Wall Gradient     18.83    8E56ACC1
+     ( 17/ 21)    2D -> Chemistry -> Isothermal Wall                   14.45    4587725A
+
+  
+
+╭──────────────────────────────── Test Summary ────────────────────────────────╮
+│                                                                              │
+│  ✗ 4 TESTS FAILED                                                            │
+│                                                                              │
+│      17 passed                                                               │
+│       4 failed                                                               │
+│     739 skipped                                                              │
+│    ────────────                                                              │
+│     760 total                                                                │
+│                                                                              │
+│    Time: 3m 22.1s                                                            │
+│                                                                              │
+│    Failed Tests:                                                             │
+│      • 2D -> 1 Fluid(s) -> Viscous -> IBM ->...                              │
+│        UUID: 1843DA80                                                        │
+│        (tolerance mismatch)                                                  │
+│      • 2D -> 1 Fluid(s) -> Viscous -> IBM ->...                              │
+│        UUID: 7F70E665                                                        │
+│        (tolerance mismatch)                                                  │
+│      • 2D -> 2 Fluid(s) -> Viscous -> IBM ->...                              │
+│        UUID: 0E240AD7                                                        │
+│        (tolerance mismatch)                                                  │
+│      • 2D -> 2 Fluid(s) -> Viscous -> IBM ->...                              │
+│        UUID: 8D8F6424                                                        │
+│        (tolerance mismatch)                                                  │
+│                                                                              │
+│    Next Steps:                                                               │
+│      • Run with --generate to update golden files (if changes are            │
+│  intentional)                                                                │
+│      • Check individual test output in tests/<UUID>/                         │
+│      • Run specific test: ./mfc.sh test --only <UUID>                        │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+
+mfc: ERROR > main.py finished with a 4 exit code.
+mfc: (venv) Exiting the Python virtual environment.
