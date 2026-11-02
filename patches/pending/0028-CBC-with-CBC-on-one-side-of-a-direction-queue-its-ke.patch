@@ -1,0 +1,194 @@
+From 5040ae947c85e44cdd525a49bea551d1c557c025 Mon Sep 17 00:00:00 2001
+From: xs1128 <ooixinsheng@gmail.com>
+Date: Tue, 3 Nov 2026 07:22:23 +0800
+Subject: [PATCH] CBC: with CBC on one side of a direction, queue its kernels
+ on a second OpenACC queue ahead of the Riemann solve
+
+The CBC setup, flux conversion and FD kernels are small (79-316 blocks) and since 0027 read only the primitive state, so
+s_compute_directional_rhs now queues them (s_cbc phase 1) on OpenACC queue 2, which first waits for all queued work, and
+they run alongside the Riemann solve of that direction on the default queue. The s_cbc call after the solve then only
+copies back, after the default queue waits for queue 2. Used only for OpenACC with NVHPC, CBC kernels that never read
+the Riemann fluxes, and CBC on exactly one side of the direction (both sides share the work arrays); otherwise unchanged.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ src/simulation/m_cbc.fpp | 91 ++++++++++++++++++++++++++++++++++++----
+ src/simulation/m_rhs.fpp |  7 ++++
+ 2 files changed, 89 insertions(+), 9 deletions(-)
+
+diff --git a/src/simulation/m_cbc.fpp b/src/simulation/m_cbc.fpp
+index 228f8ad..e921308 100644
+--- a/src/simulation/m_cbc.fpp
++++ b/src/simulation/m_cbc.fpp
+@@ -12,14 +12,18 @@ module m_cbc
+     use m_global_parameters
+     use m_variables_conversion
+     use m_compute_cbc
+-    use m_constants, only: riemann_solver_hll, model_eqns_gamma_law, recon_type_weno, recon_type_muscl
++    use m_constants, only: riemann_solver_hll, model_eqns_gamma_law, recon_type_weno, recon_type_muscl, BC_CHAR_SLIP_WALL, &
++        & BC_CHAR_SUP_OUTFLOW
++#if defined(MFC_OpenACC) && defined(MFC_NVHPC)
++    use openacc, only: acc_set_default_async, acc_get_default_async
++#endif
+     use m_thermochem, only: get_mixture_energy_mass, get_mixture_specific_heat_cv_mass, get_mixture_specific_heat_cp_mass, &
+         & gas_constant, get_mixture_molecular_weight, get_species_enthalpies_rt, molecular_weights, get_species_specific_heats_r, &
+         & get_mole_fractions
+ 
+     implicit none
+ 
+-    private; public :: s_initialize_cbc_module, s_cbc, s_finalize_cbc_module
++    private; public :: s_initialize_cbc_module, s_cbc, s_finalize_cbc_module, f_cbc_split
+ 
+     ! The cell-average primitive variables. They are obtained by reshaping (RS) q_prim_vf in the coordinate direction normal to the
+     ! domain boundary along which the CBC is applied.
+@@ -76,6 +80,12 @@ module m_cbc
+     logical :: cbc_flux_overwritten
+     integer :: cbc_flux_jend
+ 
++    !> Side (-1/+1) of each direction whose CBC kernels were queued ahead of the Riemann solve (s_cbc phase 1) and still need their
++    !! copy-back; 0 if none. See f_cbc_split.
++    integer, dimension(1:3) :: cbc_pending = 0
++    !> OpenACC queue for CBC kernels queued ahead of the Riemann solve
++    integer, parameter :: cbc_queue = 2
++
+     ! GRCBC inputs for subsonic inflow and outflow conditions consisting of inflow velocities, pressure, density and void fraction
+     ! as well as outflow velocities and pressure
+ 
+@@ -480,18 +490,22 @@ contains
+     end subroutine s_associate_cbc_coefficients_pointers
+ 
+     !> Apply characteristic boundary conditions by modifying fluxes near domain boundaries
+-    subroutine s_cbc(q_prim_vf, flux_vf, flux_src_vf, cbc_dir_norm, cbc_loc_norm, ix, iy, iz)
++    subroutine s_cbc(q_prim_vf, flux_vf, flux_src_vf, cbc_dir_norm, cbc_loc_norm, ix, iy, iz, phase)
+ 
+         type(scalar_field), dimension(sys_size), intent(in)    :: q_prim_vf
+         type(scalar_field), dimension(sys_size), intent(inout) :: flux_vf, flux_src_vf
+         integer, intent(in)                                    :: cbc_dir_norm, cbc_loc_norm
+         type(int_bounds_info), intent(in)                      :: ix, iy, iz
+-        real(wp)                                               :: drho_dt
+-        real(wp)                                               :: dpres_dt
+-        real(wp)                                               :: dgamma_dt
+-        real(wp)                                               :: dpi_inf_dt
+-        real(wp)                                               :: dqv_dt
+-        real(wp)                                               :: dpres_ds
++        !> 1: queue the CBC kernels on cbc_queue only (called before the Riemann solve, see f_cbc_split). Absent: everything, or
++        !! only the copy-back if phase 1 already ran for this boundary.
++        integer, intent(in), optional :: phase
++        integer                       :: default_queue
++        real(wp)                      :: drho_dt
++        real(wp)                      :: dpres_dt
++        real(wp)                      :: dgamma_dt
++        real(wp)                      :: dpi_inf_dt
++        real(wp)                      :: dqv_dt
++        real(wp)                      :: dpres_ds
+ 
+         #:if USING_AMD
+             real(wp), dimension(20) :: L
+@@ -535,6 +549,25 @@ contains
+         cbc_dir = cbc_dir_norm
+         cbc_loc = cbc_loc_norm
+ 
++#if defined(MFC_OpenACC) && defined(MFC_NVHPC)
++        if (cbc_pending(cbc_dir) == cbc_loc .and. .not. present(phase)) then
++            ! Phase 1 queued this boundary's kernels on cbc_queue; the copy-back must follow both them and the Riemann solve
++            ! (queued since on the default queue), and nothing has touched this module's state in between.
++            cbc_pending(cbc_dir) = 0
++            $:GPU_WAIT(extraAccArgs='(cbc_queue) async')
++            call s_finalize_cbc(flux_vf, flux_src_vf)
++            return
++        end if
++        if (present(phase)) then
++            ! Start only after everything already queued (the halo fill of q_prim_vf and the previous direction's copy-back),
++            ! then send this routine's async work, including the conversion it calls, to cbc_queue so it runs alongside the
++            ! Riemann solve queued next on the default queue.
++            $:GPU_WAIT(extraAccArgs='async(cbc_queue)')
++            default_queue = acc_get_default_async()
++            call acc_set_default_async(cbc_queue)
++        end if
++#endif
++
+         $:GPU_UPDATE(device='[cbc_dir, cbc_loc]', extraAccArgs='async')
+ 
+         call s_initialize_cbc(q_prim_vf, flux_vf, flux_src_vf, ix, iy, iz)
+@@ -933,6 +966,14 @@ contains
+ 
+         ! END: FD2 or FD4 of RHS at j = 0
+ 
++#if defined(MFC_OpenACC) && defined(MFC_NVHPC)
++        if (present(phase)) then
++            call acc_set_default_async(default_queue)
++            cbc_pending(cbc_dir) = cbc_loc
++            return
++        end if
++#endif
++
+         ! The reshaping of outputted data and disssociation of the FD and PI coefficients, or CBC coefficients, respectively, based
+         ! on selected CBC coordinate direction.
+         call s_finalize_cbc(flux_vf, flux_src_vf)
+@@ -941,6 +982,38 @@ contains
+ 
+     end subroutine s_cbc
+ 
++    !> Whether direction cbc_dir_in's CBC can run its kernels alongside the Riemann solve (s_cbc phase 1 before it, the copy-back
++    !! after): OpenACC with NVHPC async queues, CBC kernels that never read the Riemann fluxes (cbc_flux_overwritten), and CBC on
++    !! exactly one side of the direction, since both sides share this direction's work arrays. loc: that side.
++    function f_cbc_split(cbc_dir_in, loc) result(split)
++
++        integer, intent(in)   :: cbc_dir_in
++        integer, intent(out)  :: loc
++        logical               :: split
++        type(int_bounds_info) :: bc
++        logical               :: cbc_beg, cbc_end
++
++        split = .false.
++        loc = 0
++#if defined(MFC_OpenACC) && defined(MFC_NVHPC)
++        if (.not. cbc_flux_overwritten) return
++        if (cbc_dir_in == 1) then
++            bc = bc_x
++        else if (cbc_dir_in == 2) then
++            bc = bc_y
++        else
++            bc = bc_z
++        end if
++        cbc_beg = bc%beg <= BC_CHAR_SLIP_WALL .and. bc%beg >= BC_CHAR_SUP_OUTFLOW
++        cbc_end = bc%end <= BC_CHAR_SLIP_WALL .and. bc%end >= BC_CHAR_SUP_OUTFLOW
++        if (cbc_beg .neqv. cbc_end) then
++            split = .true.
++            loc = merge(-1, 1, cbc_beg)
++        end if
++#endif
++
++    end function f_cbc_split
++
+     !> Set up the selected CBC for the current boundary
+     subroutine s_initialize_cbc(q_prim_vf, flux_vf, flux_src_vf, ix, iy, iz)
+ 
+diff --git a/src/simulation/m_rhs.fpp b/src/simulation/m_rhs.fpp
+index c770378..eafe5cd 100644
+--- a/src/simulation/m_rhs.fpp
++++ b/src/simulation/m_rhs.fpp
+@@ -1116,6 +1116,7 @@ contains
+         integer, intent(in)                                    :: id
+         type(scalar_field), dimension(sys_size), intent(inout) :: rhs_vf
+         logical, intent(in)                                    :: is_hat_L
++        integer                                                :: cbc_side
+ 
+         ! Configuring Coordinate Direction Indexes
+ 
+@@ -1128,6 +1129,12 @@ contains
+         end if
+         irx%end = m; iry%end = n; irz%end = p
+ 
++        ! CBC on one side of this direction whose kernels do not read the Riemann fluxes: queue them now on their own OpenACC
++        ! queue so they run alongside the Riemann solve; the s_cbc call in s_compute_advection_source_term then only copies back.
++        if (f_cbc_split(id, cbc_side)) then
++            call s_cbc(q_prim_qp%vf, flux_n(id)%vf, flux_src_n(id)%vf, id, cbc_side, irx, iry, irz, phase=1)
++        end if
++
+         ! Computing Riemann Solver Flux and Source Flux
+         call nvtxStartRange("RHS-RIEMANN-SOLVER")
+         call s_riemann_solver(qR_rsx_vf, dqR_prim_dx_n(id)%vf, dqR_prim_dy_n(id)%vf, dqR_prim_dz_n(id)%vf, qR_prim(id)%vf, &
+-- 
+2.47.3
+
