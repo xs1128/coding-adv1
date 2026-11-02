@@ -1,0 +1,17 @@
+{
+  "name": "mfc-h200-slides",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "slidev slides.md --open",
+    "build": "slidev build slides.md --base ./ --out dist",
+    "export": "slidev export slides.md --output ../dist/slides.pdf"
+  },
+  "dependencies": {
+    "@slidev/cli": "53.0.0",
+    "@slidev/theme-default": "0.25.0"
+  },
+  "devDependencies": {
+    "playwright-chromium": "^1.55.0"
+  }
+}

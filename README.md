@@ -66,6 +66,7 @@ they save another 1.1 %.
 | Folder / file | What's inside |
 |---|---|
 | [`report.md`](report.md) | The full write-up (also built as `dist/report.pdf` by `tools/build_pdf.py`) |
+| [`slides/`](slides/) | Slides for the 11-11 talk ([Slidev](https://sli.dev)): `cd slides && npm install && npm run dev`; `npm run export` writes `dist/slides.pdf` |
 | [`patches/opt/`](patches/opt/) | Our 24 changes to MFC, one per file |
 | [`patches/pending/`](patches/pending/) | Two newer changes that are faster and give the same answers, but have not had the full test suite yet |
 | [`patches/exp/`](patches/exp/) | Experiments we tried, most of them rejected |
