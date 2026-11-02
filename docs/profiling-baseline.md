@@ -1,87 +1,87 @@
-# Baseline measurements and profiling — MFC v5.7.0 on nano4 H200 (2026-10-22)
+# Starting point: where the time went (MFC v5.7.0, nano4 H200, 2026-10-22)
 
-Case: `harness/cases/perf3d.py` = upstream `examples/3D_performance_test` (5-eq, 2 fluids, WENO5-M, HLLC, RK3,
-FP64, stretched grid), 201³ cells (strong) or 8.12 M cells/GPU (weak), 30 steps, NVHPC 26.3 OpenACC,
-HPC-X 2.25.1 mpirun, 1 rank/GPU, `OMPI_MCA_io=romio321`, no CPU binding. Every number → `results/<path>`.
+We measured the unchanged code first. Case: `harness/cases/perf3d.py` = upstream `examples/3D_performance_test`
+(2 fluids, WENO5-M, HLLC, RK3, FP64), 201³ cells ("strong": same problem, more GPUs) or 8.12 M cells per GPU
+("weak"), 30 steps, 1 rank (MPI process) per GPU. Every number points to `results/<path>`.
 
-## Environment fixes needed before anything ran (all disclosed, none touch numerics)
-| Problem | Evidence | Fix |
-|---|---|---|
-| `srun` cannot init HPC-X OMPI | results/base/failed_600131_srun | `mpirun` (`-b mpirun`) |
-| OMPI core binding outside cgroup cpuset | results/base/failed_600134_bind | `OMPI_MCA_hwloc_base_binding_policy=none` |
-| OMPIO on WekaFS: `MPI_File_write_all` 337 s at 2 ranks; `MPI_File_close` segfault at 4 ranks | results/old/scale_ompio, results/prof/nsys_caseopt_2g | `OMPI_MCA_io=romio321` |
-| nsys cannot write /tmp/nvidia on some nodes | results/prof/nsys_caseopt_4g_romio (job 600177) | per-job TMPDIR in /dev/shm |
+A **kernel** is one GPU function run over many cells. **WENO5** builds smooth values at cell faces; **HLLC** works
+out what flows across them. A **halo exchange** swaps border cells between GPUs. **nsys** records a timeline;
+**ncu** looks closely at one kernel. **Grind** is MFC's speed number (ns per grid point per equation per RHS
+pass); lower is better.
+
+## Fixes needed before anything ran (settings only, disclosed, math untouched)
+`srun` could not start Open MPI → `mpirun`. Open MPI pinned cores outside the job's CPUs → binding off. Default MPI
+file I/O took 337 s at 2 ranks and crashed at 4 → `OMPI_MCA_io=romio321`. nsys could not write /tmp/nvidia on
+some nodes → TMPDIR in /dev/shm. (Evidence: results/base/failed_600131_srun, results/base/failed_600134_bind,
+results/old/scale_ompio, job 600177.)
 
 ## 1 GPU
-| Build | grind ns/gp/eq/rhs | wall (30 steps) | job |
+| Build | grind | wall (30 steps) | job |
 |---|---|---|---|
-| generic `--gpu acc` | 0.930 (±0.1 %) | 10.8 s | base/generic_1g (600136) |
-| `--case-optimization` | **0.397** (±0.2 %) | 7.5 s | base/caseopt_1g (600139) |
+| generic | 0.930 | 10.8 s | 600136 |
+| case-optimized (built for this one case) | **0.397** | 7.5 s | 600139 |
 
-Reference: MFC docs H100 SXM 0.38, GH200 0.32; issue #2088 reports master 0.41–0.47 on H200 → we reproduce the
-known regression vs v4.9.3 (0.346).
+Upstream reports 0.41–0.47 on H200 (issue #2088), slower than v4.9.3 (0.346); we see the same.
 
-nsys (prof/nsys_caseopt_1g, 10 steps): GPU busy ≈96 % of a stage (25.3 of 26.3 ms); 66 kernel launches/stage.
-Wall of a 10-step run: INIT 3.9 s (MPI_Init 2.2 s), SAVE-DATA 1.4 s, stepping 0.82 s.
+nsys: the GPU is busy ≈96 % of a stage (66 kernel launches). A 10-step run spends 3.9 s starting up, 1.4 s saving
+data, and only 0.82 s stepping.
 
-ncu (prof/ncu_caseopt_1g; clocks locked at 1.48 GHz so durations ≈25 % inflated):
-| kernel (per stage) | share | regs | warps active | DRAM | note |
-|---|---|---|---|---|---|
-| WENO5 ×3 | 34 % | 188–196 | 12 % (2 blocks/SM) | 10 % | FP64 pipe 31 %, latency-bound (wait/long_scoreboard) |
-| HLLC ×3 | 25 % | 127–160 | 17–23 % | 31–42 % | no spills in case-opt build; long_scoreboard |
-| copy-like (pack ×3, finalize ×3, rhs copy, flux-diff ×3, RK, cons→prim) | ≈25 % | 44–66 | 40–56 % | 24–37 % (1.2–1.8 TB/s) | SM 64–74 %: instruction-bound index math |
+ncu (prof/ncu_caseopt_1g): "regs" are registers, each thread's tiny fast storage. The more a thread needs, the
+fewer threads run at once ("warps active").
 
-## Multi-GPU (case-opt), one node
-Grind (= min over stages, max over ranks — optimistic) and the honest **median step time** from nsys NVTX.
-| GPUs | strong grind | strong speedup (grind) | weak stage (grind) | weak eff. | wall strong / weak |
-|---|---|---|---|---|---|
-| 1 | 0.397 | 1.00 | 25.8 ms | 100 % | 7.5 / 7.5 s |
-| 2 | 0.258 | 1.54 | 27.4 ms | 94 % | 10 / 12 s |
-| 4 | 0.158 | 2.51 | 30.4 ms | 85 % | 13.6 / 17.3 s |
-| 8 | 0.111 | 3.57 | 35.4 ms | 73 % | 18.8 / 31.0 s |
-| 8, `rdma_mpi=T` | **0.071** | **5.57** | **25.8 ms** | **≈100 %** | 18.7 / 26.6 s |
-(results/scale/*; jobs 600171–600180)
-
-Correctness: final states (step 30) of 2/4/8 GPUs, host-staged and RDMA, are **bitwise identical** to 1 GPU
-(results/scale/*/compare_vs_1g.json).
-
-nsys per-step distribution (rank 0, 10 steps; prof/nsys_caseopt_{1g,4g_romio,8g_romio,8g_rdma}):
-| config | TIMESTEP median | COMPUTE-RHS median | RHS-COMMUNICATION median | first step |
+| kernel | share of stage | regs | warps active | memory speed used |
 |---|---|---|---|---|
-| 1 GPU | 81.2 ms | 25.9 ms | 0.38 ms (BC only) | 89 ms |
-| 4 GPU host-staged | 32.6 ms | 10.3 ms | 3.05 ms (30 %) | 46 ms |
-| 8 GPU host-staged | 26.0 ms | 8.3 ms | 4.42 ms (53 %) | 50 ms |
-| 8 GPU RDMA | **16.5 ms** | 5.25 ms | 1.35 ms (26 %) | **175 ms** (one-off IPC setup) |
+| WENO5 | 34 % | 188–196 | 12 % | 10 % (waits on memory) |
+| HLLC | 25 % | 127–160 | 17–23 % | 31–42 % |
+| copy-like kernels | ≈25 % | 44–66 | 40–56 % | 24–37 % (busy with index math) |
 
-## Identified bottlenecks (ranked by impact on multi-GPU time-to-solution)
-1. **Halo exchange is serial, blocking and (by default) host-staged.** 53 % of a stage at 8 GPUs strong;
-   RDMA cuts it to 26 % but 6 sequential blocking `MPI_Sendrecv` + pack/unpack with no compute overlap remain.
-   Strong-scaling efficiency at 8 GPUs: 45 % (grind, host-staged) → 62 % (median step, RDMA).
-2. **Fixed per-run costs grow with rank count** (not in grind): MPI_Init 2.2 s (1 rank) → 7–29 s (8 ranks,
-   under nsys), 996 MPI_Bcast at startup, MPI_Finalize 2 s, MPI-IO. Wall at 8 GPUs ≈ 2.5× the 1-GPU wall for
-   the 30-step benchmark despite 5× faster steps.
-3. **Single-GPU kernel efficiency** (sets the compute floor; faster kernels make comm relatively worse):
-   WENO register-limited occupancy, instruction-bound copy kernels at ~30 % of HBM bandwidth, ≈18 % of stage in
-   redundant copies.
-4. **Load imbalance**: kernel launches per rank 992–2072 (boundary ranks run BC/CBC kernels; interior ranks
-   more pack/unpack) → neighbours wait in Sendrecv (variance: max/median Sendrecv ≈ 10×).
-5. **Variance / first-step cost of RDMA** (175 ms first step) — amortized in long runs, matters for short ones.
+## Several GPUs on one node
+Grind is optimistic (fastest stage, slowest rank); the honest number is the **median step**. `rdma_mpi=T` sends
+halos straight from GPU to GPU; otherwise they go through the CPU ("host-staged").
 
-## Per-rank imbalance at 8 GPUs (prof/nsys_caseopt_8g_{rdma,romio}, medians per stage)
-Decomposition 2×2×2: every rank has 3 MPI faces + 3 physical faces; `end` faces are CBC (bc=−6), `beg` reflective.
-| rank | GPU kernels | RHS − comm (RDMA) | comm (RDMA) | Sendrecv median (RDMA) |
+| GPUs | strong grind | speedup | weak efficiency | wall strong / weak |
 |---|---|---|---|---|
-| 0 (no CBC face) | 3.54 ms | 3.91 ms | 1.35 ms | 0.34 ms |
-| 3, 5, 6 (2 CBC faces) | 3.59–3.61 | 4.46–4.52 | 0.64–0.69 | 0.04 |
-| 7 (3 CBC faces) | 3.60 | **4.79** | 0.37 | 0.03 |
-GPU work is balanced (±2 %), but rank 7 spends **0.9 ms/stage more on the host** (CBC: tiny kernels + 5 blocking
-`GPU_UPDATE`s per call) → every other rank waits for it inside Sendrecv. Even rank 0 has 0.37 ms/stage of host
-gaps between kernels. ⇒ At 8 GPUs the parallel bottleneck is **host-side launch/sync latency + its imbalance**,
-not halo bandwidth (pure transfer ≈0.03 ms per face with RDMA).
+| 1 | 0.397 | 1.00 | 100 % | 7.5 / 7.5 s |
+| 2 | 0.258 | 1.54 | 94 % | 10 / 12 s |
+| 4 | 0.158 | 2.51 | 85 % | 13.6 / 17.3 s |
+| 8 | 0.111 | 3.57 | 73 % | 18.8 / 31.0 s |
+| 8, RDMA | **0.071** | **5.57** | **≈100 %** | 18.7 / 26.6 s |
 
-## MPI transport check (net/osu_2g, job 600232; OSU device buffers, GPU0↔GPU1)
-Hypothesis "pml_ucx links the system /lib64 UCX (no CUDA transports on the login node) ⇒ no NVLink IPC" is
-**refuted** on compute nodes: UCX 1.20 protocol table selects `cuda_ipc` zero-copy rendezvous for ≥1.3 KB device
-messages; D→D latency 3.1 µs (8 B) / 12.5 µs (1 MB) / 20.9 µs (4 MB); bandwidth 292 GB/s at 4 MB.
-⇒ a 2.6 MB MFC halo face costs ≈15–20 µs of transfer; the measured 0.34 ms median Sendrecv is waiting.
-(The HPC-X-UCX arm of the job did not run: `hpcx-init.sh` trips `set -u`; not re-run since arm A is at NVLink speed.)
+(results/scale/*, jobs 600171–600180.) All end **bitwise identical** (every bit the same) to 1 GPU.
+
+Medians per step, nsys, rank 0:
+
+| config | step | halo exchange | first step |
+|---|---|---|---|
+| 1 GPU | 81.2 ms | 0.38 ms | 89 ms |
+| 4 GPU host-staged | 32.6 ms | 3.05 ms (30 %) | 46 ms |
+| 8 GPU host-staged | 26.0 ms | 4.42 ms (53 %) | 50 ms |
+| 8 GPU RDMA | **16.5 ms** | 1.35 ms (26 %) | **175 ms** |
+
+## Bottlenecks, biggest multi-GPU cost first
+1. **Halo exchange**: one face at a time, waiting, through the CPU by default. RDMA helps, but 6 waiting
+   `MPI_Sendrecv`s in a row remain. 8-GPU efficiency: 45 % → 62 % with RDMA.
+2. **Start-up grows with rank count** (grind hides it): MPI_Init 2.2 s → 7–29 s at 8 ranks (under nsys). 8 GPUs take ≈ 2.5×
+   the 1-GPU wall time, though their steps are 5× faster.
+3. **Kernel speed on one GPU** sets the floor: ≈18 % of a stage is unneeded copies.
+4. **Uneven load**: 992–2072 kernel launches per rank, so neighbours wait.
+5. **RDMA's slow first step** matters only for short runs.
+
+## Who waits for whom at 8 GPUs (prof/nsys_caseopt_8g_rdma, per stage)
+Each rank has 3 faces facing other ranks and 3 on the domain edge; some edges use CBC (an outflow boundary).
+
+| rank | GPU kernels | rest of RHS | Sendrecv wait |
+|---|---|---|---|
+| 0 (no CBC face) | 3.54 ms | 3.91 ms | 0.34 ms |
+| 3, 5, 6 (2 CBC faces) | 3.59–3.61 | 4.46–4.52 | 0.04 |
+| 7 (3 CBC faces) | 3.60 | **4.79** | 0.03 |
+
+GPU work is even (±2 %), but rank 7 spends **0.9 ms/stage more on the CPU** (tiny CBC kernels plus 5 waiting
+updates per call), and the others wait for it. So at 8 GPUs the limit is **the CPU's launch-and-wait delay, spread
+unevenly**, not halo bandwidth (≈0.03 ms per face).
+
+## MPI transport check (job 600232, two GPUs)
+The guess "no fast NVLink path between GPUs" is **wrong** on compute nodes: UCX 1.20 uses `cuda_ipc` for GPU
+messages ≥1.3 KB, at 292 GB/s. A 2.6 MB halo face needs ≈15–20 µs, so the 0.34 ms median Sendrecv is mostly
+waiting. (The HPC-X-UCX half of the job did not run: `hpcx-init.sh` trips `set -u`. Not re-run, since the first
+half already reaches NVLink speed.)

@@ -1,48 +1,40 @@
 # Harness
 
-All jobs run on nano4 (`hpc nano4-u1131128 '...'`) from `/work/u1131128/coding-adv1` after `tools/sync.sh push`.
-Results land in `results/<LABEL>/` (pulled back with `tools/sync.sh pull`, never hand-edited); bulky run outputs
-in `runs/<LABEL>/` stay on nano4.
+Scripts that run MFC on the cluster, time it, and check that the answer did not change.
 
-| Tool | Purpose |
+Jobs run on nano4 in `/work/u1131128/coding-adv1` (sent by `tools/sync.sh push`). Results come back to
+`results/<LABEL>/` (`tools/sync.sh pull`, never hand-edited); big outputs stay on nano4 in `runs/<LABEL>/`.
+
+| Tool | Does |
 |---|---|
-| `scripts/env.sh`, `scripts/build.sh` | toolchain + MPI env; `build.sh generic` / `build.sh caseopt <case.py>` (login node) |
-| `harness/submit.sh LABEL CASE NGPU MIN [VAR=..]` | submit `SCRIPT=run` (default) / `profile` / `mfctest` / `osu`; logs `results/jobs.tsv` |
-| `harness/run.sbatch` | timing: prep + REPS reps → `summary.tsv` (wall, grind); +1 NVTX-only nsys rep → `steps.tsv` |
-| `harness/profile.sbatch` | `MODE=nsys` (all ranks) or `MODE=ncu` (rank 0) → CSVs; summarize with `nsys_summary.py` / `ncu_summary.py` |
-| `harness/mfctest.sbatch` | `./mfc.sh test --no-build` (all or `TEST_ARGS` subset) → `test_summary.json` |
-| `harness/run_suite.sh TAG [NGPU=2] [SHARDS=4]` | full suite as chained `--from/--to` shards (≤25 min each, never concurrent) |
-| `harness/verify.py LABEL [--test-summary shard..]` | **gate**: final state vs `runs/ref/perf3d_201_30` (bitwise / ≤1e-12) + suite with no new failures |
-| `harness/run_all.sh TAG [GPUS=..] [VAR=..]` | standard set: `TAG/strong_<g>g` (201³) + `TAG/weak_<g>g` (8.12 M cells/GPU) |
-| `harness/collect.py` | one table of all results (grind, wall, median/first step, verify) |
-| `harness/osu.sbatch` | GPU↔GPU MPI latency/bandwidth |
-| `harness/tests/test_compare_state.sh` | comparator self-test (identical/1-ulp pass; 1e-9, NaN, size, missing fail) |
+| `scripts/build.sh` | builds MFC on the login node: `generic`, or `caseopt` (tuned to one case) |
+| `harness/submit.sh` | queues a job (`SCRIPT=run`/`profile`/`mfctest`/`osu`), logs it in `results/jobs.tsv` |
+| `harness/run.sbatch`, `harness/profile.sbatch`, `harness/osu.sbatch` | timing runs; nsys (a timeline) or ncu (a close-up of one GPU function, a "kernel"); GPU-to-GPU MPI speed |
+| `harness/mfctest.sbatch`, `harness/run_suite.sh` | MFC's tests: a subset, or all in back-to-back shards of ≤25 min |
+| `harness/verify.py` | **the gate**: final state vs `runs/ref/perf3d_201_30`, and no new test failures |
+| `harness/run_all.sh`, `harness/collect.py` | standard runs (201³ grid; 8.12 M cells per GPU), one results table |
+| `harness/tests/test_compare_state.sh` | tests the comparer: last-digit (1-ulp) diffs pass; 1e-9, NaN, wrong size fail |
 
-## Metrics
-- **grind** (MFC): min RK-stage time over steps ≥3, max over ranks, ns/gp/eq/rhs. Optimistic; excludes I/O,
-  init and any stall outside the stage bracket.
-- **step_ms_med** (`steps.tsv`, `all` row = slowest rank): median TIMESTEP over steps 2..N — the headline
-  number for parallel efficiency. `first_ms` reported separately (one-off costs, e.g. RDMA IPC setup).
-- **wall**: whole `simulation` process incl. MPI_Init and I/O.
+## Speed numbers
+- **grind**: MFC's own number, ns per grid point per equation per RHS pass. Fastest RK stage (sub-step) from step
+  3 on, slowest rank (one MPI process per GPU). Optimistic: skips I/O, start-up and pauses.
+- **step_ms_med**: median time of a whole step from step 2 on, slowest rank. Our main multi-GPU number.
+- **wall**: the whole run, start to end.
 
-## Correctness contract
-1. `harness/verify.py <label>` must PASS for every timing result we report. Every baseline so far — 1/2/4/8 GPUs,
-   host-staged and RDMA, generic and case-optimized builds — is **bitwise identical** to the reference, so any
-   change that only reorganises parallel work or memory traffic must remain bitwise; a non-bitwise change must
-   stay ≤1e-12 and be justified.
-2. Any `src/` change must also pass the full `./mfc.sh test` with no failures beyond
-   `harness/known_test_failures.txt` (failures of the unmodified pinned build on this machine).
-3. Never edit tolerances, the reference run, or golden files.
+## Correctness rules
+1. `verify.py` must PASS for every timing we report. All baselines so far are **bitwise** identical to the
+   reference (every bit the same). Changes that only reorder work must stay bitwise; any other change must stay
+   within 1e-12 and say why.
+2. `src/` changes must pass the full `./mfc.sh test` with no failures beyond `harness/known_test_failures.txt`
+   (tests that already fail on the unchanged code here).
+3. Never touch tolerances, the reference run, or the expected-answer files.
 
-## Test-suite procedure (GPU-frugal)
-No up-front full-suite baseline: it costs ~145 GPU-min and upstream CI runs the full suite on every PR anyway.
-1. After any change to the MFC checkout, build every test variant on the login node:
-   `cd $MFC_DIR && ./mfc.sh test --dry-run -j 8` (the sbatch runs with `--no-build`, so a missing variant shows up
-   as a failure, e.g. C4EB58A8 in job 600296).
-2. During development: run only the tests that touch the changed code, 1 GPU, e.g.
-   `harness/submit.sh test/<tag> - 1 15 SCRIPT=mfctest "TEST_ARGS=-o 3D"` or `TEST_ARGS=--percent 10`.
-3. A failure counts as pre-existing only after rerunning that UUID on the pinned build (`MFC_DIR=$ROOT/mfc`,
-   `-o <UUID>`, ~1 min); then it goes in `harness/known_test_failures.txt` with the evidence.
-4. Full suite (`harness/run_suite.sh <tag>`: chained `--from/--to` shards, 2 GPUs each, ~145 GPU-min total)
-   only once, on the final optimized branch right before opening the upstream PR, and only with the user's go-ahead.
-5. `harness/verify.py <label> --test-summary results/test/<tag>*/test_summary.json`.
+## Testing cheaply
+The full suite costs ~145 GPU-min, and upstream runs it on every PR anyway.
+1. After each change, build all test variants on the login node (`./mfc.sh test --dry-run -j 8`); a missing one
+   shows up as a failure (C4EB58A8, job 600296).
+2. While working, run only the related tests on 1 GPU.
+3. A failure counts as old only if it fails the same way on the pinned build; then it goes into
+   `harness/known_test_failures.txt` with the evidence.
+4. Run the full suite once, on the final branch, before the upstream PR, with the user's go-ahead.
+5. Finish with `harness/verify.py <label> --test-summary results/test/<tag>*/test_summary.json`.

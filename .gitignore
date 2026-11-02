@@ -12,7 +12,6 @@ __pycache__/
 .venv/
 .provenance
 JOURNEY.md
-JOURNEY.md
 *.qdrep
 /mfc/
 /dist/

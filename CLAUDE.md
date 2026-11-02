@@ -1,43 +1,49 @@
 # CLAUDE.md — rules for agents working in this repo
 
-Coding-Adv-HW-1: optimize an SC26 Student Cluster Competition application. The coding part picks one of
-WRF (F1) / MFC (nano4); **we do MFC on nano4 (H200)**. Grading criteria not yet published. Deadline: end of Oct 2026.
-AP Research briefs (WRF + MFC): `ap-research/`. Plan: `PLAN.md`. Private notes: `JOURNEY.md` (gitignored). Agent mistakes: `AGENT_LOG.md`.
+Homework (Coding-Adv-HW-1): make one SC26 Student Cluster Competition app faster. We picked **MFC on nano4 (H200 GPUs)**.
+Start with `README.md`. Full write-up: `report.md`. Every change, explained: `docs/optimizations.md`. Every attempt,
+kept or not: `docs/ladder.md`. Agent mistakes: `AGENT_LOG.md`. Old plan: `docs/history/plan.md`.
+Private notes: `JOURNEY.md` (gitignored).
 
-## App
+## The app
 **MFC** v5.7.0 — https://github.com/MFlowCode/MFC, commit `0b3d56c8e1c9a3aa8d112681b72c87ab69fe5f13`.
-- `reference/MFC` — listed as a pinned submodule, but this checkout has none (no `.gitmodules`); to read the source
-  offline, apply `patches/opt/` to a v5.7.0 worktree of any local MFC clone (`git am --keep-cr`).
-- nano4 `$ROOT/mfc` — working clone where builds happen; optimizations go on branch `p12` (worktree `mfc-p12` = v5.7.0 + 0001–0015: `p11` = 0001–0013, `p11fmt` adds 0014 = formatter only, `p12` adds 0015 = fused WENO5+HLLC, `p13` 0016, `p14` 0017, `p15` 0018 (worktree `mfc-rkfuse`, full GPU suite clean), `p16full` 0019 (worktree `mfc-p16`), `p17` 0020 (worktree `mfc-p17`), `p18` 0021 (worktree `mfc-p18` = v5.7.0 + 0001–0021, under the full suite), `p19` 0022 (worktree `mfc-rkb2`, reused from a rejected experiment, = v5.7.0 + 0001–0022; `p17ab`/`mfc-wpf` and `p18ab`/`mfc-rkpf` are the same without 0018, used for the A/Bs; `exp-savenan`/`mfc-savenan` is the same without 0018, used for the A/B runs); `p20` 0023–0024 (**canonical**: worktree `mfc-p20` = v5.7.0 + 0001–0024, −10.5 % vs P19 at 1 GPU, bitwise;
-  full suite 672459–672470: only the 23 known failures; `mfc-iomem` has the same source and is the A/B baseline); `mfc-p4` = the 10-31 report state; one clean commit per optimization; experiments on side branches) and are
-  exported as patches into `patches/` here (so the history of every source change lives in this repo).
+- Our changes are the patch files in `patches/opt/` (one patch = one optimization). Apply them in order to a v5.7.0
+  checkout with `git am --keep-cr patches/opt/*.patch` to get our version. Rejected or pending experiments are in `patches/exp/`.
+- On nano4, `$ROOT/mfc` is the clone where builds happen. Each stage has its own git worktree next to it:
+  - `mfc` = plain v5.7.0, `mfc-p4` = the 10-31 report state.
+  - `mfc-p20` = **canonical** (v5.7.0 + 0001–0024, full test suite clean apart from the 23 known failures).
+    `mfc-iomem` has the same source and is the A/B baseline.
+  - `mfc-p2fa` (branch `exp-p2fasync`) and `mfc-bcfast` (branch `exp-bcfast`) = newest candidates on top of P20.
+  - Older stages (`mfc-p12` … `mfc-p18`, `mfc-rkb2`, …) are kept only so old results can be rebuilt.
 
-## SC26 rules we follow (spirit of scientific computing)
-1. No physics/numerics shortcuts: same equations, schemes, grid, steps and FP64 unless an explicit, labelled
-   experiment. Never loosen `./mfc.sh test` tolerances (1e-12) or change outputs.
-2. `src/` changes must be upstream-PR-able: pass the full `./mfc.sh test`, portable (OpenACC *and* OpenMP paths
-   via FYPP macros), within ±5000 lines. Build/flag changes: disclose, and show `./mfc.sh test` passes.
-3. Figure of merit = MFC grindtime (ns / gridpoint / equation / RHS) plus wall time of `simulation`.
-4. Never hide a failing test, a regression, or a negative result.
+## SC26 rules we follow
+1. No physics shortcuts: same equations, schemes, grid, step count and FP64. Never loosen the `./mfc.sh test`
+   tolerance (1e-12) or change outputs. Our A/B runs check results are bit-for-bit identical.
+2. Source changes must be fit for an upstream pull request: pass the full `./mfc.sh test`, work for both OpenACC
+   and OpenMP (use the FYPP macros), stay within ±5000 lines. Build/flag changes must be disclosed.
+3. Score = MFC grindtime (ns per grid point per equation per RHS call) plus `simulation` wall time.
+4. Never hide a failing test, a slowdown or a negative result.
+5. Never bypass the pre-commit hook (`--no-verify`).
 
-## Compute etiquette (user instruction — H200s are expensive)
-- Compile on the login node with modest `-j` (≤8). **Never run simulations on the login node.**
-- Jobs: `-A acd110018 -p dev`, **1 GPU by default**, tight `--time` (≤15–20 min). 2–4 GPUs for scaling studies;
-  a full 8-GPU node only briefly and only when needed; **no multi-node without asking the user.**
-- Smallest problem that shows the behaviour; short step counts; cancel stuck jobs immediately.
-- Before submitting, state GPUs × minutes. Log every job in `results/jobs.tsv`.
+## Using the GPUs (user's instruction: H200s are expensive)
+- Compile on the login node with `-j` 8 or less. **Never run simulations on the login node.**
+- Jobs: `-A acd110018 -p dev`, **1 GPU by default**, short `--time` (15–20 min at most). 2–4 GPUs only for scaling
+  studies; a full 8-GPU node only briefly; **no multi-node runs without asking.** Ask before any job set over ~30 GPU-minutes.
+- Use the smallest problem and fewest steps that show the effect; cancel stuck jobs at once.
+- Say GPUs × minutes before submitting. Submit through `harness/submit.sh`, which logs every job in `results/jobs.tsv`.
 
 ## Workflow
-- **Commit often** (the graders want version control): commit before launching jobs, commit raw results after.
-- `tools/sync.sh push` mirrors this tree to `nano4-u1131128:/work/u1131128/coding-adv1` (refuses a dirty tree);
-  `tools/sync.sh pull` brings `results/` back. `results/` is never hand-edited; every number cites job id + path.
-- Timing: warm-up, ≥3 reps (≥5 for final claims), median + spread; record `nvidia-smi` clocks/power/temp.
-- Never trust a subagent's claim about timing regions or correctness — verify against the raw files.
+- **Commit often** (the graders want version control): before launching jobs, and again after with the raw results.
+- `tools/sync.sh push` copies this tree to `nano4-u1131128:/work/u1131128/coding-adv1` (it refuses if there are
+  uncommitted changes); `tools/sync.sh pull` brings `results/` back. Never hand-edit `results/`; every number names its job id and path.
+- Timing: warm up, then at least 3 repeats (5 for final claims); report the median and spread; record GPU clocks, power and temperature.
+- Never trust a subagent's claim about timings or correctness. Check the raw files yourself.
+- After rewriting docs, run `tools/check_rewrite.py FILE…`. It flags any number the rewrite added and any broken links.
 
-## Machine facts (nano4)
-- Alias `nano4-u1131128` (user's own account; OTP; never use `*-chwang`/other people's aliases).
-- Compute nodes `25a-hgpn*`: 8× H200 (141 GB), 2× Xeon 8480+ (112 cores), Slurm 25.11. Login nodes rotate
-  (lgn01/02/04/05) and have different GPUs — do not benchmark there.
-- Toolchain: `source scripts/env.sh` → NVHPC 26.3 (CUDA 13.1, HPC-X 2.25.1 Open MPI 4.1.9, CUDA-aware/UCX),
-  cmake 4.0.0. nsys/ncu are in the NVHPC bin dir. `/work` has ~60 GB free — keep outputs small.
-- `hpc <host> '<cmd>'`: single arg goes to the remote shell; use `bash -lc` for module-dependent commands.
+## nano4 facts
+- Alias `nano4-u1131128` (the user's own account; needs OTP). Never use `*-chwang` or other people's aliases.
+- Compute nodes `25a-hgpn*`: 8× H200 (141 GB), 2× Xeon 8480+ (112 cores), Slurm. Login nodes rotate and have
+  different GPUs, so never benchmark on them.
+- Toolchain: `source scripts/env.sh` loads NVHPC 26.3 (CUDA 13.1, HPC-X Open MPI, CUDA-aware) and cmake 4.0.0. nsys and ncu are in the NVHPC bin dir.
+  `/work` has ~60 GB free, so keep outputs small.
+- `hpc <host> '<cmd>'` runs a single argument through the remote shell; use `bash -lc` when the command needs modules.

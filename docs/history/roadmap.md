@@ -1,78 +1,70 @@
-# Optimization roadmap — MFC on nano4 H200, parallelism first (2026-10-22)
+# Optimization roadmap: MFC on nano4 H200, parallelism first (2026-10-22)
 
-Inputs: measurements in `docs/profiling-baseline.md`; research in `docs/research-halo-overlap.md`,
-`docs/research-env-tuning.md`, `docs/research-kernels.md`, `docs/literature.md`. Estimates are marked *est.*;
-everything else cites a results path.
+> Historical: the plan as written in October 2026; what actually happened is in [../../report.md](../../report.md)
+> and [../ladder.md](../ladder.md).
+
+Based on [profiling-baseline.md](../profiling-baseline.md) and the research in
+[research-halo-overlap.md](../background/research-halo-overlap.md),
+[research-env-tuning.md](../background/research-env-tuning.md),
+[research-kernels.md](../background/research-kernels.md) and [literature.md](../background/literature.md).
+Guesses are marked *est.*; everything else is measured.
 
 ## Where the time goes (measured)
-- **1 GPU** (201³, case-opt): 0.397 ns grind, 81 ms/step; GPU busy 96 %. WENO 34 %, HLLC 25 %, copy-like kernels
-  ≈25 % at ~30 % of HBM bandwidth (instruction-bound), host gaps ≈4 %.
-- **8 GPUs strong, host-staged (default)**: 26.0 ms/step median → 3.1× (39 %). Halo = 53 % of a stage.
-- **8 GPUs strong, `rdma_mpi=T`**: 16.5 ms/step → **4.9× (62 %)**; weak ≈100 % on grind. Remaining loss per stage
-  (5.5 ms vs 3.4 ms ideal): neighbour **wait ≈0.9 ms**, pack/unpack/BC/sync ≈0.33 ms, host gaps ≈0.4 ms,
-  transfer ≈0.09 ms.
-- **The wait is host-side imbalance**: GPU kernel time is equal on all ranks (3.54–3.61 ms), but the rank owning
-  3 CBC (bc=−6) faces spends **+0.9 ms/stage on the host** (tiny CBC kernels + 5 blocking `GPU_UPDATE`s per call).
-- **Transport is not the problem**: UCX uses `cuda_ipc` (292 GB/s, 12.5 µs at 1 MB; net/osu_2g).
-- **Fixed costs** (outside grind): MPI_Init 2→7–29 s, 996 startup Bcasts, MPI-IO; wall at 8 GPUs ≈2.5× 1-GPU wall
-  for a 30-step run.
+The simulation moves in steps; each step has stages. With several GPUs, each GPU owns one block of the grid and
+swaps its border cells (the "halo") with its neighbours every stage. Kernels are the small programs the GPU runs.
+- **1 GPU:** 81 ms per step; the GPU is busy 96 % of the time. The WENO and HLLC kernels take 34 % and 25 %.
+- **8 GPUs, data sent through the CPU (default):** 26.0 ms per step, only 3.1× faster. The halo swap takes 53 %.
+- **8 GPUs, sending GPU to GPU directly (`rdma_mpi=T`):** 16.5 ms per step, **4.9×**. The biggest loss left is
+  waiting for neighbours (≈0.9 ms per stage).
+- **That wait comes from uneven CPU work.** GPU time is the same on every rank (process). But the rank that owns
+  the special open boundaries (CBC) spends **+0.9 ms per stage on the CPU**, and the others wait for it.
+- **The link is not the problem:** GPU-to-GPU transfer runs at 292 GB/s.
 
 ## Rules for every step
-Same case, FP64, grid, steps; bitwise compare of the final state vs the 1-GPU reference
-(`harness/compare_state.py`, all baselines are bitwise identical across 1/2/4/8 ranks) + `./mfc.sh test` (1e-12)
-for any `src/` change. Metric = **median step time** (nsys NVTX, all ranks) *and* grind; report the first-step
-cost separately. Src changes ≤ a few hundred lines, OpenACC + OpenMP paths, upstream-PR-able. Tiny jobs:
-1/2/4 GPUs routinely, 8 GPUs only for the confirming run.
+Same case, grid, steps and FP64 math. The final state must match the 1-GPU answer bitwise (to the last bit).
+Code changes must pass MFC's tests and be fit to send back to MFC.
 
-## Tier 0 — configuration/tooling (no src change; disclose)  · ~1 day
-| # | Change | Evidence / est. gain | Verify |
-|---|---|---|---|
-| T0.1 | `rdma_mpi=T` (case param) | **measured −37 % step at 8 GPUs** | bitwise ✓ (scale/strong_8g_rdma) |
-| T0.2 | ROMIO MPI-IO (`OMPI_MCA_io=romio321`), `mpirun`, no OMPI auto-binding | required to run at all on wekafs | done |
-| T0.3 | NUMA-correct pinning wrapper (rank r → cores of GPU r's socket, `numactl --membind`) | est. 0–10 %; targets host-side jitter, which *is* our bottleneck | per-rank RHS−comm spread |
-| T0.4 | Cut MPI_Init/Finalize: `OMPI_MCA_coll_hcoll_enable=0`, `OMPI_MCA_coll_ucc_enable=0`, `UCX_NET_DEVICES`/`UCX_TLS=self,sm,cuda_copy,cuda_ipc` (single node), `HWLOC_COMPONENTS=-opencl,-cuda,-nvml` | wall: est. −5…−20 s at 8 ranks; no effect on grind | `osu_init` + job wall; UCX_PROTO_INFO still shows cuda_ipc |
-| T0.5 | NVHPC 25.9 vs 26.3 A/B (IGR paper/#2088: newer NVHPC regressed FP64) | est. 0–25 % single-GPU | grind A/B on same node |
-| T0.6 | Power: record draw; test perf at lower caps if allowed (SC26 10 kW) | perf/W data point | smi logs already captured |
+## Tier 0: settings only (disclosed) · ~1 day
+- **T0.1** `rdma_mpi=T`: **measured −37 % step time at 8 GPUs**, bitwise.
+- **T0.3** Tie each process to the CPU next to its GPU: est. 0–10 %. It targets CPU jitter, which *is* our
+  bottleneck.
+- **T0.4** Faster MPI start-up: est. −5…−20 s of wall time; no effect on grind.
+- **T0.5** Older vs newer compiler as an A/B (both on one node): est. 0–25 %.
 
-## Tier 1 — parallel-efficiency source changes (small, PR-able)  · ~3–4 days
-| # | Change | Where | Est. gain @8 GPUs | LOC | Risk |
-|---|---|---|---|---|---|
-| P1 | **Remove blocking host syncs in CBC + fuse its small kernels** (attacks the measured +0.9 ms/stage imbalance) | `m_cbc.fpp` (GPU_UPDATE at ~461, 522, 951, 952, 1189) | −3…−8 % (up to −15 % if the whole imbalance goes) | 100–300 | low, bitwise |
-| P2 | **Remove scalar `GPU_UPDATE`s per stage** (mytime, v_size, is*/isx/dir_idx in WENO/Riemann setup) — keep them device-resident or pass by value | `m_time_steppers:468`, `m_weno:945-948`, `m_riemann_state:317-339`, `m_mpi_common:594` | −2…−5 % | 50–150 | low |
-| P3 | **Single OpenACC async queue + explicit `wait` before MPI** to hide launch latency (the remaining host gaps) | `parallel_macros.fpp` (`extraAccArgs`), halo routines | −3…−10 % (#2093: 1.11× at 4 GPUs) | 50–200 | medium (grind becomes wrong → use step time) |
-| P4 | WENO only on transverse-interior rows + all-dims face exchange with per-direction wait | `m_rhs`, `m_weno`, `m_mpi_common` | −4…−6 % (and −3 % at 1 GPU) | 200–350 | medium (feature allowlist) |
-| P5 | Small halo cleanups (x-pack loop order, copy `buffer_count` not max face on host path) | `m_mpi_common:594,826,836` | ~1 % | 30–60 | low; fold into NTHU #2090 |
-Not worth it here (measured/est.): per-direction Isend/Irecv (#2090) — at ≤2 ranks per dimension each rank has
-one MPI face per dim, so ≈0 gain; MPS (one rank already keeps the GPU 96 % busy); other decompositions (2×2×2
-already minimal volume); NVSHMEM/CUDA graphs (vetoed upstream).
+## Tier 1: small code changes for multi-GPU speed · ~3–4 days
+Gains are *est.* at 8 GPUs.
+- **P1** Remove blocking CPU–GPU waits in CBC and merge its small kernels: −3…−8 %, up to −15 % if the whole
+  imbalance goes.
+- **P2** Stop copying single values between CPU and GPU every stage: −2…−5 %.
+- **P3** Queue GPU work without waiting, and wait only before MPI: −3…−10 %.
+- **P4** Skip WENO work that is not needed: −4…−6 %.
+- **P5** Small halo clean-ups: ~1 %.
 
-## Tier 2 — single-GPU kernel efficiency (sets the compute floor)  · ~2–3 days, overlaps Tier 1
-| # | Change | Est. stage saving | LOC | Upstream |
-|---|---|---|---|---|
-| K1 | collapse(3) + seq variable loop in copy kernels (= NTHU #2087) | −10…−12 % | 8 | approved 10-21 |
-| K2 | WENO occupancy: `vector_length(64)` / per-file maxregcount 128–168 / collapse trial | −5…−10 % | 3–6 | flag-only parts need disclosure |
-| K3 | Alias `flux_n(1)` → `flux_rsx_vf` (drop finalize copy) + #2092 pack removal | −3.5…−4.5 % | ~34 | new small PR + open draft |
-| K4 | HLLC inlining (raise `-Minline` limits for that file; else Fypp-constant `dir_idx`) | −5…−11 % | 0–100 | open (#2094) |
-| K5 | #2087 pattern on RK update and α·div(u) source | −2…−3 % | ~40 | follow-up |
-Projected 1-GPU grind: 0.397 → ≈0.31–0.33 (K1–K3) → ≈0.27–0.29 ns (+K4) *est.*
+## Tier 2: faster single-GPU kernels · ~2–3 days
+Savings are *est.* per stage.
+- **K1** Better loop layout in copy kernels (same as NTHU's upstream change #2087): −10…−12 %.
+- **K2** Keep more GPU threads busy in WENO: −5…−10 %.
+- **K3** Drop an extra copy: −3.5…−4.5 %.
+- **K4** Inline HLLC's helper functions (paste them into the caller): −5…−11 %.
 
-## Tier 3 — architectural (only if time remains; not before the deadline)
-- Interior/boundary split with comm overlap: 91–96 % of cells overlappable, but each extra box adds 3–6 host
-  syncs (~0.6–1 ms) > the 0.42 ms it can hide — **only after P2/P3 remove host syncs**. 700–1200 LOC.
-- 26-neighbour single-round exchange with fused pack/unpack (350–550 LOC; −3…−5 % at 8 GPUs).
+Projected 1-GPU grind with K1–K4: 0.397 → ≈0.27–0.29 ns *est.*
+
+## Tier 3: bigger redesigns (only if time remains)
+Compute the inside of each block while the border is in transit. Each extra piece adds CPU–GPU waits that cost
+more than it hides, so **only after P2/P3**.
 
 ## Expected outcome (est.)
 | | 1 GPU step | 8 GPU step | 8-GPU speedup |
 |---|---|---|---|
-| baseline host-staged | 81 ms | 26.0 ms | 3.1× |
-| + T0 (rdma, measured) | 81 ms | 16.5 ms | 4.9× |
+| baseline | 81 ms | 26.0 ms | 3.1× |
+| + T0 (measured) | 81 ms | 16.5 ms | 4.9× |
 | + P1–P3 | 79 ms | ≈13–14 ms | ≈5.8–6.1× |
-| + K1–K4 | ≈58–62 ms | ≈10–11 ms | ≈5.5–6× (comm share grows as kernels shrink) |
-Note the #2093 lesson: faster kernels lower parallel *efficiency*; we report both time-to-solution and efficiency.
+| + K1–K4 | ≈58–62 ms | ≈10–11 ms | ≈5.5–6× |
 
-## Order of work (homework deadline end of Oct; SC26 src changes must be merged upstream by 10-26)
-1. T0.3–T0.5 A/B (1–2 GPU-jobs each, ≤10 min) → lock the configuration.
-2. K1 (+ coordinate with NTHU's #2087/#2090/#2092 authors — likely classmates; do not duplicate).
-3. P1 → P2 → P3, each: patch on branch `opt` in nano4 `mfc/`, export to `patches/`, `./mfc.sh test`, bitwise
-   compare, 2-/8-GPU nsys, commit with job ids.
-4. K2–K4 as time allows; Tier 3 only as a design write-up.
+Faster kernels lower parallel *efficiency*: communication becomes a bigger share.
+
+## Order of work (homework due end of Oct)
+1. A/B T0.3–T0.5 in short jobs, then lock the settings.
+2. K1, coordinating with its NTHU authors (likely classmates) so we do not duplicate work.
+3. P1 → P2 → P3, each tested, compared bitwise and committed with job ids.
+4. K2–K4 as time allows; Tier 3 only as a written design.
