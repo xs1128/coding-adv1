@@ -120,3 +120,16 @@ Every experiment we ran, oldest first. Each kept change is the starting point fo
   rare inputs (subnormals and the like). They are what keeps results bitwise and cannot go.
 - So the local traffic is register spilling under the 128-register cap; caps 64–255 were all measured (rows 6, 17, 24, 42,
   51) and 128 is best.
+
+### Why the ranks wait at 4 GPUs, and the next idea (nsys 685113, no new GPU run)
+- 4 ranks split the grid 2 × 2 (x and y). Per step, ranks spend the same time in every kernel except CBC: 0.16 / 0.36 /
+  0.40 / 0.59 ms on ranks 0–3, because each rank runs CBC only on the domain-end faces it owns (rank 3 owns x, y and z).
+  The busiest rank idles 0.56 ms per step and its swaps take 54 µs; rank 0 idles 1.17 ms and its swaps take 175 µs.
+  So the halo-exchange "wait" is mostly ranks waiting for rank 3's CBC work.
+- The CBC FD kernel (`s_cbc_618`) takes 28–39 µs per face with only 79–316 blocks, so the GPU is mostly idle while it runs.
+  At 1 GPU the whole CBC path is 389 µs per stage (`nsys_cbcdead_1g`), about 4 % of a step.
+- Next idea, not built: since 0027, CBC reads only the primitive state (ready before the sweeps), so its setup,
+  conversion and FD kernels could run on a second OpenACC queue alongside the HLLC sweeps, with only the copy-back kept
+  after HLLC on the main queue. That needs the CBC module's per-call settings (direction, side, index ranges) kept per
+  direction instead of in shared module variables, and must keep the original order when both sides of a direction are
+  CBC. Expected: about 1–2 % at 1 GPU, more at 4 GPUs, where it would also even out the ranks.
