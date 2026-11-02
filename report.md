@@ -216,10 +216,10 @@ bash harness/reproduce.sh verify   # bitwise gate + median step per run
 The patch series applied to v5.7.0 gives a tree identical to the one measured here (checked for 0001–0005: empty
 diff against branch `p3`; 0006 is `git format-patch p3..p4`). Multi-GPU runs with `rdma_mpi` add `WRAP=$ROOT/harness/nicbind.sh` for the start-up fix (T0.4).
 
-## 11. Addendum (2026-11-01): P7–P18
+## 11. Addendum (2026-11-01, updated 11-02): P7–P20
 
 Same rules as §2: every arm bitwise identical to v5.7.0, same-node A/B against the rung below, every number a job.
-Rung by rung, with every rejected variant, in `docs/ladder.md` (rows 9–28) and `docs/optimizations.md`.
+Rung by rung, with every rejected variant, in `docs/ladder.md` (rows 9–44) and `docs/optimizations.md`.
 
 **Result at 1 GPU, one same-node A/B** (v5.7.0 against P16, 2 rounds × 5 reps per arm, hgpn065, job 669752):
 
@@ -231,8 +231,8 @@ Rung by rung, with every rejected variant, in `docs/ladder.md` (rows 9–28) and
 
 With P17 and P18 (below), one more same-node A/B of v5.7.0 against the canonical tree (v5.7.0 + 0001–0021, 2 rounds ×
 5 reps, hgpn005, job 670158): step **76.75 / 76.74 → 34.39 / 34.30 ms, 2.24×**; grind 0.3963–0.3990 → 0.1768–0.1779 ns
-(2.24×); bitwise. (Chaining the A/Bs gave 2.26×.) P19 then takes another 3.4 % off P18 (670619), about 2.31× chained; a
-direct v5.7.0 → P19 A/B has not been run. The 10-31 final (P4) was 1.27× at 1 GPU (§1). Multi-GPU (`rdma_mpi`, same node, P11 against P18,
+(2.24×); bitwise. (Chaining the A/Bs gave 2.26×.) P19 then takes another 3.4 % off P18 (670619) and P20
+another 10.5 % off P19 (671002), about 2.59× chained; a direct v5.7.0 → P20 A/B has not been run. The 10-31 final (P4) was 1.27× at 1 GPU (§1). Multi-GPU (`rdma_mpi`, same node, P11 against P18,
 `UCX_TLS=self,sm,cuda_copy,cuda_ipc` in both arms, 3 reps; bitwise in all 4 arms):
 
 | GPUs | P11 step | P18 step | | Grind P11 → P18 (ns) | Job |
@@ -261,14 +261,18 @@ v5.7.0 multi-GPU A/B was not run.
 | P17 | 0020 | Fused kernel: the next variable's WENO5 stencil is loaded one iteration ahead (12.5 % of its stalls were load latency) | 36.66 → 35.90 ms (−2.1 %) | 670011 |
 | P18 | 0021 | Fused RK update: the next equation's fluxes, `q1`, `qs` loaded before the current one is stored | 35.88 → 34.51 ms (−3.8 %) | 670088 |
 | P19 | 0022 | Fused RK update reads the flux slabs (`flux_rsx_vf`, `flux_src_rsx_vf`) directly: one descriptor instead of a three-level walk per load (static LDGs 159 → 92) | 34.27 → 33.12 ms (−3.4 %) | 670619 |
-| *P20 cand.* | *exp diffs* | *Not yet a rung (needs its own full suite).* Stage state, saved stage and the non-aliased primitives as slabs; the fused WENO5+HLLC kernel reads its stencil from `q_slab` and writes the flux slabs, all as explicit-shape dummies (exp-rkq + exp-qslab + exp-fslab); cons→prim no longer stores aliased fields onto themselves (exp-c2pskip) | 33.09 → **29.63 ms (−10.5 %)**, bitwise | 670687, 670779, 670811, 671002 |
+| P20 | 0023–0024 | Stage state, saved stage and the non-aliased primitives as slabs; the fused WENO5+HLLC kernel reads its stencil from `q_slab` and writes the flux slabs, all as explicit-shape dummies (0023); cons→prim no longer stores aliased fields onto themselves (0024) | 33.09 → **29.63 ms (−10.5 %)**, bitwise | 670687, 670779, 670811, 671002 |
 
 **Correctness.** Full `./mfc.sh test` on the GPU build of P15 (v5.7.0 + 0001–0018, `--mpi --acc-gpu`, jobs
 669500–669511): 712 passed; the failures are exactly the 23 tests in `harness/known_test_failures.txt`, which fail
 identically on pinned v5.7.0. Full suite on P18 (v5.7.0 + 0001–0021, jobs 670591–670598 + make-up 671033): the same 713 tests as for P15, and the
 23 failures are again exactly the known list; no new failure. (The first 8 shards silently skipped 59 tests, because
 `--from/--to` follows the runner's order at run time; the make-up shard ran them, and `run_suite.sh` now passes explicit
-`--only` lists.) P19 and the P20 candidate have bitwise A/B runs but no suite of their own yet.
+`--only` lists.) Full suite on P20 (v5.7.0 + 0001–0024, so it also covers P19; jobs 672459–672470): the same 713 tests,
+690 passed, and the 23 failures are again exactly the known list. The shard lists also held MFC's 39 "Convergence" tests,
+which a plain `./mfc.sh test` skips and no earlier suite ran. Each calls `./mfc.sh run`, which tried to build new
+configurations on the GPU node and failed in CMake (5 of them), and the shard timed out on the sixth; they say nothing
+about the numerics of either version and are now left out of the lists.
 
 **Wall time (environment, disclosed; not a source change).** At 1 GPU most of the wall is outside the steps. The
 largest piece was MPI_Init, which on HPC-X opens UCX and the node's InfiniBand adapters even for one rank. Same node,

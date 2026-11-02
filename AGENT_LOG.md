@@ -140,3 +140,8 @@
 - 11-02: the `hpc` master connection to nano4 dropped (OTP) while two local watchers were polling it. One treated the
   failed `squeue` as "queue empty" and exited; the other kept retrying a login that now asks for an OTP every minute
   (stopped, so as not to lock the account). Rule: watchers stop on `hpc` exit status 255, not just on output.
+- 11-02: the P20 suite's shard lists came from `./mfc.sh test -l` (752 UUIDs), which includes MFC's 39 "Convergence"
+  tests that the runner skips without `--only` and that no earlier suite ran. All 39 landed in shard 7; each calls
+  `./mfc.sh run`, which rebuilt MFC configurations on the GPU node (CMake errors) and the shard timed out after ~12 min
+  on them (672470, 25 min of 1 GPU). I had written that the P20 lists matched P18's 713 without comparing them.
+  Fix: `run_suite.sh` drops the Convergence tests. Rule: diff the UUID list against the previous suite's before submitting.

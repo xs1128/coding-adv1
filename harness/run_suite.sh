@@ -19,7 +19,10 @@ for st in "$MFC_DIR"/build/staging/gpu-acc-*; do
 done
 # Each shard gets its UUIDs explicitly (--only): a --from/--to range follows the runner's order at run time, which lost
 # 59 tests of the P18 suite (shard 6 ran 14 of 94; made up by job 671033).
-mapfile -t uuids < <(cd "$MFC_DIR" && ./mfc.sh test -l 2>/dev/null | sed 's/\x1b\[[0-9;]*m//g' | grep -oE '[0-9A-F]{8}')
+# The 39 "Convergence" tests are left out: a plain `./mfc.sh test` skips them, and each one calls `./mfc.sh run`, which
+# builds new configurations on the GPU node and failed there in CMake (P20 shard 7, 672470, timed out on them).
+mapfile -t uuids < <(cd "$MFC_DIR" && ./mfc.sh test -l 2>/dev/null | sed 's/\x1b\[[0-9;]*m//g' | grep -v 'Convergence' \
+                       | grep -oE '[0-9A-F]{8}')
 n=${#uuids[@]}; per=$(( (n + shards - 1) / shards )); prev=""
 cd "$ROOT"
 for ((i = 0; i < shards; i++)); do

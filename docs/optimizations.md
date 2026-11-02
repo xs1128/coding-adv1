@@ -46,7 +46,7 @@ AGENT_LOG #16). Every arm is bitwise identical to v5.7.0.
 | **v5.7.0 → P18, direct same-node A/B** (canonical tree 0001–0021, 2 rounds × 5 reps, hgpn005) | **76.75 / 76.74 → 34.39 / 34.30 ms: 2.24×**; grind 0.3963–0.3990 → 0.1768–0.1779 ns (2.24×) | — | 670158 |
 | **P18 → P19** (flux slabs read directly in the fused RK update; 2 rounds × 3 reps, hgpn021) | **34.27 / 34.28 → 33.14 / 33.10 ms (−3.4 %)**; grind 0.1777 → 0.1714 | — | 670619 |
 | *P19 → P20 candidate* (exp-rkq + exp-qslab + exp-fslab; not a rung until its full suite) | P19 33.17 / 33.20 → **30.07 / 30.08 ms (−9.4 %)** | — | 670811 (also 670687, 670779) |
-| *P19 → P20 candidate + exp-c2pskip* (cons→prim skips the identity copy of aliased fields) | P19 33.075 / 33.100 → **29.620 / 29.633 ms (−10.5 %)** | — | 671002 |
+| **P19 → P20** (0023 + 0024: exp-rkq/qslab/fslab + exp-c2pskip; full suite 672459–672470 clean) | P19 33.075 / 33.100 → **29.620 / 29.633 ms (−10.5 %)** | — | 671002 |
 | **P11 → P18 at 4 / 8 GPUs** (`rdma_mpi`, same node, `UCX_TLS=self,sm,cuda_copy,cuda_ipc` both arms, 3 reps, hgpn034) | 4g **12.294 → 10.131 ms (−17.6 %)**, grind 0.0632 → 0.0525; 8g **7.344 → 6.115 ms (−16.7 %)**, grind 0.0376 → 0.0315; wall unchanged (start-up dominated); bitwise all 4 arms | — | 670516, 670540 |
 
 8 GPUs (`rdma_mpi`, 667577, hgpn029): P4 → P11 grind 0.0502 → 0.0376 ns (−25.2 %), bitwise; the P11 arm got 2 of 3
@@ -162,8 +162,8 @@ local memory. Same node (670619, hgpn021, 2 rounds × 3 reps): 34.27 / 34.28 →
 two-level walk); they are allocated one array per equation, so giving them the same treatment means allocating
 `q_cons_qp` and `q_cons_ts(2)` as slabs.
 
-**P20 candidate: the fused WENO5+HLLC kernel on explicit-shape slabs** (`patches/exp/exp-rkq.diff`,
-`exp-qslab.diff`, `exp-fslab-on-qslab.diff`; suite pending). The ncu source counters of the fused kernel (670130) do not
+**P20: the fused WENO5+HLLC kernel on explicit-shape slabs** (`patches/opt/0023`–`0024`; from `patches/exp/exp-rkq.diff`,
+`exp-qslab.diff`, `exp-fslab-on-qslab.diff`, `exp-c2pskip`; full suite clean). The ncu source counters of the fused kernel (670130) do not
 resolve `.fpp` lines, so the per-instruction counts were joined by address to `nvdisasm -g` line info of the same kernel
 variant (`tools/ncu_line_join.py`). Stencil loads were 16 % of executed instructions (IMAD/IADD3 on one descriptor per
 variable), and HLLC flux stores reloaded the module descriptors of `flux_rsx_vf`/`flux_src_rsx_vf` after each store.

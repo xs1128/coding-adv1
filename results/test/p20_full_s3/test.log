@@ -1,0 +1,139 @@
+mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn001 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 2
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | 
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Build | syscheck and pre_process
+
+
+ Build | syscheck and simulation
+
+
+
+ Test pre_process and simulation | Only B89113D9, 295D22C1, 7E15602E, 7C2FF26F, B2CBB9FE, E16570CC, ACCC8390, 3E23CB5D, 1658214E, 999812A9, F9EB7B49, C4B81FF0, F4883338, F5493DA5, 9ED54F28, 0D21B728, 84FC700A, A0E9B272, 3D320EA4, 03D598D0, 7B67FDE5, 122713AA, 18DB27D5, 574636EE, 5A137315, 595705C7, 059D137F, 6191C8D0, 5281BD7B, 6CFBCF4A, C46769FD, 623B6C30, E0256CBF, 8D0E7E1D, 02BD9B5E, AAE5C27B, 2E021372, 9F3B58E7, 361D2A9B, 8360C26B, 284E0EF5, 83291843, D80F2162, 6B1AD553, 342686E8, E21940B3, 121D4ECA, B1DB4CA7, 2801A7EE, 661A7736, 6FC6A809, 09DAFEBA, F99FBB36, E09A12D9, 5010B814, 730DFD6D, ABAC3AE3, C93BE9B5, D0045756, 557FF170, 61FFF3D3, 6B4B738B, 6249EDDE, 8BCBAED8, 9DCBE54F, 0BDC8E40, 38C2159F, D7107B89, 4B7FC359, BB0418CD, EFDCFF72, 35231DF8, A3EC9BD7, EDADA16E, 5F099890, 04E1CB26, 4A15969C, E3EB6065, CD6C83A2, 0F6DB678, F1D01264, 14846B52, 90D62933, A7C19B7B, 4F79391A, 77292B06, 9BD657CB, 30035426, 01DC0251, 9ACD5174, 73B0539E, 2A523AC1, C1974DB8, and AFB46CF8 (94 tests)
+  
+     Progress      Test Name                                        Time(s)   UUID
+  
+     (  1/ 94)    2D -> Acoustic Source -> Transducer -> support=...   14.96    295D22C1
+     (  2/ 94)    2D -> Acoustic Source -> Transducer -> support=...   14.97    B89113D9
+     (  3/ 94)    2D -> Acoustic Source -> Transducer -> support=...   14.91    7C2FF26F
+     (  4/ 94)    2D -> Acoustic Source -> Transducer -> support=...   14.96    7E15602E
+     (  5/ 94)    2D -> Acoustic Source -> Transducer -> support=...   15.07    B2CBB9FE
+     (  6/ 94)    2D -> Acoustic Source -> Transducer Array -> su...   15.02    E16570CC
+     (  7/ 94)    2D -> Acoustic Source -> Transducer Array -> su...   15.29    ACCC8390
+     (  8/ 94)    2D -> Acoustic Source -> Transducer Array -> su...   15.24    3E23CB5D
+     (  9/ 94)    2D -> Bubbles -> Polytropic -> bubble_model=3        15.51    1658214E
+     ( 10/ 94)    2D -> Bubbles -> Polytropic -> bubble_model=2        15.46    999812A9
+     ( 11/ 94)    2D -> Bubbles -> nb=1                                15.24    C4B81FF0
+     ( 12/ 94)    2D -> Bubbles -> bubble_model=2                      15.31    F9EB7B49
+     ( 13/ 94)    2D -> Bubbles -> adv_n=T                             15.64    F4883338
+     ( 14/ 94)    2D -> Bubbles -> adv_n=T -> adap_dt=T                15.59    F5493DA5
+     ( 15/ 94)    2D -> Bubbles -> low_Mach=1                          15.38    0D21B728
+     ( 16/ 94)    2D -> Bubbles -> artificial_Ma                       15.44    9ED54F28
+     ( 17/ 94)    2D -> Bubbles -> low_Mach=2                          16.02    84FC700A
+     ( 18/ 94)    2D -> Bubbles -> QBMM                                16.05    A0E9B272
+     ( 19/ 94)    2D -> Bubbles -> QBMM -> bubble_model=3              17.35    03D598D0
+     ( 20/ 94)    2D -> Bubbles -> QBMM -> Non-polytropic              17.93    3D320EA4
+     ( 21/ 94)    2D -> Hypoelasticity -> 1 Fluid(s)                   15.66    122713AA
+     ( 22/ 94)    2D -> Bubbles -> QBMM -> bubble_model=3 -> Non-...   16.93    7B67FDE5
+     ( 23/ 94)    2D -> Hypoelasticity -> 1 Fluid(s) -> probe -> ...   23.69    18DB27D5
+     ( 24/ 94)    2D -> Hypoelasticity -> 1 Fluid(s) -> cont_damage    22.95    574636EE
+     ( 25/ 94)    2D -> Hypoelasticity -> 1 Fluid(s) -> bc=-2          16.79    595705C7
+     ( 26/ 94)    2D -> Hypoelasticity -> 1 Fluid(s) -> cont_dama...   16.84    5A137315
+     ( 27/ 94)    2D -> Hypoelasticity -> 1 Fluid(s) -> Axisymmetric   15.65    059D137F
+     ( 28/ 94)    2D -> Hypoelasticity -> 2 Fluid(s) -> eos=mie_g...   16.30    6191C8D0
+     ( 29/ 94)    2D -> Hypoelasticity -> 2 Fluid(s)                   15.31    5281BD7B
+     ( 30/ 94)    2D -> Hypoelasticity -> 2 Fluid(s) -> cont_dama...   14.60    6CFBCF4A
+     ( 31/ 94)    2D -> Phase Change model 5 -> 2 Fluid(s) -> mod...   14.72    623B6C30
+     ( 32/ 94)    2D -> Phase Change model 5 -> 2 Fluid(s) -> mod...   14.78    C46769FD
+     ( 33/ 94)    2D -> Phase Change model 5 -> 3 Fluid(s) -> mod...   14.64    8D0E7E1D
+     ( 34/ 94)    2D -> Phase Change model 5 -> 3 Fluid(s) -> mod...   14.70    E0256CBF
+     Still running (>2min) 02BD9B5E  2D -> Phase Change model 6 -> 3 Fluid(s) -> model equation -> 3
+     Still running (>2min) AAE5C27B  2D -> Phase Change model 6 -> 3 Fluid(s) -> model equation -> 2
+     ( 35/ 94)    2D -> Phase Change model 6 -> 3 Fluid(s) -> mod...  312.28    AAE5C27B
+     ( 36/ 94)    2D -> Phase Change model 6 -> 3 Fluid(s) -> mod...  312.34    02BD9B5E
+     ( 37/ 94)    2D -> Viscosity -> Bubbles -> Polytropic -> bub...   17.78    9F3B58E7
+     ( 38/ 94)    2D -> Viscosity -> Bubbles -> Polytropic -> bub...   17.83    2E021372
+     ( 39/ 94)    2D -> Viscosity -> Bubbles -> nb=1                   17.83    8360C26B
+     ( 40/ 94)    2D -> Viscosity -> Bubbles -> bubble_model=2         17.89    361D2A9B
+     ( 41/ 94)    2D -> Viscosity -> Bubbles -> QBMM -> bubble_mo...   18.00    83291843
+     ( 42/ 94)    2D -> Viscosity -> Bubbles -> QBMM                   18.05    284E0EF5
+     ( 43/ 94)    2D -> Viscosity -> Bubbles -> QBMM -> bubble_mo...   18.77    6B1AD553
+     ( 44/ 94)    2D -> Viscosity -> Bubbles -> QBMM -> bubble_mo...   18.82    D80F2162
+     ( 45/ 94)    2D -> Bodyforces                                     15.55    E21940B3
+     ( 46/ 94)    2D -> Smoothing                                      15.61    342686E8
+     ( 47/ 94)    2D -> SpatialBodyforces                              15.37    B1DB4CA7
+     ( 48/ 94)    2D -> Bodyforces -> cfl_adap_dt=T                    15.42    121D4ECA
+     ( 49/ 94)    2D -> BC Patches -> Line Segment -> Y                15.50    661A7736
+     ( 50/ 94)    2D -> BC Patches -> Line Segment -> X                15.55    2801A7EE
+     ( 51/ 94)    3D -> bc=-2                                          17.50    09DAFEBA
+     ( 52/ 94)    3D -> bc=-1                                          17.57    6FC6A809
+     ( 53/ 94)    3D -> bc=-5                                          16.99    E09A12D9
+     ( 54/ 94)    3D -> bc=-4                                          17.06    F99FBB36
+     ( 55/ 94)    3D -> bc=-6                                          18.08    5010B814
+     ( 56/ 94)    3D -> bc=-7                                          18.04    730DFD6D
+     ( 57/ 94)    3D -> bc=-8                                          17.85    ABAC3AE3
+     ( 58/ 94)    3D -> bc=-9                                          17.81    C93BE9B5
+     ( 59/ 94)    3D -> bc=-11                                         17.92    557FF170
+     ( 60/ 94)    3D -> bc=-10                                         17.98    D0045756
+     ( 61/ 94)    3D -> bc=-3                                          16.96    6B4B738B
+     ( 62/ 94)    3D -> bc=-12                                         17.03    61FFF3D3
+     ( 63/ 94)    3D -> bc=-16                                         17.46    8BCBAED8
+     ( 64/ 94)    3D -> bc=-15                                         17.52    6249EDDE
+     ( 65/ 94)    3D -> grcbc x                                        17.69    0BDC8E40
+     ( 66/ 94)    3D -> bc=-17                                         17.75    9DCBE54F
+     ( 67/ 94)    3D -> grcbc z                                        17.90    D7107B89
+     ( 68/ 94)    3D -> grcbc y                                        17.96    38C2159F
+     ( 69/ 94)    3D -> weno_order=3                                   16.82    4B7FC359
+     ( 70/ 94)    3D -> weno_order=3 -> wenoz=T                        16.79    BB0418CD
+     ( 71/ 94)    3D -> weno_order=5                                   17.30    35231DF8
+     ( 72/ 94)    3D -> weno_order=3 -> mapped_weno=T                  17.36    EFDCFF72
+     ( 73/ 94)    3D -> weno_order=5 -> teno=T                         17.17    EDADA16E
+     ( 74/ 94)    3D -> weno_order=5 -> mp_weno=T                      17.22    A3EC9BD7
+     ( 75/ 94)    3D -> weno_order=5 -> wenoz=T                        17.47    5F099890
+     ( 76/ 94)    3D -> weno_order=5 -> mapped_weno=T                  17.43    04E1CB26
+     ( 77/ 94)    3D -> weno_order=7                                   22.16    4A15969C
+     ( 78/ 94)    3D -> weno_order=7 -> teno=T                         22.13    E3EB6065
+     ( 79/ 94)    3D -> weno_order=7 -> wenoz=T                        21.78    CD6C83A2
+     ( 80/ 94)    3D -> weno_order=7 -> mapped_weno=T                  21.75    0F6DB678
+     ( 81/ 94)    3D -> muscl_order=2 -> muscl_lim=3                   18.12    14846B52
+     ( 82/ 94)    3D -> muscl_order=2 -> muscl_lim=2                   18.17    F1D01264
+     ( 83/ 94)    3D -> muscl_order=2 -> muscl_lim=4                   17.88    90D62933
+     ( 84/ 94)    3D -> muscl_order=2 -> muscl_lim=5                   17.84    A7C19B7B
+     ( 85/ 94)    3D -> muscl_order=2 -> muscl_eps=0 -> muscl_lim=1    18.28    4F79391A
+     ( 86/ 94)    3D -> muscl_order=2 -> muscl_eps=0 -> muscl_lim=2    18.24    77292B06
+     ( 87/ 94)    3D -> muscl_order=2 -> muscl_eps=0 -> muscl_lim=3    18.00    9BD657CB
+     ( 88/ 94)    3D -> muscl_order=2 -> muscl_eps=0 -> muscl_lim=4    17.96    30035426
+     ( 89/ 94)    3D -> muscl_order=2 -> muscl_eps=0 -> muscl_lim=5    18.01    01DC0251
+     ( 90/ 94)    3D -> 1 Fluid(s) -> riemann_solver=1 -> mixture...   17.97    9ACD5174
+     ( 91/ 94)    3D -> 1 Fluid(s) -> riemann_solver=1 -> wave_sp...   18.20    2A523AC1
+     ( 92/ 94)    3D -> 1 Fluid(s) -> riemann_solver=1 -> avg_sta...   18.28    73B0539E
+     ( 93/ 94)    3D -> 1 Fluid(s) -> riemann_solver=1 -> avg_sta...   17.37    C1974DB8
+     ( 94/ 94)    3D -> 1 Fluid(s) -> riemann_solver=5 -> mixture...   17.33    AFB46CF8
+
+  
+
+╭──────────────────────────────── Test Summary ────────────────────────────────╮
+│                                                                              │
+│  ✓ ALL TESTS PASSED                                                          │
+│                                                                              │
+│      94 passed                                                               │
+│       0 failed                                                               │
+│     666 skipped                                                              │
+│    ────────────                                                              │
+│     760 total                                                                │
+│                                                                              │
+│    Time: 18m 26.0s                                                           │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+
+mfc: (venv) Exiting the Python virtual environment.
