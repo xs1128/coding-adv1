@@ -77,7 +77,7 @@ memory (`/dev/shm`) cut the wall time of a whole run, start-up and save included
 | [`report.md`](report.md) | The full write-up (also built as `dist/report.pdf` by `tools/build_pdf.py`) |
 | [`slides/`](slides/) | Slides for the 11-11 talk ([Slidev](https://sli.dev)): `cd slides && npm install && npm run dev`; `npm run export` writes `dist/slides.pdf` |
 | [`patches/opt/`](patches/opt/) | Our 24 changes to MFC, one per file |
-| [`patches/pending/`](patches/pending/) | Three newer changes that are faster and give the same answers, but have not had the full test suite yet |
+| [`patches/pending/`](patches/pending/) | Four newer changes that are faster and give the same answers, but have not had the full test suite yet |
 | [`patches/exp/`](patches/exp/) | Experiments we tried, most of them rejected |
 | [`docs/`](docs/) | Explanations: each optimization, the ladder of attempts, how the test harness works, the code layout |
 | [`docs/background/`](docs/background/) | Research notes and papers we read |
