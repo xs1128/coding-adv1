@@ -318,6 +318,20 @@ The official MFC table lists 0.38 ns for H100 SXM. That number uses a different 
   show balanced ranks (RHS 5.35–5.37 ms) at equal clocks, so this is a node anomaly, not load imbalance.
 - The baseline has 2 reps and no per-step data; the final comparison needs a same-node baseline with ≥5 reps.
 
+**Idle GPU and small operations per RK stage (nsys 670902, P20 candidate, 30 stages; analysed 11-02:
+GPU trace joined to the API trace by correlation id and to NVTX ranges by time).** 331–370 µs per stage (3.7 %) with no
+kernel running. Per stage the host issues ~48 host-to-device copies and ~30 memsets of a few bytes each (scalar and
+bounds `update device` in the Riemann setup, the CBC set-up and the primitive→flux conversion; NVHPC sends a 4-byte
+scalar update as `cuMemsetD32Async`), each costing ~2–3 µs of GPU time even when queued. Per direction,
+`s_convert_primitive_to_flux_variables` (only caller: CBC) updates six module bounds synchronously and runs as a
+synchronous kernel, so the host waits for the whole Riemann solve, then for the conversion (19 + 12 µs of idle GPU around
+it). Kernel time outside the Riemann solve and RK update: ghost cells (`s_populate_bc_direction`, 6 launches) 241 µs per
+stage (x-beg 100, x-end 49, y 35 / 18, z 29 / 17 µs; one thread per boundary cell looping over all fields and ghost
+layers, 164 registers, 688 B stack), CBC set-up, characteristic update and write-back 417 µs, primitive→flux 54 µs.
+Experiments built on this (pending their A/B): exp-p2fasync (`patches/exp/exp-p2fasync-on-p20.diff`: bounds and direction
+map as firstprivate scalars, kernel on the async queue) and exp-bcfast (`patches/exp/exp-bcfast-on-p2fasync.diff`:
+extrapolation and reflective ghost cells of plain-fluid runs filled with one thread per ghost value).
+
 ## Next
 1. **8 GPUs, code-only arm:** v5.7.0 with `rdma_mpi` on the node of 606019 (≈32 GPU-min, needs the user's OK); the
    8-GPU row above mixes code and configuration. `nicbind.sh` at 8 GPUs is also unmeasured.
