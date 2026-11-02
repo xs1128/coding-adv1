@@ -200,7 +200,9 @@ On 4 GPUs (`rdma_mpi`, same node, job 685059) the three pending patches take P20
 boundary-condition tests give 45 passes and the 4 known failures, unchanged from P20 (684975, 685001).
 0028 (also pending) queues the small CBC kernels on a second OpenACC queue so they run alongside the Riemann solve:
 28.813 / 28.772 → 28.586 / 28.585 ms at 1 GPU (−0.7 %, job 685237, bitwise); the 5 suite tests that take that path pass
-(685267).
+(685267). On 4 GPUs it takes 8.556 → 8.315 ms (−2.8 %, 685274, bitwise), because there the other ranks wait for
+the rank with the most CBC faces. Chaining the A/Bs: about 28.8 ms at 1 GPU (about 2.70× v5.7.0) and about −8 % per
+step vs P20 at 4 GPUs.
 
 **Several GPUs** (`rdma_mpi`, same node, P11 vs P18; bitwise):
 
