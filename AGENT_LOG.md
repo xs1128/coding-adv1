@@ -106,6 +106,10 @@ the figure script disagreed. Rule: derived numbers come from raw files, in one s
   file (half written, empty Slurm log, state "COMPLETED"), so no arm was timed: about 1 GPU-minute lost. Freed 67 GB
   by deleting the restart dumps of 26 finished experiments in `runs/exp` (their results are in `results/` and the
   ladder; `runs/ref` and `runs/final` kept) and re-ran as 683029. Rule: run `df -h /work/u1131128` before submitting.
+- **11-03: new `/dev/shm` run folders were put where another step deletes.** RUNLOCAL first used the step-profiling
+  rep's temp folder (684733 lost arm B's final state; its timings were still valid), and a profile wrote its report
+  inside the folder RUNLOCAL replaces on copy-back (684805, 0.7 GPU-min). Both fixed and re-run. Twice a watcher was
+  started on a guessed job id instead of the one `submit.sh` printed. Rule: copy the id from the output.
 - **11-03: a guard named a flag this MFC version does not have** (`hyperelasticity`); the build stopped on it, caught
   before any GPU time.
 
