@@ -137,3 +137,6 @@
   rebuild of that old tree; I stopped the script before it reached `mfc-r255`. The sweep also repeated
   ladder row 17 (caps 168/255 on the fused kernel, +7 %), which I had not checked first.
   Rule: experiment scripts refuse an existing directory, and check the ladder before planning a sweep.
+- 11-02: the `hpc` master connection to nano4 dropped (OTP) while two local watchers were polling it. One treated the
+  failed `squeue` as "queue empty" and exited; the other kept retrying a login that now asks for an OTP every minute
+  (stopped, so as not to lock the account). Rule: watchers stop on `hpc` exit status 255, not just on output.
