@@ -101,6 +101,13 @@ the figure script disagreed. Rule: derived numbers come from raw files, in one s
   login (stopped, so the account would not get locked). Rule: stop on `hpc` exit status 255.
 - **11-02: the P20 suite included 39 tests that rebuild MFC.** The shard timed out on them (25 min of 1 GPU). The
   agent had written that the lists matched P18's without comparing. Rule: diff the test list before submitting.
+- **11-03: a full disk ended an A/B run without a word.** /work/u1131128 has a 700 GB quota; it was 100 % full
+  (2.5 GB free), mostly other projects plus 143 GB of our run folders. Job 682858 died while arm a1 wrote its restart
+  file (half written, empty Slurm log, state "COMPLETED"), so no arm was timed: about 1 GPU-minute lost. Freed 67 GB
+  by deleting the restart dumps of 26 finished experiments in `runs/exp` (their results are in `results/` and the
+  ladder; `runs/ref` and `runs/final` kept) and re-ran as 683029. Rule: run `df -h /work/u1131128` before submitting.
+- **11-03: a guard named a flag this MFC version does not have** (`hyperelasticity`); the build stopped on it, caught
+  before any GPU time.
 
 ## Code the student must be able to defend
 (filled in as optimizations land)

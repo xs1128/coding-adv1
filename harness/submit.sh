@@ -8,6 +8,10 @@ exports="ALL,LABEL=$label,CASE=$case,NGPU=$ngpu"
 # Only mfctest takes "-" (no case file); every other script copies $CASE on the GPU node. Fail here instead
 # (667720, 667909 held GPUs for minutes to die on that cp).
 [[ ( $case == - && " $* " == *" SCRIPT=mfctest "* ) || -f $ROOT/$case ]] || { echo "submit.sh: no case file $ROOT/$case" >&2; exit 2; }
+# /work/u1131128 is a 700 GB quota shared with other projects; a full disk killed 682858 mid restart-write with an
+# empty log. Each perf3d arm writes ~0.5 GB, so refuse below 10 GB free.
+free_gb=$(df -BG --output=avail "$ROOT" | tail -1 | tr -dc 0-9)
+(( free_gb >= 10 )) || { echo "submit.sh: only ${free_gb} GB free on $ROOT; clean runs/ first" >&2; exit 2; }
 script=run; dep=()
 for kv in "$@"; do
   case "$kv" in
