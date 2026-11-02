@@ -112,3 +112,11 @@ Every experiment we ran, oldest first. Each kept change is the starting point fo
   0.07 s, time loop 0.89 s, save 0.48 s (the 311 ms pageable device-to-host copy plus 180 ms of `pwrite`), finish 0.07 s.
 - The one sizeable piece left is that copy. Fixing it needs pinned host buffers, which OpenACC/OpenMP cannot allocate
   portably; the runtime's own pinning settings were slower (row 54). Stopped here.
+
+### What the fused kernel's local-memory traffic is (machine code of exp-cbcdead, no GPU run)
+- `cuobjdump -sass` of the x-sweep kernel: 248 local loads (209 of them 64-bit) and 52 local stores against 158 global
+  loads; 86 `CALL`s. The relocation table names the calls: 71 × `__cuda_sm20_dblrcp_rn_slowpath_v3` and 13 ×
+  `__cuda_sm20_dsqrt_rn_f64_mediumpath_v1`, the correctly rounded FP64 division and square-root fallbacks, taken only for
+  rare inputs (subnormals and the like). They are what keeps results bitwise and cannot go.
+- So the local traffic is register spilling under the 128-register cap; caps 64–255 were all measured (rows 6, 17, 24, 42,
+  51) and 128 is best.
