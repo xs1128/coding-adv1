@@ -9,9 +9,16 @@ ROOT=/work/u1131128/coding-adv1
 source "$ROOT/scripts/env.sh"
 : "${LABEL:?}" "${CASE:?}" "${NGPU:=1}" "${REPS:=3}" "${BUILD:=generic}" "${CASE_ARGS:=}" "${MPIRUN_ARGS:=}" "${RUN_ENV:=}" "${WRAP:=}"
 RUN_ENV=${RUN_ENV//+/,}; RUN_ENV=${RUN_ENV//@/ }  # sbatch --export splits at commas: write + for a comma, @ between variables
-: "${STEPPROF:=1}" "${KEEP_OUTPUT:=0}"
+: "${STEPPROF:=1}" "${KEEP_OUTPUT:=0}" "${RUNLOCAL:=0}"
 out=$ROOT/results/$LABEL
 run=$ROOT/runs/$LABEL            # bulky outputs (D/, restart_data/, silo) live outside results/
+# RUNLOCAL=1 (setting, disclosed): the case directory, so the initial-state read and the restart save, lives in
+# node-local memory (/dev/shm) instead of Lustre; after the timed reps the final state is copied to runs/ for verify.
+keep=$run
+if [[ $RUNLOCAL == 1 ]]; then
+  run=/dev/shm/${USER}_${SLURM_JOB_ID}/$LABEL
+  rm -rf "$run"; mkdir -p "$keep"
+fi
 mkdir -p "$out" "$run"
 cp "$ROOT/$CASE" "$run/case.py"
 
@@ -76,5 +83,8 @@ if [[ $KEEP_OUTPUT != 1 ]]; then   # keep only the final state for verify
   last=$(ls "$run"/restart_data/ | sed -nE 's/^lustre_([0-9]+)\.dat$/\1/p' | sort -n | tail -1)
   for f in "$run"/restart_data/lustre_[0-9]*.dat; do [[ $f == */lustre_${last}.dat ]] || rm -f "$f"; done
   rm -rf "$run"/D "$run"/p_all "$run"/silo_hdf5 "$run"/steps_rank*.csv
+fi
+if [[ $RUNLOCAL == 1 ]]; then   # untimed: bring the run (final state, inputs, logs) back to runs/ and free the RAM
+  rm -rf "$keep"; mkdir -p "$(dirname "$keep")"; cp -r "$run" "$keep"; rm -rf "/dev/shm/${USER}_${SLURM_JOB_ID}"
 fi
 cat "$out/summary.tsv"; cat "$out/steps.tsv" 2>/dev/null || true
