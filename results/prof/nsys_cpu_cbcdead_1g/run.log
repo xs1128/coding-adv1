@@ -1,0 +1,17 @@
+Collecting data...
+ Simulating a case-optimized 200x200x200 case on 1 rank(s) with OpenACC offloading.
+ [  0%] step 1 of 11 (t_step 0) t/step  0.00E+00s (avg  0.00E+00s) ETA 0:00:00
+ [ 10%] step 2 of 11 (t_step 1) t/step  3.52E-02s (avg  0.00E+00s) ETA 0:00:00
+ [ 19%] step 3 of 11 (t_step 2) t/step  2.91E-02s (avg  0.00E+00s) ETA 0:00:00
+ [ 28%] step 4 of 11 (t_step 3) t/step  2.92E-02s (avg  2.92E-02s) ETA 0:00:00
+ [ 37%] step 5 of 11 (t_step 4) t/step  2.92E-02s (avg  2.92E-02s) ETA 0:00:00
+ [ 46%] step 6 of 11 (t_step 5) t/step  2.91E-02s (avg  2.92E-02s) ETA 0:00:00
+ [ 55%] step 7 of 11 (t_step 6) t/step  2.92E-02s (avg  2.92E-02s) ETA 0:00:00
+ [ 64%] step 8 of 11 (t_step 7) t/step  2.92E-02s (avg  2.92E-02s) ETA 0:00:00
+ [ 73%] step 9 of 11 (t_step 8) t/step  2.92E-02s (avg  2.92E-02s) ETA 0:00:00
+ [ 82%] step 10 of 11 (t_step 9) t/step  2.91E-02s (avg  2.92E-02s) ETA 0:00:00
+ Performance:   0.1505015625000000      ns/gp/eq/rhs
+Generating '/dev/shm/u1131128_684723/nsys-report-3414.qdstrm'
+[1/1] [0%                          ] nsys_rank0.nsys-rep[1/1] [0%                          ] nsys_rank0.nsys-rep[1/1] [14%                         ] nsys_rank0.nsys-rep[1/1] [=15%                        ] nsys_rank0.nsys-rep[1/1] [=17%                        ] nsys_rank0.nsys-rep[1/1] [==19%                       ] nsys_rank0.nsys-rep[1/1] [==20%                       ] nsys_rank0.nsys-rep[1/1] [==21%                       ] nsys_rank0.nsys-rep[1/1] [===22%                      ] nsys_rank0.nsys-rep[1/1] [====25%                     ] nsys_rank0.nsys-rep[1/1] [====26%                     ] nsys_rank0.nsys-rep[1/1] [=====29%                    ] nsys_rank0.nsys-rep[1/1] [======33%                   ] nsys_rank0.nsys-rep[1/1] [======34%                   ] nsys_rank0.nsys-rep[1/1] [=======36%                  ] nsys_rank0.nsys-rep[1/1] [=======39%                  ] nsys_rank0.nsys-rep[1/1] [========42%                 ] nsys_rank0.nsys-rep[1/1] [=========43%                ] nsys_rank0.nsys-rep[1/1] [==========49%               ] nsys_rank0.nsys-rep[1/1] [=============58%            ] nsys_rank0.nsys-rep[1/1] [===============67%          ] nsys_rank0.nsys-rep[1/1] [========================100%] nsys_rank0.nsys-rep[1/1] [========================100%] nsys_rank0.nsys-rep
+Generated:
+	/work/u1131128/coding-adv1/runs/prof/nsys_cpu_cbcdead_1g/nsys_rank0.nsys-rep
