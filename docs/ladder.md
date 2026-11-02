@@ -79,3 +79,11 @@ Every experiment we ran, oldest first. Each kept change is the starting point fo
   (`m_riemann_solver_hllc.fpp:1208`).
 - Helpers in the same file do get inlined. Compiling the HLLC file with the helper modules as one unit gives 150
   registers, LDL 76 / STL 8. → K4b (row 4).
+
+### Why the fused RK update is still ~2× off bandwidth (ncu job 681191, exp-bcfast)
+- `results/prof/ncu_bcfast_rk/ncu_details.csv`: 1.50 ms, DRAM 46.7 % (2.25 TB/s), SM 29.2 %, 148 registers,
+  theoretical occupancy 18.8 % (3 warps per scheduler), achieved 17.9 %. Each warp waits on loads most of the time.
+- So it is latency-bound: too few warps in flight to cover memory delay. The obvious fix (fewer registers, more
+  warps) was already tried in row 45 and lost (spills cost more than the extra warps help), and the one-thread-per-
+  equation split (row 38) redoes shared work. No cheap win left here; the next idea would be explicit prefetch
+  through shared memory, which OpenACC/OpenMP macros cannot express portably.
