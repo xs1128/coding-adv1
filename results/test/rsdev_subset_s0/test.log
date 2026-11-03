@@ -1,0 +1,250 @@
+mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn033 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 2
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | 
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Build | syscheck and pre_process
+
+
+ Build | syscheck and simulation
+
+
+
+ Test pre_process and simulation | Only 026AA23F, 0288BDAD, 036E4F8E, 03EB2617, 043B535A, 059D137F, 0648E422, 07C1FECC, 0853FBD1, 0879E062, 09DDCC0C, 0DDE8A87, 10CCE589, 11DD3A5C, 122713AA, 126FF74F, 16FBF4C8, 17E2C6D1, 18BDCBC8, 18DB27D5, 1929BEC7, 19981E38, 1A78D4CC, 1C88A727, 1CCA82F5, 1E738705, 2097140E, 2274CB4E, 27B24CD9, 28A7D6F4, 290C3BA8, 29C5D458, 2A523AC1, 2F35A1FE, 3154EC76, 32A3A936, 32D0F235, 34336A1F, 345A94C0, 345BC486, 34F3999B, 36DF737F, 3A8359F6, 3B414AF0, 3BFEAC19, 3C00B89D, 421A6AD9, 43CADBB8, 4561DCE7, 461DCB09, 481CA4B4, 4912EFF1, 49501B5A, 4AADC848, 4AEF478A, 4C812637, 4D88A48D, 4D95A70E, 4E2849D9, 4E7B3DE0, 4F2F4ACE, 4FBA4023, 5281BD7B, 5527832F, 55A51767, 574636EE, 5781A4C2, 595705C7, 5A137315, 5D405BF9, 5D536A45, 5DAB50B2, 6103FA4F, 6191C8D0, 6241177B, 645A26E3, 66CB22E3, and 6736AFD0 (78 tests)
+  
+     Progress      Test Name                                        Time(s)   UUID
+  
+     (  1/ 78)    1D -> 1 Fluid(s) -> riemann_solver=1 -> mixture...   14.57    5527832F
+     (  2/ 78)    1D -> 1 Fluid(s) -> riemann_solver=1 -> avg_sta...   14.58    4AEF478A
+     (  3/ 78)    1D -> 1 Fluid(s) -> riemann_solver=1 -> avg_sta...   14.48    49501B5A
+     (  4/ 78)    1D -> 1 Fluid(s) -> riemann_solver=1 -> wave_sp...   14.53    32D0F235
+  
+     ✗ FAILED: 1D -> 1 Fluid(s) -> riemann_solver=2 -> model_e...
+       UUID: 2F35A1FE
+       Attempts: 1
+       Error: Test tests/2F35A1FE: 1D -> 1 Fluid(s) -> riemann_solver=2 -> model_eqns=3: Variable n°13 (1-indexed) in D/cons.1.00.000050.dat is not within tolerance:
+  - Candidate:   0.99999974198789
+  - Golden:      0.9999997419894
+  - Error:       abs: 1.51E-12, rel: 1.51E-12
+  - Tolerance:   abs: 1.00E-12, rel: 1.00E-12
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.5.00.000050.dat
+ - Variable n°9
+ - Candidate: -2.95803989154981
+ - Golden: 2.50000000096369
+ - Absolute Error: 5.46E+00
+ - Relative Error: 2.18E+00
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.5.00.000050.dat
+ - Variable n°256
+ - Candidate: -2.95803989155049
+ - Golden: 0.25003246270072
+ - Relative Error: 1.28E+01
+ - Absolute Error: 3.21E+00
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+     (  5/ 78)    1D -> 1 Fluid(s) -> riemann_solver=2 -> mixture...   13.92    18BDCBC8
+     (  6/ 78)    1D -> 1 Fluid(s) -> riemann_solver=1 -> low_Mach=1   14.23    66CB22E3
+     (  7/ 78)    1D -> 1 Fluid(s) -> Viscous -> riemann_solver=5      14.18    1C88A727
+     (  8/ 78)    1D -> 2 Fluid(s) -> riemann_solver=1 -> mixture...   20.52    1E738705
+     (  9/ 78)    1D -> 2 Fluid(s) -> riemann_solver=1 -> avg_sta...   26.97    0879E062
+     ( 10/ 78)    1D -> 2 Fluid(s) -> riemann_solver=1 -> mpp_lim      14.17    1CCA82F5
+     ( 11/ 78)    1D -> 2 Fluid(s) -> riemann_solver=2 -> mixture...   14.68    3A8359F6
+     ( 12/ 78)    1D -> 2 Fluid(s) -> riemann_solver=2 -> wave_sp...   14.11    461DCB09
+     ( 13/ 78)    1D -> 2 Fluid(s) -> riemann_solver=2 -> low_Mach=2   13.49    0288BDAD
+     ( 14/ 78)    1D -> 2 Fluid(s) -> Viscous -> riemann_solver=5      13.33    27B24CD9
+     ( 15/ 78)    1D -> Hypoelasticity -> 1 Fluid(s) -> cont_damage    13.87    32A3A936
+     ( 16/ 78)    2D -> 1 Fluid(s) -> riemann_solver=1 -> avg_sta...   13.57    3BFEAC19
+     ( 17/ 78)    2D -> 1 Fluid(s) -> riemann_solver=1 -> avg_sta...   13.84    3154EC76
+     ( 18/ 78)    2D -> 1 Fluid(s) -> riemann_solver=5 -> mixture...   13.85    09DDCC0C
+     ( 19/ 78)    2D -> 1 Fluid(s) -> riemann_solver=2 -> mixture...   13.94    3B414AF0
+     ( 20/ 78)    2D -> 1 Fluid(s) -> riemann_solver=2 -> avg_sta...   13.88    3C00B89D
+     ( 21/ 78)    2D -> 1 Fluid(s) -> riemann_solver=2 -> wave_sp...   13.82    345A94C0
+     ( 22/ 78)    2D -> 1 Fluid(s) -> riemann_solver=2 -> avg_sta...   13.98    036E4F8E
+  
+     ✗ FAILED: 2D -> 1 Fluid(s) -> riemann_solver=2 -> model_e...
+       UUID: 043B535A
+       Attempts: 1
+       Error: Test tests/043B535A: 2D -> 1 Fluid(s) -> riemann_solver=2 -> model_eqns=3: Variable n°1 (1-indexed) in D/cons.6.00.000050.dat is not within tolerance:
+  - Candidate:   2.4984039103167
+  - Golden:      2.49776682450169
+  - Error:       abs: 6.37E-04, rel: 2.55E-04
+  - Tolerance:   abs: 1.00E-12, rel: 1.00E-12
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.6.00.000050.dat
+ - Variable n°36
+ - Candidate: 4.31552184086018
+ - Golden: 0.2524603286322
+ - Absolute Error: 4.06E+00
+ - Relative Error: 1.61E+01
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.6.00.000050.dat
+ - Variable n°36
+ - Candidate: 4.31552184086018
+ - Golden: 0.2524603286322
+ - Relative Error: 1.61E+01
+ - Absolute Error: 4.06E+00
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+     ( 23/ 78)    2D -> 1 Fluid(s) -> riemann_solver=1 -> low_Mach=1   13.97    1A78D4CC
+     ( 24/ 78)    2D -> 1 Fluid(s) -> riemann_solver=2 -> low_Mach=1   14.07    126FF74F
+     ( 25/ 78)    2D -> 1 Fluid(s) -> riemann_solver=2 -> low_Mach=2   14.87    290C3BA8
+     ( 26/ 78)    2D -> 1 Fluid(s) -> Viscous -> riemann_solver=5      13.79    4561DCE7
+     ( 27/ 78)    2D -> 2 Fluid(s) -> riemann_solver=1 -> mixture...   14.04    16FBF4C8
+     ( 28/ 78)    2D -> 2 Fluid(s) -> riemann_solver=2 -> mixture...   14.21    5781A4C2
+     ( 29/ 78)    2D -> 2 Fluid(s) -> riemann_solver=2 -> avg_sta...   13.75    645A26E3
+  
+     ✗ FAILED: 2D -> 2 Fluid(s) -> riemann_solver=2 -> model_e...
+       UUID: 4F2F4ACE
+       Attempts: 1
+       Error: Test tests/4F2F4ACE: 2D -> 2 Fluid(s) -> riemann_solver=2 -> model_eqns=3: Variable n°6 (1-indexed) in D/cons.5.00.000050.dat is not within tolerance:
+  - Candidate:   1.46990460778269
+  - Golden:      1.4699046077847
+  - Error:       abs: 2.01E-12, rel: 1.37E-12
+  - Tolerance:   abs: 1.00E-12, rel: 1.00E-12
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.8.00.000050.dat
+ - Variable n°1
+ - Candidate: 0.42723145066296
+ - Golden: 2.24802238993771
+ - Absolute Error: 1.82E+00
+ - Relative Error: 8.10E-01
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.9.00.000050.dat
+ - Variable n°34
+ - Candidate: 0.05571211464645
+ - Golden: 0.31450700937027
+ - Relative Error: 8.23E-01
+ - Absolute Error: 2.59E-01
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+     ( 30/ 78)    2D -> 2 Fluid(s) -> riemann_solver=2 -> alt_sou...   13.47    5DAB50B2
+     ( 31/ 78)    2D -> 2 Fluid(s) -> riemann_solver=1 -> u-inter...   13.67    4912EFF1
+     ( 32/ 78)    2D -> 2 Fluid(s) -> riemann_solver=2 -> low_Mach=1   14.30    1929BEC7
+     ( 33/ 78)    2D -> 2 Fluid(s) -> riemann_solver=2 -> low_Mach=2   14.60    55A51767
+     ( 34/ 78)    2D -> 2 Fluid(s) -> Viscous -> riemann_solver=5      14.72    4C812637
+     ( 35/ 78)    2D -> Hypoelasticity -> 1 Fluid(s)                   14.11    122713AA
+     ( 36/ 78)    2D -> Hypoelasticity -> 1 Fluid(s) -> probe -> ...   14.09    18DB27D5
+     ( 37/ 78)    2D -> Hypoelasticity -> 1 Fluid(s) -> cont_damage    14.06    574636EE
+     ( 38/ 78)    2D -> Hypoelasticity -> 1 Fluid(s) -> cont_dama...   14.60    5A137315
+     ( 39/ 78)    2D -> Hypoelasticity -> 1 Fluid(s) -> bc=-2          13.94    595705C7
+     ( 40/ 78)    2D -> Hypoelasticity -> 1 Fluid(s) -> Axisymmetric   13.46    059D137F
+     ( 41/ 78)    2D -> Hypoelasticity -> 2 Fluid(s) -> eos=mie_g...   14.36    6191C8D0
+     ( 42/ 78)    2D -> Hypoelasticity -> 2 Fluid(s)                   14.14    5281BD7B
+     ( 43/ 78)    3D -> 1 Fluid(s) -> riemann_solver=1 -> wave_sp...   14.36    2A523AC1
+     ( 44/ 78)    3D -> 1 Fluid(s) -> riemann_solver=2 -> avg_sta...   15.20    28A7D6F4
+  
+     ✗ FAILED: 3D -> 1 Fluid(s) -> riemann_solver=2 -> model_e...
+       UUID: 6241177B
+       Attempts: 1
+       Error: Test tests/6241177B: 3D -> 1 Fluid(s) -> riemann_solver=2 -> model_eqns=3: Variable n°25 (1-indexed) in D/cons.6.00.000050.dat is not within tolerance:
+  - Candidate:   1.00000000000298
+  - Golden:      0.99999999999981
+  - Error:       abs: 3.17E-12, rel: 3.17E-12
+  - Tolerance:   abs: 1.00E-12, rel: 1.00E-12
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.7.00.000050.dat
+ - Variable n°4
+ - Candidate: 0.0
+ - Golden: 1.53296467663035
+ - Absolute Error: 1.53E+00
+ - Relative Error: 1.00E+00
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.7.00.000050.dat
+ - Variable n°4
+ - Candidate: 0.0
+ - Golden: 1.53296467663035
+ - Relative Error: 1.00E+00
+ - Absolute Error: 1.53E+00
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+     ( 45/ 78)    3D -> 1 Fluid(s) -> riemann_solver=1 -> low_Mach=1   14.54    4D88A48D
+     ( 46/ 78)    3D -> 1 Fluid(s) -> riemann_solver=2 -> low_Mach=1   14.89    07C1FECC
+     ( 47/ 78)    3D -> 1 Fluid(s) -> riemann_solver=2 -> low_Mach=2   15.33    0853FBD1
+     ( 48/ 78)    3D -> 2 Fluid(s) -> riemann_solver=5 -> mixture...   14.81    4AADC848
+     ( 49/ 78)    2D -> Hypoelasticity -> HLLD -> alt_soundspeed=T     14.75    6103FA4F
+     ( 50/ 78)    2D -> Hypoelasticity -> HLLD -> ADC -> alt_soun...   15.91    4FBA4023
+     ( 51/ 78)    2D -> Hypoelasticity -> HLLC -> alt_soundspeed=F     16.26    34F3999B
+     ( 52/ 78)    2D -> Hypoelasticity -> HLLC -> alt_soundspeed=T     16.69    29C5D458
+     ( 53/ 78)    2D -> Hypoelasticity -> HLL -> Interface RHS ->...   16.17    4E2849D9
+     ( 54/ 78)    2D -> Hypoelasticity -> HLL -> Interface RHS ->...   13.91    34336A1F
+     ( 55/ 78)    2D -> Hypoelasticity -> HLL -> u-interface -> I...   14.12    03EB2617
+     ( 56/ 78)    2D -> Hypoelasticity -> HLL -> u-interface -> I...   13.76    345BC486
+     ( 57/ 78)    2D -> Axisymmetric -> Hypoelasticity -> HLLD ->...   14.77    421A6AD9
+     ( 58/ 78)    2D -> Axisymmetric -> Hypoelasticity -> HLLD ->...   16.08    17E2C6D1
+     ( 59/ 78)    2D -> Axisymmetric -> Hypoelasticity -> HLLC ->...   16.80    2097140E
+     ( 60/ 78)    2D -> Axisymmetric -> Hypoelasticity -> HLLC ->...   17.51    43CADBB8
+     ( 61/ 78)    2D -> Axisymmetric -> Hypoelasticity -> HLLC ->...   16.73    5D536A45
+     ( 62/ 78)    2D -> Axisymmetric -> Hypoelasticity -> HLL -> ...   14.21    4E7B3DE0
+     ( 63/ 78)    3D -> Hypoelasticity -> HLLD -> alt_soundspeed=F     16.08    481CA4B4
+     ( 64/ 78)    3D -> Hypoelasticity -> HLLD -> alt_soundspeed=T     16.74    6736AFD0
+     ( 65/ 78)    3D -> Hypoelasticity -> HLLC -> alt_soundspeed=F     16.23    5D405BF9
+     ( 66/ 78)    3D -> Hypoelasticity -> HLLC -> alt_soundspeed=T     15.84    026AA23F
+     ( 67/ 78)    3D -> Hypoelasticity -> HLLC -> ADC -> alt_soun...   15.58    36DF737F
+     ( 68/ 78)    3D -> Hypoelasticity -> HLL -> Interface RHS ->...   15.63    0648E422
+     ( 69/ 78)    3D -> Hypoelasticity -> HLL -> u-interface -> I...   16.25    19981E38
+     ( 70/ 78)    2D -> Hypoelasticity -> HLLD -> Shear guard -> ...   13.69    10CCE589
+     ( 71/ 78)    2D -> Axisymmetric -> Hypoelasticity -> HLLD ->...   13.92    11DD3A5C
+     ( 72/ 78)    2D -> Hypoelasticity -> HLLD -> CBC uniform pre...   14.43    2274CB4E
+     ( 73/ 78)    1D -> Example -> hypo_2materials                     13.67    4D95A70E
+     ( 74/ 78)    MPI Consistency -> 3D -> Hypoelasticity              31.29    0DDE8A87
+
+  
+
+╭──────────────────────────────── Test Summary ────────────────────────────────╮
+│                                                                              │
+│  ✗ 4 TESTS FAILED                                                            │
+│                                                                              │
+│      74 passed                                                               │
+│       4 failed                                                               │
+│     682 skipped                                                              │
+│    ────────────                                                              │
+│     760 total                                                                │
+│                                                                              │
+│    Time: 10m 11.1s                                                           │
+│                                                                              │
+│    Failed Tests:                                                             │
+│      • 1D -> 1 Fluid(s) -> riemann_solver=2 ...                              │
+│        UUID: 2F35A1FE                                                        │
+│        (tolerance mismatch)                                                  │
+│      • 2D -> 1 Fluid(s) -> riemann_solver=2 ...                              │
+│        UUID: 043B535A                                                        │
+│        (tolerance mismatch)                                                  │
+│      • 2D -> 2 Fluid(s) -> riemann_solver=2 ...                              │
+│        UUID: 4F2F4ACE                                                        │
+│        (tolerance mismatch)                                                  │
+│      • 3D -> 1 Fluid(s) -> riemann_solver=2 ...                              │
+│        UUID: 6241177B                                                        │
+│        (tolerance mismatch)                                                  │
+│                                                                              │
+│    Next Steps:                                                               │
+│      • Run with --generate to update golden files (if changes are            │
+│  intentional)                                                                │
+│      • Check individual test output in tests/<UUID>/                         │
+│      • Run specific test: ./mfc.sh test --only <UUID>                        │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+
+mfc: ERROR > main.py finished with a 4 exit code.
+mfc: (venv) Exiting the Python virtual environment.

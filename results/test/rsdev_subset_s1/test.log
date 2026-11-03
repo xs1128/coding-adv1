@@ -1,0 +1,77 @@
+mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn083 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 2
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | 
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Build | syscheck and pre_process
+
+
+ Build | syscheck and simulation
+
+
+
+ Test pre_process and simulation | Only 67A5ECF8, 6811629E, 6AF90F3C, 6BB67897, 6CFBCF4A, 6D24B115, 7374E266, 73B0539E, 758D0268, 7B21681C, 7C8F1BA9, 7EFBCDAE, 7F964063, 83EFC30C, 851F7AE2, 879C490D, 891C8626, 96AF00B3, 9730B2DF, 9ACD5174, 9AEC024A, 9C9B2CBC, 9DAC4DDC, 9EB947DB, A0B82851, A26B7E00, A5C93D62, A6AC2E06, A96DA754, AACF1BC5, AB0BE4E4, AB56B056, AD1A50B7, AE3ECF01, AF0BCEE4, AFB46CF8, AFE4994E, B2AEF240, B33E256A, B76C4F04, B8F5F1C8, BD8004FF, BDD3411B, C06849AD, C1974DB8, C36F18FB, C462AA3E, C4907722, C4A2FAA3, C531DC93, C7B686C0, CB76A5E1, CC89283B, CF11AA56, D222AFB8, D41FFB94, D58700BB, DA44D68D, DC6D7467, DC9CB97E, E04B6502, E5E5CBD5, E6F54696, EF3E7C79, F0E6771E, F0F175B2, F28381D9, F31EAABF, F4F6AC27, F5512823, F5705D1B, F5F06EA3, F97573DB, F9E0BE95, FBF808BE, FC4D07B6, and FD891191 (77 tests)
+  
+     Progress      Test Name                                        Time(s)   UUID
+  
+     (  1/ 77)    1D -> 1 Fluid(s) -> riemann_solver=5 -> mixture...   64.01    AFE4994E
+     (  2/ 77)    1D -> 1 Fluid(s) -> riemann_solver=2 -> avg_sta...   64.03    F97573DB
+     (  3/ 77)    1D -> 1 Fluid(s) -> riemann_solver=2 -> wave_sp...   62.64    F4F6AC27
+     (  4/ 77)    1D -> 1 Fluid(s) -> riemann_solver=2 -> avg_sta...   62.59    E5E5CBD5
+     (  5/ 77)    1D -> 1 Fluid(s) -> riemann_solver=2 -> low_Mach=2   62.68    CB76A5E1
+     (  6/ 77)    1D -> 1 Fluid(s) -> riemann_solver=2 -> low_Mach=1   62.75    7B21681C
+     (  7/ 77)    1D -> 2 Fluid(s) -> riemann_solver=1 -> wave_sp...   63.47    83EFC30C
+     (  8/ 77)    1D -> 2 Fluid(s) -> riemann_solver=5 -> mixture...   63.42    96AF00B3
+     (  9/ 77)    1D -> 2 Fluid(s) -> riemann_solver=2 -> avg_sta...   62.37    6D24B115
+  
+     ✗ FAILED: 1D -> 2 Fluid(s) -> riemann_solver=2 -> model_e...
+       UUID: FD891191
+       Attempts: 1
+       Error: Test tests/FD891191: 1D -> 2 Fluid(s) -> riemann_solver=2 -> model_eqns=3: Variable n°28 (1-indexed) in D/cons.1.00.000050.dat is not within tolerance:
+  - Candidate:   0.62940616770028
+  - Golden:      0.62940616769838
+  - Error:       abs: 1.90E-12, rel: 3.02E-12
+  - Tolerance:   abs: 1.00E-12, rel: 1.00E-12
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.7.00.000050.dat
+ - Variable n°9
+ - Candidate: 0.42750000011747
+ - Golden: 2.25000000086559
+ - Absolute Error: 1.82E+00
+ - Relative Error: 8.10E-01
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.5.00.000050.dat
+ - Variable n°250
+ - Candidate: 0.49885566772123
+ - Golden: 0.20013801290901
+ - Relative Error: 1.49E+00
+ - Absolute Error: 2.99E-01
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+     ( 10/ 77)    1D -> 2 Fluid(s) -> riemann_solver=2 -> mpp_lim      62.57    C4907722
+     ( 11/ 77)    1D -> 2 Fluid(s) -> riemann_solver=2 -> alt_sou...   62.70    9DAC4DDC
+     ( 12/ 77)    1D -> 2 Fluid(s) -> riemann_solver=2 -> low_Mach=1   61.86    F28381D9
+     ( 13/ 77)    1D -> 2 Fluid(s) -> riemann_solver=1 -> low_Mach=1   62.16    F5512823
+     ( 14/ 77)    1D -> Hypoelasticity -> 1 Fluid(s)                   63.60    9EB947DB
+     ( 15/ 77)    1D -> Hypoelasticity -> 2 Fluid(s)                   63.50    AF0BCEE4
+     ( 16/ 77)    2D -> 1 Fluid(s) -> riemann_solver=1 -> wave_sp...   64.62    FBF808BE
+     ( 17/ 77)    2D -> 1 Fluid(s) -> riemann_solver=1 -> mixture...   64.69    7374E266
+     ( 18/ 77)    2D -> 2 Fluid(s) -> riemann_solver=1 -> avg_sta...   64.54    DC9CB97E
+     ( 19/ 77)    2D -> 2 Fluid(s) -> riemann_solver=1 -> wave_sp...   64.50    A5C93D62
+     ( 20/ 77)    2D -> 2 Fluid(s) -> riemann_solver=1 -> mpp_lim      64.60    A6AC2E06
+     ( 21/ 77)    2D -> 2 Fluid(s) -> riemann_solver=5 -> mixture...   64.56    9730B2DF
+     ( 22/ 77)    2D -> 2 Fluid(s) -> riemann_solver=2 -> wave_sp...   63.96    FC4D07B6
+     ( 23/ 77)    2D -> 2 Fluid(s) -> riemann_solver=2 -> mpp_lim      63.91    F0F175B2
+     ( 24/ 77)    2D -> 2 Fluid(s) -> riemann_solver=1 -> u-inter...   65.43    AE3ECF01
+     ( 25/ 77)    2D -> 2 Fluid(s) -> riemann_solver=1 -> low_Mach=1   65.38    B2AEF240

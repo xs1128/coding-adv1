@@ -138,6 +138,16 @@ the figure script disagreed. Rule: derived numbers come from raw files, in one s
   the 3 runs (0.04082 → 0.04011 ns, −1.7 %) where the ladder uses medians (0.04080 → 0.04013, −1.6 %). Found when
   rechecking the row against `summary.tsv` before promoting it to pending 0032; no GPU cost, the step figure was right.
   Rule kept: recompute every number from the raw files before it goes into a doc.
+- **11-03: two test shards on one checkout at once.** The exp-rsdev subset (155 tests) was submitted as two 1-GPU jobs
+  side by side; `mfctest.sbatch` holds a lock on the checkout's `tests/`, so shard 1 (691630) stopped after 3 s ("another
+  ./mfc.sh test holds ...") while shard 0 ran. Cost ~0.05 GPU-min. Its folder was renamed `rsdev_subset_s1_locked` (kept,
+  not edited) and the shard rerun as 691740. Rule: shards on one checkout are chained (`AFTER=`, as `run_suite.sh` does).
+- **11-03: a test shard on a slow node timed out.** The rerun of shard 1 (691740) landed on hgpn083, where tests took
+  64-65 s instead of 10-31 s (shard 0, same commit, hgpn033); the brake check at job start passed, so the cause is not
+  known. It hit its 15-min limit after 26 of 77 tests: 15 GPU-min, 26 results kept (25 pass, FD891191 fails with P22's
+  exact error). The other 51 were rerun with hgpn083 excluded (691832). The subset now costs ~35 GPU-min against the
+  ~24 estimated, over the ~30 GPU-min ask-first line because of the slow node; the rerun (~9 GPU-min) was submitted
+  without asking. Rule: a per-test time check in `mfctest.sbatch` that stops early would catch this sooner.
 
 ## Code the student must be able to defend
 (filled in as optimizations land)
