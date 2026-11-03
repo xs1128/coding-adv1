@@ -75,7 +75,7 @@ suite (713 tests, ladder row 67) gives exactly the 23 known failures, with the s
 **Waiting for the full test suite** ([`patches/pending/`](patches/pending/)): 0031 sets the boundary code's few
 numbers on the GPU with one tiny kernel instead of 9 small copies from the CPU per call. That removes a 21 ms one-off
 cost in the first step (the GPU runtime had to set up a pinned copy buffer for the second queue) and makes each step
-0.3 % faster (job 686808, bitwise); all 34 CBC tests pass (686876).
+0.3 % faster at 1 GPU (job 686808) and 1.3 % faster at 4 GPUs (686954), bitwise; all 34 CBC tests pass (686876).
 
 **Run settings (disclosed, no code change):** at 1 GPU, Open MPI without UCX (`ob1`) and a run directory in node-local
 memory (`/dev/shm`) cut the wall time of a whole run, start-up and save included, to about 3.8 s (job 684750).

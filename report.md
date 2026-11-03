@@ -223,7 +223,8 @@ P21 is 4.75 % faster per step than P20; the wall time is the same within noise. 
 makes the OpenACC runtime allocate a pinned staging buffer (21 ms `cuMemHostAlloc`, nsys 685403), once per run.
 Queuing those copies on the default queue instead removes the 21 ms but costs 0.15 % per step (686710, ladder row 68).
 0031 (pending) writes the same values on the GPU with one single-block kernel that takes them as arguments: first step
-56.6 / 57.6 → 35.7 / 35.8 ms, grind 0.14566 → 0.14522 ns (−0.30 %), bitwise (686808); all 34 CBC tests pass (686876).
+56.6 / 57.6 → 35.7 / 35.8 ms, grind 0.14566 → 0.14522 ns (−0.30 %), bitwise (686808); all 34 CBC tests pass (686876). On 4 GPUs (`rdma_mpi`,
+686954): 8.032 → 7.927 ms per step (−1.3 %), bitwise.
 
 **Several GPUs** (`rdma_mpi`, same node, P11 vs P18; bitwise):
 
