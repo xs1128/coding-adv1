@@ -1,0 +1,46 @@
+mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn004 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 2
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | 
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ambient N2 rho=1.1380 a1=353 | bubble rho=0.4879 (ratio 0.43) | shock M=2.5 u2=618 T2/T1=2.14
+ Build | syscheck and pre_process | Chemistry: h2o2.yaml
+
+
+ Build | syscheck and simulation | Chemistry: h2o2.yaml
+
+
+
+ Test pre_process and simulation | Only 3F6DA12C and B317404C (2 tests)
+  
+     Progress      Test Name                                        Time(s)   UUID
+  
+     (  1/  2)    2D -> Example -> reactive_shock_bubble               15.61    3F6DA12C
+     (  2/  2)    2D -> IBM -> Vieille Burn Rate                       16.01    B317404C
+
+  
+
+╭──────────────────────────────── Test Summary ────────────────────────────────╮
+│                                                                              │
+│  ✓ ALL TESTS PASSED                                                          │
+│                                                                              │
+│       2 passed                                                               │
+│       0 failed                                                               │
+│     758 skipped                                                              │
+│    ────────────                                                              │
+│     760 total                                                                │
+│                                                                              │
+│    Time: 17.1s                                                               │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+
+mfc: (venv) Exiting the Python virtual environment.
