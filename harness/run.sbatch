@@ -53,9 +53,13 @@ echo "sim=$sim" >> "$out/env.txt"
 cd "$run"
 rm -f restart_data/lustre_[1-9]*.dat   # the warm-up's final state must not stand in for the timed reps' (verify reads it)
 printf 'rep\twall_s\tgrind_ns\n' > "$out/summary.tsv"
+# NOLIBPATH=1 (setting, disclosed): the timed runs start with LD_LIBRARY_PATH unset. The binaries' RPATHs find the same
+# libraries (696781: the same 187 loaded objects), and every LD_LIBRARY_PATH miss was a metadata lookup on Lustre.
+libu=(); [[ ${NOLIBPATH:-0} == 1 ]] && libu=(-u LD_LIBRARY_PATH)
+echo "nolibpath=${NOLIBPATH:-0}" >> "$out/env.txt"
 for r in $(seq 1 "$REPS"); do
   t0=$(date +%s.%N)
-  env $RUN_ENV mpirun -np "$NGPU" $MPIRUN_ARGS $WRAP "$sim" > "$out/rep$r.log" 2>&1
+  env "${libu[@]}" $RUN_ENV mpirun -np "$NGPU" $MPIRUN_ARGS $WRAP "$sim" > "$out/rep$r.log" 2>&1
   t1=$(date +%s.%N)
   g=$(awk '/Performance:/{print $2}' "$out/rep$r.log" | tail -1)
   printf '%s\t%.3f\t%s\n' "$r" "$(echo "$t1 - $t0" | bc)" "$g" >> "$out/summary.tsv"
