@@ -140,13 +140,13 @@ P20, simpler array addressing; P21 is the boundary work. Every arm of every comp
 
 ### 1 · Stop waiting
 The CPU queued each GPU job and then waited for it. Now it queues everything and moves on.
-<div class="text-xs mt-2 font-mono">0001 0005 0013 0019</div>
+<div class="text-xs mt-2 font-mono">0001 0005 0013 0019 0025 0028 0029</div>
 </div>
 <div class="card">
 
 ### 2 · Stop copying, skip unused work
 Arrays were copied before being read, and some cells computed that nobody used. Now kernels read in place and skip them.
-<div class="text-xs mt-2 font-mono">0006–0009 0011 0024</div>
+<div class="text-xs mt-2 font-mono">0006–0009 0011 0024 0026 0027 0030</div>
 </div>
 <div class="card">
 
@@ -162,10 +162,10 @@ One-file build so helpers inline, register limits, load the next values early, p
 </div>
 </div>
 
-<div class="foot">24 patches in patches/opt/, one idea each; every one explained in docs/optimizations.md</div>
+<div class="foot">30 patches in patches/opt/, one idea each; every one explained in docs/optimizations.md</div>
 
 <!--
-The 24 patches fall into four ideas. One, stop waiting: the CPU used to wait after each GPU job. Two, stop copying:
+The 30 patches fall into four ideas. One, stop waiting: the CPU used to wait after each GPU job. Two, stop copying:
 read arrays in place. Three, do in one pass what used to take several: the biggest one put WENO5 inside the HLLC
 kernel. Four, help the compiler and the memory system: inlining, register limits, loading the next values early,
 and simpler array addressing.
@@ -346,7 +346,7 @@ class: dark
 <div class="foot" style="color:#b9c3d6">Repo: [GitHub link] · report.md · docs/optimizations.md · AGENT_LOG.md</div>
 
 <!--
-To sum up: 13 days, over 200 commits, 256 GPU jobs, 24 patches. Most of the speed came from moving less data. Every claim
+To sum up: 13 days, about 270 commits, about 300 GPU jobs, 30 patches. Most of the speed came from moving less data. Every claim
 is measured on one node and checked bit for bit, and failures are kept. And an AI agent is a fast engineer, but it
 needs rules, a budget and checks it can't talk its way around. Thanks, happy to take questions.
 -->
