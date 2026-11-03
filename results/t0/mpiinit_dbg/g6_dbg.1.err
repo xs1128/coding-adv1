@@ -1,0 +1,4 @@
+[25a-hgpn005:3623195] mpirun: SIGPIPE detected on fd 13 - aborting
+[25a-hgpn005:3623195] mpirun: SIGPIPE detected on fd 13 - aborting
+mpirun: abort is already in progress...hit ctrl-c again to forcibly terminate
+
