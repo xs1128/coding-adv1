@@ -117,8 +117,9 @@ memory (`/dev/shm`) cut the wall time of a whole run, start-up and save included
 Starting the run with `LD_LIBRARY_PATH` unset (`NOLIBPATH=1`) cuts it further: the variable lists 6 compiler folders on the
 slow shared file system, and the program finds the same libraries without it. With patches up to 0038, a whole run takes
 2.79–2.82 s instead of 3.55–3.65 s (median, job 696791), with the same answer (ladder row 85). At 4 GPUs it saves about 0.6–0.9 s too (job 696824, row 86); the `/dev/shm` run directory adds about 3 % there (696970, row 87), and turning off two collective libraries that HPC-X starts with MPI (hcoll, UCC) about 12 % more (697130, row 89), and leaving out two UCX parts a single node does not use another 10 % (697393, row 92). A file of ROMIO hints (bigger buffer, 4 writers instead of 1) makes the 4-GPU save about a third faster (697672, row 95). Altogether a whole 4-GPU run went from about 7.2–7.3 s to about 4.5–4.6 s with the same answer.
-At 1 GPU, starting the program directly instead of through `mpirun` saves another 0.25–0.33 s: a whole run now takes
-2.42–2.49 s (median, job 697735, row 98), against 3.55–3.65 s before today's settings.
+At 1 GPU, starting the program directly instead of through `mpirun` saves another 0.25–0.33 s: a whole run takes
+2.42–2.49 s (median, job 697735, row 98), and with a shorter library search path 2.28–2.29 s (697750, row 99),
+against 3.55–3.65 s before today's settings.
 
 **Since the 10-31 report**, the time per step at 1 GPU went from ~60 ms to ~28.4 ms (see [`report.md`](report.md) §11).
 
