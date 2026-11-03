@@ -207,7 +207,8 @@ build flag changes: −0.35 % at 1 GPU (685381) and 8.299 → 8.065 ms (−2.8 %
 about −11 % per step vs P20 at 4 GPUs (chained A/Bs). 0030 (pending) skips the per-cell ghost-cell kernel on faces
 whose cells are all extrapolation/CBC or reflective, where the fast path has already filled them: 28.689 / 28.657 →
 28.440 / 28.478 ms at 1 GPU (−0.75 %, job 685452, bitwise). Chaining all six: about 28.5 ms at 1 GPU (about 2.73×
-v5.7.0). Its 83-test boundary and CBC subset is job 685533.
+v5.7.0). With 0025–0030 the 34 CBC and 49 boundary tests give 79 passes and the 4 known IBM-viscous failures, with the same
+errors as P20 (685533).
 
 **Several GPUs** (`rdma_mpi`, same node, P11 vs P18; bitwise):
 

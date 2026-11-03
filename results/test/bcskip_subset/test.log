@@ -1,0 +1,261 @@
+mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn021 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 2
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | 
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Build | syscheck and pre_process
+
+
+ Build | syscheck and simulation
+
+
+ Build | syscheck and pre_process | Chemistry: h2o2.yaml
+
+
+ Build | syscheck and simulation | Chemistry: h2o2.yaml
+
+
+
+ Test pre_process and simulation | Only 3AE495F4, 5EC236F2, 48CCE072, AED93D34, C5B79059, 727F72ED, A60691E7, 3FC6FC4A, 63CD6ADF, A6846AD4, A6E65782, 4129A23A, E84967E7, 5F877BC9, 16C03D8E, B96AC58F, 8FDEE23A, BF46F657, 212401B4, EB6687AB, E09A12D9, 5010B814, 730DFD6D, ABAC3AE3, C93BE9B5, D0045756, 557FF170, 61FFF3D3, 0BDC8E40, 38C2159F, D7107B89, 2274CB4E, 9C9B2CBC, 18BDCBC8, D79C3E6F, 8A59E8E6, 70DAE9E8, 2AB32975, 2FD933A2, ED728400, 9D92767D, 55533234, EAA53889, 20AE0551, D972BA0F, 4D7926CD, 98081DA3, 10DBA76B, C7BE8FEA, 4F5A5E32, 34626101, 6171E9D4, 1843DA80, 7F70E665, BBF7C467, F60D6594, BA4372C5, 65CC7EB7, 0E240AD7, 8D8F6424, 595705C7, 6FC6A809, 09DAFEBA, F99FBB36, 6B4B738B, 6249EDDE, 8BCBAED8, 9DCBE54F, 28D037A7, 43A1D3C6, 5173E637, A1B2B963, 32DD0363, 0387594F, 7DCA9229, 1E62093F, 6ED50013, 8339878C, 408BF558, BFAA7587, 67A5ECF8, 8E56ACC1, and 4587725A (83 tests)
+  
+     Progress      Test Name                                        Time(s)   UUID
+  
+     (  1/ 83)    1D -> bc=-1                                          16.10    D79C3E6F
+     (  2/ 83)    1D -> bc=-2                                          16.11    8A59E8E6
+     (  3/ 83)    1D -> bc=-5                                          20.47    3AE495F4
+     (  4/ 83)    1D -> bc=-4                                          24.68    70DAE9E8
+     (  5/ 83)    1D -> bc=-6                                          30.90    5EC236F2
+     (  6/ 83)    1D -> bc=-7                                          27.80    48CCE072
+     (  7/ 83)    1D -> bc=-8                                          15.89    AED93D34
+     (  8/ 83)    1D -> bc=-9                                          14.84    C5B79059
+     (  9/ 83)    1D -> bc=-10                                         17.47    727F72ED
+     ( 10/ 83)    1D -> bc=-11                                         17.42    A60691E7
+     ( 11/ 83)    1D -> bc=-12                                         17.13    3FC6FC4A
+     ( 12/ 83)    1D -> bc=-3                                          17.08    2AB32975
+     ( 13/ 83)    1D -> bc=-16                                         16.46    ED728400
+     ( 14/ 83)    1D -> bc=-15                                         16.51    2FD933A2
+     ( 15/ 83)    1D -> grcbc x                                        16.22    63CD6ADF
+     ( 16/ 83)    1D -> bc=-17                                         16.28    9D92767D
+     ( 17/ 83)    1D -> 1 Fluid(s) -> riemann_solver=2 -> mixture...   16.44    18BDCBC8
+     ( 18/ 83)    1D -> 2 Fluid(s) -> eos=mie_gruneisen -> bc=-5       16.39    A6846AD4
+     ( 19/ 83)    2D -> bc=-2                                          16.74    EAA53889
+     ( 20/ 83)    2D -> bc=-1                                          16.79    55533234
+     ( 21/ 83)    2D -> bc=-4                                          17.09    20AE0551
+     ( 22/ 83)    2D -> bc=-5                                          17.04    A6E65782
+     ( 23/ 83)    2D -> bc=-7                                          16.51    E84967E7
+     ( 24/ 83)    2D -> bc=-6                                          16.57    4129A23A
+     ( 25/ 83)    2D -> bc=-9                                          16.54    16C03D8E
+     ( 26/ 83)    2D -> bc=-8                                          16.59    5F877BC9
+     ( 27/ 83)    2D -> bc=-11                                         16.43    8FDEE23A
+     ( 28/ 83)    2D -> bc=-10                                         16.49    B96AC58F
+     ( 29/ 83)    2D -> bc=-12                                         16.39    BF46F657
+     ( 30/ 83)    2D -> bc=-3                                          16.34    D972BA0F
+     ( 31/ 83)    2D -> bc=-16                                         16.56    98081DA3
+     ( 32/ 83)    2D -> bc=-15                                         16.62    4D7926CD
+     ( 33/ 83)    2D -> grcbc x                                        16.41    212401B4
+     ( 34/ 83)    2D -> bc=-17                                         16.47    10DBA76B
+     ( 35/ 83)    2D -> grcbc y                                        16.02    EB6687AB
+     ( 36/ 83)    2D -> 1 Fluid(s) -> IBM -> Rectangle -> slip         16.16    C7BE8FEA
+     ( 37/ 83)    2D -> 1 Fluid(s) -> Viscous -> IBM -> Rectangle...   17.08    34626101
+     ( 38/ 83)    2D -> 1 Fluid(s) -> IBM -> Circle -> slip            17.29    4F5A5E32
+  
+     ✗ FAILED: 2D -> 1 Fluid(s) -> Viscous -> IBM -> Circle ->...
+       UUID: 1843DA80
+       Attempts: 1
+       Error: Test tests/1843DA80: 2D -> 1 Fluid(s) -> Viscous -> IBM -> Circle -> slip -> model_eqns=3 -> eos=mie_gruneisen: Variable n°1 (1-indexed) in D/cons.6.00.000050.dat is not within tolerance:
+  - Candidate:   4.80884601541797
+  - Golden:      2.5
+  - Error:       abs: 2.31E+00, rel: 9.24E-01
+  - Tolerance:   abs: 1.00E-10, rel: 1.00E-10
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.6.00.000050.dat
+ - Variable n°42
+ - Candidate: 10.74611523435182
+ - Golden: 2.8203125
+ - Absolute Error: 7.93E+00
+ - Relative Error: 2.81E+00
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.6.00.000050.dat
+ - Variable n°42
+ - Candidate: 10.74611523435182
+ - Golden: 2.8203125
+ - Relative Error: 2.81E+00
+ - Absolute Error: 7.93E+00
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+     ( 39/ 83)    2D -> 1 Fluid(s) -> Viscous -> IBM -> Circle ->...   19.30    6171E9D4
+     ( 40/ 83)    2D -> 2 Fluid(s) -> IBM -> Rectangle -> slip         17.15    BBF7C467
+  
+     ✗ FAILED: 2D -> 1 Fluid(s) -> Viscous -> IBM -> model_eqn...
+       UUID: 7F70E665
+       Attempts: 1
+       Error: Test tests/7F70E665: 2D -> 1 Fluid(s) -> Viscous -> IBM -> model_eqns=3 -> slip: Variable n°1 (1-indexed) in D/cons.6.00.000050.dat is not within tolerance:
+  - Candidate:   2.95803989154996
+  - Golden:      2.5
+  - Error:       abs: 4.58E-01, rel: 1.83E-01
+  - Tolerance:   abs: 1.00E-10, rel: 1.00E-10
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.6.00.000050.dat
+ - Variable n°41
+ - Candidate: 2.95803995254323
+ - Golden: 0.25000001320108
+ - Absolute Error: 2.71E+00
+ - Relative Error: 1.08E+01
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.6.00.000050.dat
+ - Variable n°41
+ - Candidate: 2.95803995254323
+ - Golden: 0.25000001320108
+ - Relative Error: 1.08E+01
+ - Absolute Error: 2.71E+00
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+     ( 41/ 83)    2D -> 2 Fluid(s) -> IBM -> Circle -> slip            17.32    F60D6594
+     ( 42/ 83)    2D -> 2 Fluid(s) -> Viscous -> IBM -> Rectangle...   17.29    BA4372C5
+  
+     ✗ FAILED: 2D -> 2 Fluid(s) -> Viscous -> IBM -> Circle ->...
+       UUID: 0E240AD7
+       Attempts: 1
+       Error: Test tests/0E240AD7: 2D -> 2 Fluid(s) -> Viscous -> IBM -> Circle -> slip -> model_eqns=3 -> eos=mie_gruneisen: Variable n°5 (1-indexed) in D/cons.6.00.000050.dat is not within tolerance:
+  - Candidate:   0.89999999886745
+  - Golden:      0.89999999970756
+  - Error:       abs: 8.40E-10, rel: 9.33E-10
+  - Tolerance:   abs: 1.00E-10, rel: 1.00E-10
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.8.00.000050.dat
+ - Variable n°1
+ - Candidate: 0.657
+ - Golden: 2.4795
+ - Absolute Error: 1.82E+00
+ - Relative Error: 7.35E-01
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.9.00.000050.dat
+ - Variable n°1
+ - Candidate: 0.0475
+ - Golden: 0.25
+ - Relative Error: 8.10E-01
+ - Absolute Error: 2.03E-01
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+     ( 43/ 83)    2D -> 2 Fluid(s) -> Viscous -> IBM -> Circle ->...   20.27    65CC7EB7
+     ( 44/ 83)    2D -> Hypoelasticity -> 1 Fluid(s) -> bc=-2          16.34    595705C7
+  
+     ✗ FAILED: 2D -> 2 Fluid(s) -> Viscous -> IBM -> model_eqn...
+       UUID: 8D8F6424
+       Attempts: 1
+       Error: Test tests/8D8F6424: 2D -> 2 Fluid(s) -> Viscous -> IBM -> model_eqns=3 -> slip: Variable n°6 (1-indexed) in D/cons.6.00.000050.dat is not within tolerance:
+  - Candidate:   0.50000000673073
+  - Golden:      0.50000000379261
+  - Error:       abs: 2.94E-09, rel: 5.88E-09
+  - Tolerance:   abs: 1.00E-10, rel: 1.00E-10
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.8.00.000050.dat
+ - Variable n°1
+ - Candidate: 0.4275
+ - Golden: 2.25
+ - Absolute Error: 1.82E+00
+ - Relative Error: 8.10E-01
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.8.00.000050.dat
+ - Variable n°1
+ - Candidate: 0.4275
+ - Golden: 2.25
+ - Relative Error: 8.10E-01
+ - Absolute Error: 1.82E+00
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+     ( 45/ 83)    3D -> bc=-2                                          17.73    09DAFEBA
+     ( 46/ 83)    3D -> bc=-1                                          18.75    6FC6A809
+     ( 47/ 83)    3D -> bc=-5                                          18.94    E09A12D9
+     ( 48/ 83)    3D -> bc=-4                                          19.01    F99FBB36
+     ( 49/ 83)    3D -> bc=-6                                          18.67    5010B814
+     ( 50/ 83)    3D -> bc=-7                                          18.63    730DFD6D
+     ( 51/ 83)    3D -> bc=-8                                          18.65    ABAC3AE3
+     ( 52/ 83)    3D -> bc=-9                                          18.62    C93BE9B5
+     ( 53/ 83)    3D -> bc=-11                                         18.80    557FF170
+     ( 54/ 83)    3D -> bc=-10                                         18.86    D0045756
+     ( 55/ 83)    3D -> bc=-12                                         18.84    61FFF3D3
+     ( 56/ 83)    3D -> bc=-3                                          18.81    6B4B738B
+     ( 57/ 83)    3D -> bc=-16                                         18.37    8BCBAED8
+     ( 58/ 83)    3D -> bc=-15                                         18.43    6249EDDE
+     ( 59/ 83)    3D -> bc=-17                                         18.66    9DCBE54F
+     ( 60/ 83)    3D -> grcbc x                                        18.62    0BDC8E40
+     ( 61/ 83)    3D -> grcbc z                                        19.24    D7107B89
+     ( 62/ 83)    3D -> grcbc y                                        19.30    38C2159F
+     ( 63/ 83)    3D -> 1 Fluid(s) -> IBM -> Sphere -> slip            18.71    28D037A7
+     ( 64/ 83)    3D -> 1 Fluid(s) -> IBM -> Cuboid -> slip            18.67    43A1D3C6
+     ( 65/ 83)    3D -> 1 Fluid(s) -> IBM -> Cylinder -> slip          18.59    5173E637
+     ( 66/ 83)    3D -> 1 Fluid(s) -> Viscous -> IBM -> Sphere ->...   19.00    A1B2B963
+     ( 67/ 83)    3D -> 1 Fluid(s) -> Viscous -> IBM -> Cylinder ...   22.09    0387594F
+     ( 68/ 83)    3D -> 1 Fluid(s) -> Viscous -> IBM -> Cuboid ->...   22.58    32DD0363
+     ( 69/ 83)    3D -> 2 Fluid(s) -> IBM -> Cuboid -> slip            19.52    1E62093F
+     ( 70/ 83)    3D -> 2 Fluid(s) -> IBM -> Sphere -> slip            19.58    7DCA9229
+     ( 71/ 83)    3D -> 2 Fluid(s) -> IBM -> Cylinder -> slip          19.10    6ED50013
+     ( 72/ 83)    3D -> 2 Fluid(s) -> Viscous -> IBM -> Sphere ->...   19.61    8339878C
+     ( 73/ 83)    3D -> 2 Fluid(s) -> Viscous -> IBM -> Cylinder ...   22.98    BFAA7587
+     ( 74/ 83)    3D -> 2 Fluid(s) -> Viscous -> IBM -> Cuboid ->...   23.58    408BF558
+     ( 75/ 83)    3D -> Hypoelasticity -> 1 Fluid(s) -> bc=-2          18.91    67A5ECF8
+     ( 76/ 83)    2D -> Hypoelasticity -> HLLD -> CBC uniform pre...   18.89    2274CB4E
+     ( 77/ 83)    2D -> Example -> axisym_hypoelasticity               17.89    9C9B2CBC
+     ( 78/ 83)    1D -> Chemistry -> Dual Isothermal Wall Gradient     19.82    8E56ACC1
+     ( 79/ 83)    2D -> Chemistry -> Isothermal Wall                   16.79    4587725A
+
+  
+
+╭──────────────────────────────── Test Summary ────────────────────────────────╮
+│                                                                              │
+│  ✗ 4 TESTS FAILED                                                            │
+│                                                                              │
+│      79 passed                                                               │
+│       4 failed                                                               │
+│     677 skipped                                                              │
+│    ────────────                                                              │
+│     760 total                                                                │
+│                                                                              │
+│    Time: 12m 52.8s                                                           │
+│                                                                              │
+│    Failed Tests:                                                             │
+│      • 2D -> 1 Fluid(s) -> Viscous -> IBM ->...                              │
+│        UUID: 1843DA80                                                        │
+│        (tolerance mismatch)                                                  │
+│      • 2D -> 1 Fluid(s) -> Viscous -> IBM ->...                              │
+│        UUID: 7F70E665                                                        │
+│        (tolerance mismatch)                                                  │
+│      • 2D -> 2 Fluid(s) -> Viscous -> IBM ->...                              │
+│        UUID: 0E240AD7                                                        │
+│        (tolerance mismatch)                                                  │
+│      • 2D -> 2 Fluid(s) -> Viscous -> IBM ->...                              │
+│        UUID: 8D8F6424                                                        │
+│        (tolerance mismatch)                                                  │
+│                                                                              │
+│    Next Steps:                                                               │
+│      • Run with --generate to update golden files (if changes are            │
+│  intentional)                                                                │
+│      • Check individual test output in tests/<UUID>/                         │
+│      • Run specific test: ./mfc.sh test --only <UUID>                        │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+
+mfc: ERROR > main.py finished with a 4 exit code.
+mfc: (venv) Exiting the Python virtual environment.

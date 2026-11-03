@@ -68,7 +68,7 @@ On 4 GPUs the three of them make each step 5.4 % faster than P20 (8.99 → 8.52 
 (685237, bitwise), −2.8 % at 4 GPUs (685274); the 5 tests that use it pass (685267).
 0029 puts that second queue on a high-priority GPU stream: −0.35 % at 1 GPU, another −2.8 % at 4 GPUs (685381, 685404, bitwise).
 0030 skips the per-cell boundary kernel on faces where it would only read the cell codes: −0.75 % at 1 GPU
-(685452, 28.67 → 28.46 ms, bitwise); its 83-test boundary and CBC subset ran as job 685533 (result not yet read back).
+(685452, 28.67 → 28.46 ms, bitwise); with all six, the 34 CBC and 49 boundary tests give 79 passes and the 4 known failures, same errors as P20 (685533).
 
 **Run settings (disclosed, no code change):** at 1 GPU, Open MPI without UCX (`ob1`) and a run directory in node-local
 memory (`/dev/shm`) cut the wall time of a whole run, start-up and save included, to about 3.8 s (job 684750).
