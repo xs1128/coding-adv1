@@ -1,0 +1,80 @@
+02D1E522	1D -> Example -> laxshocktube
+10CCE589	2D -> Hypoelasticity -> HLLD -> Shear guard -> Resolved positive
+120043F6	1D -> 2 Fluid(s) -> eos=vinet
+127A967A	2D -> Example -> mibm_cylinder_in_cross_flow
+1D88CFE0	2D -> Example -> shearlayer
+1E288DE4	1D -> Bubbles -> QBMM -> bubble_model=3
+221C9980	3D -> 1 Fluid(s) -> Viscous -> IBM -> Cylinder
+24119641	2D -> Example -> riemann_test_muscl
+2486442D	3D -> Phase Change model 5 -> 3 Fluid(s) -> model equation -> 2
+2A523AC1	3D -> 1 Fluid(s) -> riemann_solver=1 -> wave_speeds=2
+2A5CFF02	1D -> weno_order=3
+2EE0C3AA	2D -> 2 Fluid(s) -> IBM -> Periodic Circle
+31742FC7	2D -> weno_order=5 -> wenoz=T
+32A3A936	1D -> Hypoelasticity -> 1 Fluid(s) -> cont_damage
+32DD0363	3D -> 1 Fluid(s) -> Viscous -> IBM -> Cuboid -> slip
+33FA33BE	2D -> RMHD
+35635326	3D -> Example -> rayleigh_taylor_muscl
+374C9B16	2D -> muscl_order=2 -> muscl_eps=0 -> muscl_lim=4
+3F6DA12C	2D -> Example -> reactive_shock_bubble
+404D1458	3D -> Lagrange Bubbles -> Two-way Coupling -> Inertial Bubbles ->
+413DD555	1D -> Phase Change model 5 -> 3 Fluid(s) -> model equation -> 2
+43B5FEBD	3D -> Example -> IGR_jet_1fluid
+4927BF4B	1D -> Bubbles -> low_Mach=2
+49893269	3D -> 1 Fluid(s) -> IBM -> Particle Cloud -> Hemisphere Shell
+4C812637	2D -> 2 Fluid(s) -> Viscous -> riemann_solver=5
+4D831C2F	3D -> Lagrange Bubbles -> Two-way Coupling -> Inertial Bubbles ->
+4EAA3C32	3D -> Bubbles -> low_Mach=2
+5126B21F	2D -> 2 Fluid(s) -> weno_order=5 -> int_comp=2
+5304E59F	2D -> Example -> poiseuille_thickening_nn
+557FF170	3D -> bc=-11
+56BB8D80	1D -> weno_order=7 -> teno=T
+5A137315	2D -> Hypoelasticity -> 1 Fluid(s) -> cont_damage -> HLLC ->
+5B7A746F	3D -> Bubbles -> Polytropic -> bubble_model=3
+5CAA4E68	1D -> Example -> exp_bubscreen
+5DAB50B2	2D -> 2 Fluid(s) -> riemann_solver=2 -> alt_soundspeed
+6249EDDE	3D -> bc=-15
+641A6440	1D -> Example -> dai_woodward
+645A26E3	2D -> 2 Fluid(s) -> riemann_solver=2 -> avg_state=1
+661A7736	2D -> BC Patches -> Line Segment -> Y
+70832086	1D -> Example -> brio_wu
+70DAE9E8	1D -> bc=-4
+70EC99CE	2D -> Example -> viscous_shock_tube
+71258175	1D -> muscl_order=2 -> muscl_eps=0 -> muscl_lim=5
+727F72ED	1D -> bc=-10
+730DFD6D	3D -> bc=-7
+743D6D71	2D -> muscl_order=2 -> muscl_lim=3
+758D0268	3D -> 2 Fluid(s) -> riemann_solver=1 -> mpp_lim
+7A1719C6	Kernel -> 2D -> MTHINC -> Grid Stretching
+7C11F0ED	3D -> Example -> icpp_stl_cube
+7DEA8C54	3D -> 1 Fluid(s) -> Viscous -> weno_Re_flux -> weno_avg
+7F964063	2D -> Axisymmetric -> Hypoelasticity -> HLLD -> Rigid axial
+8A59E8E6	1D -> bc=-2
+8C7AA13B	2D -> 2 MPI Ranks
+8FDEE23A	2D -> bc=-11
+9DAC4DDC	1D -> 2 Fluid(s) -> riemann_solver=2 -> alt_soundspeed
+A1B2B963	3D -> 1 Fluid(s) -> Viscous -> IBM -> Sphere -> slip
+A7C19B7B	3D -> muscl_order=2 -> muscl_lim=5
+A92F2305	Convergence -> Sod -> MUSCL-MC
+A96DA754	2D -> Hypoelasticity -> HLLD -> Shear guard -> Negative fallback
+AACF1BC5	3D -> 2 Fluid(s) -> riemann_solver=2 -> mixture_err
+AE3FC5CB	2D -> 1 Fluid(s) -> Viscous -> IGR -> igr_order=3 -> Jacobi
+AE9A7D73	1D -> Example -> poly_bubscreen
+B317404C	2D -> IBM -> Vieille Burn Rate
+B4DC99F9	2D -> MHD -> hyper_cleaning
+BA3EF1C5	Convergence -> 3D -> MUSCL2
+BFF7CB93	Convergence -> 2D -> TENO5
+C0127FD0	2D -> Example -> acoustic_support6_axisym
+C071BA12	3D -> Example -> TaylorGreenVortex
+C46769FD	2D -> Phase Change model 5 -> 2 Fluid(s) -> model equation -> 3
+C7BE8FEA	2D -> 1 Fluid(s) -> IBM -> Rectangle -> slip
+CDD62819	3D -> Acoustic Source -> Transducer -> support=7
+F0402105	2D -> Example -> orszag_tang
+F0F175B2	2D -> 2 Fluid(s) -> riemann_solver=2 -> mpp_lim
+F1CF01C4	1D -> 2 Fluid(s) -> muscl_order=2 -> int_comp=1 -> muscl_lim=1
+F207F0FE	1D -> muscl_order=2 -> muscl_eps=0 -> muscl_lim=2
+F3127A57	3D -> Bubbles -> artificial_Ma
+F655C56A	3D -> 2 Fluid(s) -> Viscous -> IGR -> igr_order=3 -> Jacobi
+F99FBB36	3D -> bc=-4
+FA8643EF	2D -> 2 Fluid(s) -> IBM -> Rectangle
+FB822062	2D -> Axisymmetric -> Viscous

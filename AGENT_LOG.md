@@ -210,6 +210,11 @@ the figure script disagreed. Rule: derived numbers come from raw files, in one s
   stopped at 0029, so 0030–0031 of P22 were left out; the same kind of fixed range had already gone stale once (5d822ac).
   Found while adding the wall-time step; the glob is now `patches/opt/*.patch`. The script had never been run (no `repro/`
   rows in `results/jobs.tsv`, no `mfc-repro` worktree).
+- **2026-11-04: test sample 697871 was set up badly in two ways.** (1) The chemistry filter looked for 'chem' in the test
+  name, but chemistry tests are named after their case (reactive_shock_bubble, Vieille Burn Rate), so 2 of the 80 needed
+  builds that do not exist and could not start. (2) 80 tests at 2 at a time did not fit 15 min (75 done; 3 long
+  convergence-type tests were cut off). ~15 GPU-min; 75 results kept. Rule: pick chemistry tests by their parameters, not
+  their names, and size a test job from the per-test times of an earlier run.
 
 ## Code the student must be able to defend
 (filled in as optimizations land)
