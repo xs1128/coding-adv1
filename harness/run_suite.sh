@@ -21,10 +21,12 @@ done
 # refused and must be submitted (AFTER= the previous shard) once a shard has finished (bcskip_full, 2026-11-03).
 # Each shard gets its UUIDs explicitly (--only): a --from/--to range follows the runner's order at run time, which lost
 # 59 tests of the P18 suite (shard 6 ran 14 of 94; made up by job 671033).
+# The list is sorted: `./mfc.sh test -l` printed the same 713 tests in a different order in two worktrees (cbcdevset_full),
+# so a shard computed in a later call (the one the QOS limit holds back) must not rely on the order.
 # The 39 "Convergence" tests are left out: a plain `./mfc.sh test` skips them, and each one calls `./mfc.sh run`, which
 # builds new configurations on the GPU node and failed there in CMake (P20 shard 7, 672470, timed out on them).
 mapfile -t uuids < <(cd "$MFC_DIR" && ./mfc.sh test -l 2>/dev/null | sed 's/\x1b\[[0-9;]*m//g' | grep -v 'Convergence' \
-                       | grep -oE '[0-9A-F]{8}')
+                       | grep -oE '[0-9A-F]{8}' | sort)
 n=${#uuids[@]}; per=$(( (n + shards - 1) / shards )); prev=""
 cd "$ROOT"
 for ((i = 0; i < shards; i++)); do
