@@ -263,6 +263,16 @@ waits for the neighbour rank, not for the transfer (17 µs), so the wait moves i
 faces add a 37 µs kernel. The ranks with more CBC sides set the pace: rank 3 (CBC on 3 sides) runs 701 µs of CBC
 kernels per step, rank 0 (1 side) 239 µs (ladder row 73).
 
+**Pending 0034 (on 0033; not in P22).** ncu (692307) shows the main CBC kernel is latency-bound (41.5 µs, 0.6 waves,
+15 % achieved occupancy) but already hidden beside the Riemann solve; what was not hidden is the copy-back after the
+solve, 9 small kernels per step on the default queue (250 µs per step at 1 GPU in 690689). The faces it writes (3 for
+WENO5) were also solved by the Riemann kernel only to be overwritten. 0034 moves the copy-back onto the CBC queue, where
+it runs during the solve, and the solve skips those faces; the fused HLLC path writes nothing else at a face, so every
+final value is unchanged. 1 GPU (692419, 2 rounds): 28.116 / 28.153 → 27.827 / 27.793 ms per step, grind −1.2 %;
+4 GPUs (692812): 7.710 → 7.541 ms (−2.2 %), grind −2.6 %. Bitwise vs the previous version and vs v5.7.0, also on a
+mirrored case with CBC at the beginning of each direction (692840); the 30 CBC tests pass (692852). No suite test takes
+this path, so the full suite (not run) would check only that nothing else changed (ladder row 74).
+
 **Several GPUs** (`rdma_mpi`, same node, P11 vs P18; bitwise):
 
 | GPUs | P11 step | P18 step | Change | Job |

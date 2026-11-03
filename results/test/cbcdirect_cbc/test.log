@@ -1,0 +1,73 @@
+mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn017 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 2
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | 
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Build | syscheck and pre_process
+
+
+ Build | syscheck and simulation
+
+
+
+ Test pre_process and simulation | Only 3AE495F4, 5EC236F2, 48CCE072, AED93D34, C5B79059, 727F72ED, A60691E7, 3FC6FC4A, A6846AD4, A6E65782, 4129A23A, E84967E7, 5F877BC9, 16C03D8E, B96AC58F, 8FDEE23A, BF46F657, E09A12D9, 5010B814, 730DFD6D, ABAC3AE3, C93BE9B5, D0045756, 557FF170, 61FFF3D3, C0127FD0, B85C5AB6, 7A9F4EF4, 3E400FBF, and 9C9B2CBC (30 tests)
+  
+     Progress      Test Name                                        Time(s)   UUID
+  
+     (  1/ 30)    1D -> bc=-6                                          16.11    5EC236F2
+     (  2/ 30)    1D -> bc=-5                                          16.12    3AE495F4
+     (  3/ 30)    1D -> bc=-8                                          15.83    AED93D34
+     (  4/ 30)    1D -> bc=-7                                          15.89    48CCE072
+     (  5/ 30)    1D -> bc=-9                                          15.42    C5B79059
+     (  6/ 30)    1D -> bc=-10                                         15.38    727F72ED
+     (  7/ 30)    1D -> bc=-12                                         15.63    3FC6FC4A
+     (  8/ 30)    1D -> bc=-11                                         15.69    A60691E7
+     (  9/ 30)    2D -> bc=-5                                          15.54    A6E65782
+     ( 10/ 30)    1D -> 2 Fluid(s) -> eos=mie_gruneisen -> bc=-5       15.59    A6846AD4
+     ( 11/ 30)    2D -> bc=-6                                          16.04    4129A23A
+     ( 12/ 30)    2D -> bc=-7                                          16.00    E84967E7
+     ( 13/ 30)    2D -> bc=-9                                          15.91    16C03D8E
+     ( 14/ 30)    2D -> bc=-8                                          15.96    5F877BC9
+     ( 15/ 30)    2D -> bc=-10                                         15.52    B96AC58F
+     ( 16/ 30)    2D -> bc=-11                                         15.47    8FDEE23A
+     ( 17/ 30)    2D -> bc=-12                                         15.51    BF46F657
+     ( 18/ 30)    3D -> bc=-5                                          15.89    E09A12D9
+     ( 19/ 30)    3D -> bc=-7                                          17.69    730DFD6D
+     ( 20/ 30)    3D -> bc=-6                                          18.17    5010B814
+     ( 21/ 30)    3D -> bc=-8                                          17.88    ABAC3AE3
+     ( 22/ 30)    3D -> bc=-9                                          17.83    C93BE9B5
+     ( 23/ 30)    3D -> bc=-10                                         17.64    D0045756
+     ( 24/ 30)    3D -> bc=-11                                         17.60    557FF170
+     ( 25/ 30)    3D -> bc=-12                                         17.21    61FFF3D3
+     ( 26/ 30)    2D -> Example -> axisym_hypoelasticity               17.16    9C9B2CBC
+     ( 27/ 30)    2D -> Example -> acoustic_support10_axisym           15.94    B85C5AB6
+     ( 28/ 30)    2D -> Example -> acoustic_support6_axisym            16.00    C0127FD0
+     ( 29/ 30)    2D -> Example -> axisym_shockbubble                  15.65    7A9F4EF4
+     ( 30/ 30)    2D -> Example -> axisym_shockwatercavity             15.70    3E400FBF
+
+  
+
+╭──────────────────────────────── Test Summary ────────────────────────────────╮
+│                                                                              │
+│  ✓ ALL TESTS PASSED                                                          │
+│                                                                              │
+│      30 passed                                                               │
+│       0 failed                                                               │
+│     730 skipped                                                              │
+│    ────────────                                                              │
+│     760 total                                                                │
+│                                                                              │
+│    Time: 4m 6.2s                                                             │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+
+mfc: (venv) Exiting the Python virtual environment.

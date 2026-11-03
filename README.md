@@ -86,6 +86,12 @@ the 7 two-rank MPI tests with RDMA pass (690903). Full suite not run, so it stay
 the GPU waited; one tiny kernel now writes the same values. 4 GPUs: 7.780 → 7.721 ms per step (−0.76 %, job 691553);
 1 GPU unchanged (691872); bitwise; 155 targeted tests clean apart from the known failures (ladder row 72).
 
+**Pending 0034 (on 0033, not in P22):** the boundary code (CBC) used to copy its results into the flux arrays after the
+flux solver had finished, while the GPU waited, and the solver first computed the 3 boundary faces that this copy then
+overwrote. Now the copy runs on the CBC's own queue during the solve, and the solver skips those faces. 1 GPU: 28.12 /
+28.15 → 27.83 / 27.79 ms per step (−1.0 % / −1.3 %, job 692419); 4 GPUs: 7.710 → 7.541 ms (−2.2 %, 692812); bitwise,
+also with CBC on the other side of the box (692840); the 30 CBC tests pass (692852). Full suite not run (ladder row 74).
+
 **Run settings (disclosed, no code change):** at 1 GPU, Open MPI without UCX (`ob1`) and a run directory in node-local
 memory (`/dev/shm`) cut the wall time of a whole run, start-up and save included, to about 3.8 s (job 684750).
 
