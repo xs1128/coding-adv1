@@ -65,6 +65,21 @@ smi "$out/smi_after.csv"
 # LAUNCHPROBE=1 (untimed, after the reps): how long launching alone takes. Times mpirun and srun of /bin/true (3 each,
 # each under a timeout), records the dynamic loader's statistics for one mpirun of the simulation, and times launches
 # without hwloc's GPU plugins (srun of the simulation fails in orte_init with this Open MPI, 696467/696471).
+# LAUNCHPROBE=2 (untimed, after the reps): mpirun -np 1 /bin/true under Open MPI start-up settings, 3 times each
+if [[ ${LAUNCHPROBE:-0} == 2 ]]; then
+  pf=$out/launchprobe2.tsv; printf 'what\trep\twall_s\trc\n' > "$pf"
+  tm() { local w=$1 r=$2; shift 2; local t0 t1 rc=0; t0=$(date +%s.%N); "$@" > "$out/launchprobe2_$w.log" 2>&1 || rc=$?
+         t1=$(date +%s.%N); printf '%s\t%s\t%.3f\t%s\n' "$w" "$r" "$(echo "$t1 - $t0" | bc)" "$rc" >> "$pf"; }
+  declare -A pv=([default]="" [plm_isolated]="OMPI_MCA_plm=isolated" [oob_lo]="OMPI_MCA_oob_tcp_if_include=lo"
+                 [bind_none]="OMPI_MCA_hwloc_base_binding_policy=none" [odls_pspawn]="OMPI_MCA_odls=pspawn"
+                 [combo]="OMPI_MCA_plm=isolated OMPI_MCA_oob_tcp_if_include=lo OMPI_MCA_hwloc_base_binding_policy=none")
+  for r in 1 2 3; do
+    tm version $r timeout 60 mpirun --version
+    for v in default plm_isolated oob_lo bind_none odls_pspawn combo; do
+      tm $v $r env $RUN_ENV ${pv[$v]} timeout 60 mpirun -np 1 $MPIRUN_ARGS /bin/true
+    done
+  done
+fi
 if [[ ${LAUNCHPROBE:-0} == 1 ]]; then
   SRUN_ENV=${SRUN_ENV:-}; SRUN_ENV=${SRUN_ENV//+/,}; SRUN_ENV=${SRUN_ENV//@/ }   # extra env for the srun launches only
   echo "srun_env=$SRUN_ENV" >> "$out/env.txt"
