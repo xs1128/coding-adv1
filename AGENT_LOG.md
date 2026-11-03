@@ -189,6 +189,11 @@ the figure script disagreed. Rule: derived numbers come from raw files, in one s
 - **11-04: nsys could not start on hgpn019 (job 695468).** `/tmp/nvidia` on that node belonged to another user, so nsys
   failed to create its temp folder and the run exited after 35 s (~0.6 GPU-min). `harness/nsyswrap.sh` now sets `TMPDIR`
   to a per-job folder in `/dev/shm`, the fix nsys itself suggests. Resubmitted.
+- **11-04: an untried launch mode hung until the time limit (job 696387).** To cut the ~0.7 s of each run spent outside
+  MFC's own timers, arm B started the 1-rank simulation without `mpirun` (MPI singleton, a new `LAUNCH=direct` harness
+  option). Inside the Slurm job it hung before printing anything, presumably in `MPI_Init`, and the job ran to its 15-min
+  limit: ~12 GPU-min lost, arm A's 5 reps (3.443–3.569 s) kept. The option was removed again. Rule: try a new launch mode
+  once under a short `timeout` before timing it.
 
 ## Code the student must be able to defend
 (filled in as optimizations land)

@@ -53,16 +53,9 @@ echo "sim=$sim" >> "$out/env.txt"
 cd "$run"
 rm -f restart_data/lustre_[1-9]*.dat   # the warm-up's final state must not stand in for the timed reps' (verify reads it)
 printf 'rep\twall_s\tgrind_ns\n' > "$out/summary.tsv"
-# LAUNCH=direct (1 rank only): start the binary itself as an MPI singleton instead of under mpirun (a run setting)
-launch=(mpirun -np "$NGPU" $MPIRUN_ARGS)
-if [[ ${LAUNCH:-mpirun} == direct ]]; then
-  [[ $NGPU == 1 ]] || { echo "LAUNCH=direct needs NGPU=1" >&2; exit 1; }
-  launch=()
-fi
-echo "launch=${LAUNCH:-mpirun}" >> "$out/env.txt"
 for r in $(seq 1 "$REPS"); do
   t0=$(date +%s.%N)
-  env $RUN_ENV "${launch[@]}" $WRAP "$sim" > "$out/rep$r.log" 2>&1
+  env $RUN_ENV mpirun -np "$NGPU" $MPIRUN_ARGS $WRAP "$sim" > "$out/rep$r.log" 2>&1
   t1=$(date +%s.%N)
   g=$(awk '/Performance:/{print $2}' "$out/rep$r.log" | tail -1)
   printf '%s\t%.3f\t%s\n' "$r" "$(echo "$t1 - $t0" | bc)" "$g" >> "$out/summary.tsv"
