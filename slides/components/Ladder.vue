@@ -16,7 +16,8 @@ const rungs = [
   { name: 'P17', ms: 35.90, kind: 'new', note: 'load ahead' },
   { name: 'P18', ms: 34.51, kind: 'new', note: 'load ahead in RK' },
   { name: 'P19', ms: 33.12, kind: 'new', note: 'direct slab reads' },
-  { name: 'P20', ms: 29.63, kind: 'final', note: 'state slab, no self-copy' },
+  { name: 'P20', ms: 29.63, kind: 'new', note: 'state slab, no self-copy' },
+  { name: 'P21', ms: 28.27, kind: 'final', note: 'boundary work (686551)' },
 ]
 const max = 77.06
 const H = 300
@@ -35,7 +36,7 @@ const color = { base: '#8A93A6', p4: '#7FA6E8', new: '#2F6FDB', final: '#D9622B'
   <div class="flex gap-6 mt-3 text-[13px]" style="color:#3D4556">
     <span><span class="inline-block w-3 h-3 rounded-sm mr-1" style="background:#8A93A6" />v5.7.0</span>
     <span><span class="inline-block w-3 h-3 rounded-sm mr-1" style="background:#7FA6E8" />by the 10-31 report (P1–P4)</span>
-    <span><span class="inline-block w-3 h-3 rounded-sm mr-1" style="background:#2F6FDB" />after it (P7–P19)</span>
-    <span><span class="inline-block w-3 h-3 rounded-sm mr-1" style="background:#D9622B" />P20, today’s version</span>
+    <span><span class="inline-block w-3 h-3 rounded-sm mr-1" style="background:#2F6FDB" />after it (P7–P20)</span>
+    <span><span class="inline-block w-3 h-3 rounded-sm mr-1" style="background:#D9622B" />P21, today’s version</span>
   </div>
 </template>

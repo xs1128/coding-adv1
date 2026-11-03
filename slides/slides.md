@@ -70,23 +70,23 @@ layout: center
 class: dark text-center
 ---
 
-<div class="eyebrow">THE RESULT · 1 GPU · SAME NODE, SAME JOB (680943)</div>
+<div class="eyebrow">THE RESULT · 1 GPU · SAME NODE, SAME JOB (686551)</div>
 
-<div class="big mt-6">77.8 ms → <span class="accent">29.8 ms</span></div>
+<div class="big mt-6">76.9 ms → <span class="accent">28.3 ms</span></div>
 
-<div class="text-2xl mt-4" style="color:#f5f3ee">per time step: <strong>2.61× faster</strong>, every run bit-for-bit identical to v5.7.0</div>
+<div class="text-2xl mt-4" style="color:#f5f3ee">per time step: <strong>2.72× faster</strong>, every run bit-for-bit identical to v5.7.0</div>
 
 <div class="grid grid-cols-3 gap-6 mt-12 text-left text-[15px]">
 <div>10-31 report (P4):<br><strong>1.27×</strong></div>
-<div>+ 6 newer patches, suite pending:<br><strong>≈2.73×</strong></div>
-<div>Full test suite on P20:<br><strong>same 23 failures as v5.7.0</strong></div>
+<div>P20 (patches 0001–0024):<br><strong>2.59×</strong></div>
+<div>Full test suite on P21:<br><strong>same 23 failures as v5.7.0</strong></div>
 </div>
 
 <!--
 This is the headline. Original and optimized builds ran in the same job on the same node, taking turns, so the
-comparison is fair: 77.8 ms per step versus 29.8, 2.61 times faster. At the 10-31 report we were at 1.27 times. Two
-newer patches reach 2.64 times, and six of them about 2.73, but they haven't had the full test suite yet, so they are kept separate. The full suite
-on the final version fails exactly the 23 tests that already fail on the original.
+comparison is fair: 76.9 ms per step versus 28.3, 2.72 times faster. At the 10-31 report we were at 1.27 times; P20,
+the version before the last six boundary patches, is 2.59 times in the same job. The full suite on the final version
+fails exactly the 23 tests that already fail on the original, with the same errors.
 -->
 
 ---
@@ -128,7 +128,7 @@ percent. Most of our speedup came from removing data movement, not from making t
 <!--
 Every bar is one kept step, each measured against the step before it on the same node. The light-blue part was done
 by the 10-31 report. The big drops after that are P7, removing copies, P12, putting WENO5 inside the HLLC kernel, and
-P20, simpler array addressing. Every arm of every comparison was checked bit for bit.
+P20, simpler array addressing; P21 is the boundary work. Every arm of every comparison was checked bit for bit.
 -->
 
 ---

@@ -211,6 +211,24 @@ Chemistry GPU builds stopped linking after 0012, for the same linker reason. 001
   670933); one reciprocal for the WENO normalisation (the compiler already does it); storing velocities after
   pressure on top of (4) (slower, 671032).
 
+### P21 (0025–0030): the boundary work
+- **Slow.** After P20 the GPU sat idle between kernels for 3.7 % of each stage (nsys 670902), mostly waiting on the
+  boundary code: the CBC conversion ran synchronously, ghost cells were filled by one thread per boundary cell, and the
+  CBC kernels ran in line with the main flux kernel. On 4 GPUs the other ranks also wait for the rank with the most CBC faces.
+- **0025.** The CBC primitive-to-flux conversion gets its few scalars by value and goes on the GPU queue: −0.6 % (680943).
+- **0026.** Extrapolation and mirror-wall ghost cells: one GPU thread per ghost value, consecutive threads storing
+  consecutive addresses: −0.5 % more (680943).
+- **0027.** With WENO3/5 the CBC kernels overwrite every flux value the routine copies back, so it no longer copies them
+  in, and copies back only the layers it changed: −1.6 % (681650, 683029).
+- **0028.** With CBC on one side of a direction, its small kernels go on a second OpenACC queue and run beside the
+  Riemann solve: −0.7 % at 1 GPU (685237), −2.8 % at 4 GPUs (685274). OpenACC with NVHPC only; other builds unchanged.
+- **0029.** That queue runs on a high-priority CUDA stream (found with dlopen/dlsym, no build flag), so its small blocks
+  are not starved by the big kernel: −0.35 % at 1 GPU (685381), −2.8 % at 4 GPUs (685404).
+- **0030.** The per-cell boundary kernel is not launched on faces whose cells 0026 already filled: −0.75 % (685452).
+- **Gain.** P20 29.68 → P21 28.27 ms (−4.75 %, 686551, all arms bitwise); about −11 % per step at 4 GPUs (chained).
+- **Cost found later.** 0028's queue makes the OpenACC runtime allocate a pinned staging buffer on its first host copy:
+  21 ms once per run (nsys 685403). Being fixed by queuing those small copies before the queue switch (exp-cbcnobuf).
+
 ### Early ideas we rejected
 NVHPC 25.9 (no gain, not bitwise); fixing `dir_idx` at compile time in HLLC (255 registers); WENO `vector_length`
 64/96; WENO cap 96; one network card per rank at multi-GPU (see T0.4); Open MPI `ob1`/vader at multi-GPU (peers
@@ -234,7 +252,7 @@ WENO5 (about a dozen divisions per side) and the HLLC body.
 copies and ~30 tiny memsets per stage, each ~2–3 µs even when queued; a CBC-only conversion that runs synchronously;
 and slow ghost-cell filling (241 µs per stage). Two fixes for the last two, measured in one A/B (680943, all arms bitwise): the CBC conversion on the
 GPU queue, 29.83 → 29.64 ms (−0.6 %), and one thread per ghost value, → 29.49 ms (−1.1 % in total vs P20). They are
-`patches/pending/0025` and `0026`: kept apart from `patches/opt/` until the full test suite has run on them.
+0025 and 0026, now part of P21 (above).
 
 ## Multi-GPU (201³ split over 4 GPUs)
 - Step time: sc26 25.72 ms with halos through the CPU (602770); 18.81 ms with `rdma_mpi=T` (604560); 17.71 ms with P3;
@@ -280,6 +298,7 @@ directory in `/dev/shm` and copying it back afterwards (`RUNLOCAL=1`) cut wall t
 - **P15** (0001–0018, 669500–669511): 712 passed; the failures are the same 23 known tests. Covers P7–P15. P16 has
   bitwise A/B runs but no suite run.
 - **P20:** full suite 672459–672470 clean.
+- **P21** (0001–0030; 685708, 685821, 685825–685829, 685933): 690 pass, the 23 known failures with P20's exact errors.
 
 ## Next
 1. **8 GPUs, code-only arm:** v5.7.0 with `rdma_mpi` on the node of 606019 (≈32 GPU-min, needs the user's OK). The

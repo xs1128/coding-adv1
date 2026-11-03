@@ -15,17 +15,18 @@ This is our homework for the SC26 Student Cluster Competition: take the fluid si
 
 ## The result (1 H200 GPU, 201³ grid, 30 steps)
 
-All runs in one job on one node, taking turns (job 680943, 2026-11-03). Every run's final answer is
+All runs in one job on one node, taking turns (job 686551, 2026-11-03, 2 rounds). Every run's final answer is
 **bit-for-bit identical** to plain v5.7.0.
 
 | Version | Time per step | Faster than v5.7.0 |
 |---|---|---|
-| MFC v5.7.0 (original) | 77.8 ms | 1× |
-| **Ours: v5.7.0 + patches 0001–0024 ("P20")** | **29.8 ms** | **2.61×** |
-| Ours + 2 newer patches (0025–0026, still waiting for the full test suite) | 29.5 ms | 2.64× |
-| Ours + 3 newer patches (0025–0027, same; 0027 measured in a second A/B, so this is an estimate) | about 29.0 ms | about 2.68× |
-| Ours + 4 newer patches (0025–0028, same; 0028 in a third A/B) | about 28.8 ms | about 2.70× |
-| Ours + 6 newer patches (0025–0030, same; 0029 and 0030 in two more A/Bs) | about 28.5 ms | about 2.73× |
+| MFC v5.7.0 (original) | 76.9 ms | 1× |
+| Ours, previous version: patches 0001–0024 ("P20") | 29.7 ms | 2.59× |
+| **Ours: v5.7.0 + patches 0001–0030 ("P21")** | **28.3 ms** | **2.72×** |
+
+P21 is 4.75 % faster per step than P20. The whole run's wall time is about the same for both (median 5.63 s for P21 vs
+5.56 s for P20, in the run-to-run noise of ±0.2 s), because start-up and saving take most of it. An earlier job on
+another node (680943) gave 77.8 ms and 29.8 ms (2.61×) for v5.7.0 and P20.
 
 For comparison, the 10-31 report ("P4", patches 0001–0006) was 1.27× faster at 1 GPU (60.38 ms vs 76.74 ms, two
 chained A/Bs). On 4 and 8 GPUs the 10-31 numbers are 1.35× and 2.23×; later multi-GPU results are in [`report.md`](report.md) §11.
@@ -58,22 +59,23 @@ attempt, including the ones that failed.
 | 0012, 0018 | Register limits for the flux solver; a build fix | Same idea as 0004 |
 | 0014 | Code formatting only | Tidy-up |
 
-**Waiting for the full test suite** ([`patches/pending/`](patches/pending/)): 0025 lets the CPU queue one more
-boundary step instead of waiting for it, and 0026 fills the edge ("ghost") cells with one GPU thread per value. Together
-they save another 1.1 %. 0027 stops the boundary code (CBC) from copying data that its own kernels overwrite anyway;
-it saves another 1.6 % (jobs 681650 and 683029, bitwise) and passes all 34 CBC tests (682349). With all three, the 49
-boundary-condition tests give 45 passes and the 4 known failures, unchanged from P20 (684975, 685001).
-On 4 GPUs the three of them make each step 5.4 % faster than P20 (8.99 → 8.52 ms, job 685059, bitwise).
-0028 runs the small boundary (CBC) kernels on a second GPU queue next to the main solver kernel: −0.7 % more at 1 GPU
-(685237, bitwise), −2.8 % at 4 GPUs (685274); the 5 tests that use it pass (685267).
-0029 puts that second queue on a high-priority GPU stream: −0.35 % at 1 GPU, another −2.8 % at 4 GPUs (685381, 685404, bitwise).
-0030 skips the per-cell boundary kernel on faces where it would only read the cell codes: −0.75 % at 1 GPU
-(685452, 28.67 → 28.46 ms, bitwise); with all six, the 34 CBC and 49 boundary tests give 79 passes and the 4 known failures, same errors as P20 (685533).
+**Steps 25–30 (P21, full test suite passed 2026-11-03):** mostly the boundary code, which matters more on several GPUs.
+
+| # | What it does | Everyday picture |
+|---|---|---|
+| 0025 | The boundary code (CBC) gets its few numbers passed directly, so the CPU doesn't wait for each flux solve | Hand over the note instead of waiting at the counter |
+| 0026, 0030 | Fill the edge ("ghost") cells with one GPU thread per value; skip the old per-cell pass where it has nothing left to do | Many hands, and don't walk the hall twice |
+| 0027 | CBC stops copying data that its own kernels overwrite anyway | Don't copy a page you are about to rewrite |
+| 0028, 0029 | Small CBC kernels run on a second, high-priority GPU queue beside the main flux kernel | A second checkout lane for small baskets |
+
+On 1 GPU these six save about 4.75 % per step (above). On 4 GPUs they save more, about 11 % per step by chaining
+A/B jobs (685059, 685274, 685404), because there the other GPUs wait for the one with the most boundary work. The full
+suite (713 tests, ladder row 67) gives exactly the 23 known failures, with the same errors as P20.
 
 **Run settings (disclosed, no code change):** at 1 GPU, Open MPI without UCX (`ob1`) and a run directory in node-local
 memory (`/dev/shm`) cut the wall time of a whole run, start-up and save included, to about 3.8 s (job 684750).
 
-**Since the 10-31 report**, the time per step at 1 GPU went from ~60 ms to ~30 ms (see [`report.md`](report.md) §11).
+**Since the 10-31 report**, the time per step at 1 GPU went from ~60 ms to ~28 ms (see [`report.md`](report.md) §11).
 
 ## Folder map
 
@@ -82,7 +84,6 @@ memory (`/dev/shm`) cut the wall time of a whole run, start-up and save included
 | [`report.md`](report.md) | The full write-up (also built as `dist/report.pdf` by `tools/build_pdf.py`) |
 | [`slides/`](slides/) | Slides for the 11-11 talk ([Slidev](https://sli.dev)): `cd slides && npm install && npm run dev`; `npm run export` writes `dist/slides.pdf` |
 | [`patches/opt/`](patches/opt/) | Our 24 changes to MFC, one per file |
-| [`patches/pending/`](patches/pending/) | Six newer changes that are faster and give the same answers, but have not had the full test suite yet |
 | [`patches/exp/`](patches/exp/) | Experiments we tried, most of them rejected |
 | [`docs/`](docs/) | Explanations: each optimization, the ladder of attempts, how the test harness works, the code layout |
 | [`docs/background/`](docs/background/) | Research notes and papers we read |

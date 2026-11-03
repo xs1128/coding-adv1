@@ -5,14 +5,12 @@ nano4's H200 GPUs without changing its answer by a single bit. MFC simulates mov
 into small boxes (*cells*) and moves time forward in *steps*. A GPU is a chip with thousands of small cores.
 
 Every number cites a Slurm job (a numbered batch job). Our changes are patches in `patches/opt/`: §1–§10 are the
-10-31 report (`0001…0006`), §11 the later work P7–P20. Every rejected idea: `docs/ladder.md`. Agent mistakes:
+10-31 report (`0001…0006`), §11 the later work P7–P21. Every rejected idea: `docs/ladder.md`. Agent mistakes:
 `AGENT_LOG.md`.
 
-**Update (2026-11-03, after the deadline):** at 1 GPU, in one same-node A/B (job 680943, every run bitwise identical),
-v5.7.0 takes 77.79 ms per step and P20 (patches 0001–0024) takes **29.83 ms: 2.61× faster**. The full GPU test suite on
-P20 shows only the 23 failures that v5.7.0 also has. Two more patches, still waiting for their full suite, bring it to
-29.49 ms (2.64×). A third (0027, CBC skips a copy its own kernels overwrite) takes another 1.6 % off in a second
-same-node A/B (683029), about 29.0 ms or 2.68× if the two A/Bs are multiplied. Details in §11.
+**Update (2026-11-03, after the deadline):** at 1 GPU, in one same-node A/B (job 686551, every run bitwise identical),
+v5.7.0 takes 76.90 ms per step, P20 (patches 0001–0024) 29.68 ms (2.59×) and **P21 (0001–0030) 28.27 ms: 2.72× faster**.
+The full GPU test suite on P21 shows only the 23 failures that v5.7.0 also has, with the same errors as P20. Details in §11.
 
 ## 1. Result
 
@@ -163,7 +161,7 @@ bash harness/reproduce.sh verify   # bitwise gate + median step per run
 ```
 Multi-GPU runs with `rdma_mpi` add `WRAP=$ROOT/harness/nicbind.sh` (T0.4).
 
-## 11. Later work (2026-11-01, updated 11-02): P7–P20
+## 11. Later work (2026-11-01, updated 11-03): P7–P21
 
 Same rules: every run bitwise identical to v5.7.0, A/B on one node against the rung below. Details:
 `docs/ladder.md` and `docs/optimizations.md`.
@@ -188,27 +186,41 @@ v5.7.0 vs P18 (job 670158): step **76.75 / 76.74 → 34.39 / 34.30 ms, 2.24×**;
 | Grind (ns, first run) | 0.4027 | 0.1538–0.1539 | 0.1527 | 0.1519 |
 
 0025 runs the CBC primitive-to-flux conversion on the GPU queue instead of making the CPU wait; 0026 fills each ghost
-value with its own GPU thread. Both are in `patches/pending/`, not `patches/opt/`, because the full test suite has not
-run on them yet. The first try of this job (680922) stopped itself in 4 s: its node had the power brake on.
+value with its own GPU thread. Both were held in `patches/pending/` until the full suite (P21, below) passed. The first try of this job (680922) stopped itself in 4 s: its node had the power brake on.
 
-0027 (also in `patches/pending/`): with WENO3/5 the CBC kernels overwrite every flux value the boundary routine copies
+0027: with WENO3/5 the CBC kernels overwrite every flux value the boundary routine copies
 back, so it no longer copies the fluxes in, and copies back only the layers it changed. Job 681650 (hgpn011):
 29.501 / 29.501 → 29.021 / 29.014 ms; job 683029 (hgpn001): 29.265 / 29.252 → 28.807 / 28.802 ms; −1.6 % both times,
 every arm bitwise. All 34 CBC tests pass (682349). Multiplying the two A/Bs gives about 29.0 ms, about 2.68×.
 On 4 GPUs (`rdma_mpi`, same node, job 685059) the three pending patches take P20's step from 8.989 / 9.032 to
 8.529 / 8.504 ms (−5.4 %, bitwise), twice their 1-GPU gain, because boundary work is a bigger share there. The 49
 boundary-condition tests give 45 passes and the 4 known failures, unchanged from P20 (684975, 685001).
-0028 (also pending) queues the small CBC kernels on a second OpenACC queue so they run alongside the Riemann solve:
+0028 queues the small CBC kernels on a second OpenACC queue so they run alongside the Riemann solve:
 28.813 / 28.772 → 28.586 / 28.585 ms at 1 GPU (−0.7 %, job 685237, bitwise); the 5 suite tests that take that path pass
 (685267). On 4 GPUs it takes 8.556 → 8.315 ms (−2.8 %, 685274, bitwise), because there the other ranks wait for
 the rank with the most CBC faces. Chaining the A/Bs: about 28.8 ms at 1 GPU (about 2.70× v5.7.0) and about −8 % per
-step vs P20 at 4 GPUs. 0029 (pending) runs that second queue on a high-priority CUDA stream, found through dlopen/dlsym so no
+step vs P20 at 4 GPUs. 0029 runs that second queue on a high-priority CUDA stream, found through dlopen/dlsym so no
 build flag changes: −0.35 % at 1 GPU (685381) and 8.299 → 8.065 ms (−2.8 %) at 4 GPUs (685404), bitwise. With 0025–0029,
-about −11 % per step vs P20 at 4 GPUs (chained A/Bs). 0030 (pending) skips the per-cell ghost-cell kernel on faces
+about −11 % per step vs P20 at 4 GPUs (chained A/Bs). 0030 skips the per-cell ghost-cell kernel on faces
 whose cells are all extrapolation/CBC or reflective, where the fast path has already filled them: 28.689 / 28.657 →
 28.440 / 28.478 ms at 1 GPU (−0.75 %, job 685452, bitwise). Chaining all six: about 28.5 ms at 1 GPU (about 2.73×
 v5.7.0). With 0025–0030 the 34 CBC and 49 boundary tests give 79 passes and the 4 known IBM-viscous failures, with the same
 errors as P20 (685533).
+
+**P21 = v5.7.0 + 0001–0030 (2026-11-03).** Full suite (713 tests, 8 shards, ladder row 67): 690 pass, and the 23
+failures are exactly the known ones, each with the same abs/rel error as P20; 0025–0030 moved to `patches/opt/`.
+Measured directly against v5.7.0 and P20 (job 686551, hgpn030, 2 rounds × 3 runs, all bitwise):
+
+| | v5.7.0 | P20 | P21 |
+|---|---|---|---|
+| Step (median, round 1 / 2) | 76.831 / 76.966 ms | 29.675 / 29.686 ms | **28.258 / 28.281 ms** |
+| vs v5.7.0 | 1× | 2.59× | **2.72×** |
+| Grind (ns, median of 6 runs) | 0.3976 | 0.1532 | 0.1458 |
+| Wall (s, median of 6 runs; range) | 7.57 (7.44–7.68) | 5.56 (5.47–5.76) | 5.63 (5.42–5.87) |
+
+P21 is 4.75 % faster per step than P20; the wall time is the same within noise. The chained estimate above (about
+2.73×) was close. P21's first step takes 57 ms instead of 36: the first host-to-device copy on the CBC queue (0028)
+makes the OpenACC runtime allocate a pinned staging buffer (21 ms `cuMemHostAlloc`, nsys 685403), once per run.
 
 **Several GPUs** (`rdma_mpi`, same node, P11 vs P18; bitwise):
 
@@ -236,12 +248,13 @@ small card Fortran keeps for each array (start, size), which the GPU must read b
 | P18 | 0021 | Same idea in the RK update | 35.88 → 34.51 ms (−3.8 %) | 670088 |
 | P19 | 0022 | RK update reads flux slabs directly (one descriptor, not three) | 34.27 → 33.12 ms (−3.4 %) | 670619 |
 | P20 | 0023–0024 | Fixed-size slabs (0023); no self-copies in cons→prim (0024) | 33.09 → **29.63 ms (−10.5 %)**, bitwise | 670687, 670779, 670811, 671002 |
+| P21 | 0025–0030 | Boundary work: CBC without CPU waits or dead copies, on a second high-priority queue (0025, 0027–0029); ghost cells one thread per value, idle per-cell pass skipped (0026, 0030) | 29.68 → **28.27 ms (−4.75 %)**, bitwise; about −11 % at 4 GPUs (chained) | 686551 (direct); 680943, 683029, 685237, 685381, 685452 (steps) |
 
 P20 came from a line-by-line profile (ncu 670130): 16 % of the merged kernel's instructions only found addresses
 through descriptors.
 
-**Correctness.** Full suite on P15 (jobs 669500–669511), P18 (670591–670598 + make-up 671033) and P20 (0001–0024, so
-it covers P19; jobs 672459–672470): each time the same 713 tests, and the failures are exactly the 23 known ones. The
+**Correctness.** Full suite on P15 (jobs 669500–669511), P18 (670591–670598 + make-up 671033), P20 (0001–0024, so
+it covers P19; jobs 672459–672470) and P21 (0001–0030; 685708, 685821, 685825–685829, 685933): each time the same 713 tests, and the failures are exactly the 23 known ones. The
 first P18 run silently skipped 59 tests; a make-up job ran them, and `run_suite.sh` now lists tests explicitly. MFC's
 39 "Convergence" tests try to rebuild MFC on the GPU node and failed or timed out there; they say nothing about the math and are
 now left out.
@@ -266,5 +279,6 @@ equation) (+1.7 ms, 670933); delayed velocity stores in cons→prim (slower, 671
 **Where the time is now** (P20, 1 GPU, per RK stage, nsys 670902): merged WENO5+HLLC 6.87 ms (68 %), RK update
 1.50 ms (15 %), cons→prim 0.63 ms, boundaries 0.25 ms.
 
-**Reproduce.** `harness/reproduce.sh` applies every patch in `patches/opt/` (0001–0024). The canonical nano4 tree
-is branch `p20` (worktree `mfc-p20`); its full suite shows only the known failures.
+**Reproduce.** `harness/reproduce.sh` applies every patch in `patches/opt/` (0001–0030). The canonical nano4 tree
+is branch `exp-bcskip` (worktree `mfc-bcskip`, P21; the same source tree as `git am patches/opt/*.patch`); its full
+suite shows only the known failures. P20 stays in `mfc-p20`.
