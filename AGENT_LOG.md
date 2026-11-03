@@ -175,6 +175,9 @@ the figure script disagreed. Rule: derived numbers come from raw files, in one s
   (`rsync --delete`) removed it while three compiles were writing to it, and their results were lost. Only that folder
   was affected (`mfc*`, `runs/`, `results/`, `logs/` are excluded from the delete). Redone under `$ROOT/logs/flags/`.
   No GPU cost. Rule: scratch work on nano4 goes under `logs/` or a `mfc-*` worktree, never in a new top-level folder.
+- **11-04: nsys profile lost (job 693829).** `NSYS_OUT` named a folder under `runs/prof/` that did not exist; nsys
+  cannot create it, so the report went to the compute node's `/tmp` and was lost (~0.7 GPU-min). Resubmitted as 693834
+  after `mkdir -p`. Rule: create the `NSYS_OUT` folder before submitting.
 
 ## Code the student must be able to defend
 (filled in as optimizations land)
