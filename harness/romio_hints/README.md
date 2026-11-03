@@ -10,3 +10,4 @@ went through a 16 MB buffer: 32 rounds, each building new MPI datatypes on rank 
 | `cb256` | 256 MB collective buffer |
 | `cb256x4` | 256 MB buffer, 4 aggregators on the node |
 | `nocb` | no collective buffering for reads and writes |
+| `directread` | reads only: no collective buffering, no data sieving, so each contiguous piece is read straight into the field (1-GPU start-up: ROMIO's strided-read copy, nsys 697697) |
