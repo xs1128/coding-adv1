@@ -1,0 +1,133 @@
+mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn016 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 2
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | 
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Build | syscheck and pre_process
+
+
+ Build | syscheck and simulation
+
+
+
+ Test pre_process and simulation | Only 67A5ECF8, 6811629E, 6AF90F3C, 6BB67897, 6CFBCF4A, 73B0539E, 758D0268, 7C8F1BA9, 7EFBCDAE, 7F964063, 851F7AE2, 879C490D, 891C8626, 9ACD5174, 9AEC024A, 9C9B2CBC, A0B82851, A26B7E00, A96DA754, AACF1BC5, AB0BE4E4, AB56B056, AD1A50B7, AFB46CF8, B33E256A, B76C4F04, B8F5F1C8, BD8004FF, BDD3411B, C06849AD, C1974DB8, C36F18FB, C462AA3E, C4A2FAA3, C531DC93, C7B686C0, CC89283B, CF11AA56, D222AFB8, D41FFB94, D58700BB, DA44D68D, DC6D7467, E04B6502, E6F54696, EF3E7C79, F0E6771E, F31EAABF, F5705D1B, F5F06EA3, and F9E0BE95 (51 tests)
+  
+     Progress      Test Name                                        Time(s)   UUID
+  
+     (  1/ 51)    3D -> 1 Fluid(s) -> riemann_solver=1 -> mixture...   18.04    9ACD5174
+     (  2/ 51)    2D -> Hypoelasticity -> 2 Fluid(s) -> cont_dama...   18.05    6CFBCF4A
+     (  3/ 51)    3D -> 1 Fluid(s) -> riemann_solver=1 -> avg_sta...   17.80    C1974DB8
+     (  4/ 51)    3D -> 1 Fluid(s) -> riemann_solver=1 -> avg_sta...   17.86    73B0539E
+     (  5/ 51)    3D -> 1 Fluid(s) -> riemann_solver=5 -> mixture...   18.55    AFB46CF8
+     (  6/ 51)    3D -> 1 Fluid(s) -> riemann_solver=2 -> mixture...   18.51    C06849AD
+     (  7/ 51)    3D -> 1 Fluid(s) -> riemann_solver=2 -> wave_sp...   17.93    C36F18FB
+     (  8/ 51)    3D -> 1 Fluid(s) -> riemann_solver=2 -> avg_sta...   17.99    AB0BE4E4
+     (  9/ 51)    3D -> 1 Fluid(s) -> Viscous -> riemann_solver=5      18.32    6811629E
+     ( 10/ 51)    3D -> 2 Fluid(s) -> riemann_solver=1 -> mixture...   18.31    C4A2FAA3
+     ( 11/ 51)    3D -> 2 Fluid(s) -> riemann_solver=1 -> wave_sp...   18.62    BD8004FF
+     ( 12/ 51)    3D -> 2 Fluid(s) -> riemann_solver=1 -> avg_sta...   18.68    851F7AE2
+     ( 13/ 51)    3D -> 2 Fluid(s) -> riemann_solver=1 -> mpp_lim      18.17    758D0268
+     ( 14/ 51)    3D -> 2 Fluid(s) -> riemann_solver=2 -> mixture...   18.14    AACF1BC5
+     ( 15/ 51)    3D -> 2 Fluid(s) -> riemann_solver=2 -> avg_sta...   18.49    B33E256A
+     ( 16/ 51)    3D -> 2 Fluid(s) -> riemann_solver=2 -> wave_sp...   18.47    B8F5F1C8
+     ( 17/ 51)    3D -> 2 Fluid(s) -> riemann_solver=2 -> alt_sou...   18.08    7C8F1BA9
+  
+     ✗ FAILED: 3D -> 2 Fluid(s) -> riemann_solver=2 -> model_e...
+       UUID: F0E6771E
+       Attempts: 1
+       Error: Test tests/F0E6771E: 3D -> 2 Fluid(s) -> riemann_solver=2 -> model_eqns=3: Variable n°1 (1-indexed) in D/cons.10.00.000050.dat is not within tolerance:
+  - Candidate:   0.04742906935491
+  - Golden:      0.24947823675474
+  - Error:       abs: 2.02E-01, rel: 8.10E-01
+  - Tolerance:   abs: 1.00E-12, rel: 1.00E-12
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.9.00.000050.dat
+ - Variable n°1
+ - Candidate: 0.42686162419418
+ - Golden: 2.24530413079269
+ - Absolute Error: 1.82E+00
+ - Relative Error: 8.10E-01
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.9.00.000050.dat
+ - Variable n°1
+ - Candidate: 0.42686162419418
+ - Golden: 2.24530413079269
+ - Relative Error: 8.10E-01
+ - Absolute Error: 1.82E+00
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+     ( 18/ 51)    3D -> 2 Fluid(s) -> riemann_solver=1 -> u-inter...   17.13    C7B686C0
+     ( 19/ 51)    3D -> 2 Fluid(s) -> riemann_solver=2 -> mpp_lim      17.79    A0B82851
+     ( 20/ 51)    3D -> 2 Fluid(s) -> riemann_solver=1 -> low_Mach=1   18.38    F9E0BE95
+     ( 21/ 51)    3D -> 2 Fluid(s) -> riemann_solver=1 -> u-inter...   18.45    A26B7E00
+     ( 22/ 51)    3D -> 2 Fluid(s) -> riemann_solver=2 -> low_Mach=1   17.95    F5F06EA3
+     ( 23/ 51)    3D -> 2 Fluid(s) -> riemann_solver=2 -> low_Mach=2   17.91    C462AA3E
+     ( 24/ 51)    3D -> 2 Fluid(s) -> Viscous -> riemann_solver=5      18.90    AD1A50B7
+     ( 25/ 51)    3D -> Hypoelasticity -> 1 Fluid(s)                   18.87    7EFBCDAE
+     ( 26/ 51)    3D -> Hypoelasticity -> 1 Fluid(s) -> cont_damage    20.28    EF3E7C79
+     ( 27/ 51)    3D -> Hypoelasticity -> 1 Fluid(s) -> bc=-2          20.24    67A5ECF8
+     ( 28/ 51)    2D -> Hypoelasticity -> HLLD -> alt_soundspeed=F     16.25    879C490D
+     ( 29/ 51)    3D -> Hypoelasticity -> 2 Fluid(s)                   17.58    BDD3411B
+     ( 30/ 51)    2D -> Hypoelasticity -> HLLD -> ADC -> alt_soun...   15.51    891C8626
+     ( 31/ 51)    2D -> Hypoelasticity -> HLLC -> ADC -> alt_soun...   14.22    E04B6502
+     ( 32/ 51)    2D -> Hypoelasticity -> HLLC -> ADC -> alt_soun...   15.08    D222AFB8
+     ( 33/ 51)    2D -> Axisymmetric -> Hypoelasticity -> HLLD ->...   15.03    6AF90F3C
+     ( 34/ 51)    2D -> Axisymmetric -> Hypoelasticity -> HLLC ->...   15.11    6BB67897
+     ( 35/ 51)    2D -> Axisymmetric -> Hypoelasticity -> HLLD ->...   15.16    F31EAABF
+     ( 36/ 51)    2D -> Axisymmetric -> Hypoelasticity -> HLL -> ...   15.19    B76C4F04
+     ( 37/ 51)    2D -> Axisymmetric -> Hypoelasticity -> HLL -> ...   15.27    DA44D68D
+     ( 38/ 51)    3D -> Hypoelasticity -> HLLD -> ADC -> alt_soun...   19.93    D41FFB94
+     ( 39/ 51)    3D -> Hypoelasticity -> HLLD -> ADC -> alt_soun...   19.91    CF11AA56
+     ( 40/ 51)    3D -> Hypoelasticity -> HLL -> Interface RHS ->...   19.92    9AEC024A
+     ( 41/ 51)    3D -> Hypoelasticity -> HLLC -> ADC -> alt_soun...   19.99    F5705D1B
+     ( 42/ 51)    2D -> Hypoelasticity -> 3 Fluid(s) -> HLL -> u-...   16.41    E6F54696
+     ( 43/ 51)    3D -> Hypoelasticity -> HLL -> u-interface -> I...   17.88    AB56B056
+     ( 44/ 51)    2D -> Hypoelasticity -> 3 Fluid(s) -> HLLC -> a...   14.56    CC89283B
+     ( 45/ 51)    2D -> Hypoelasticity -> HLLD -> Fan-order fallback   13.74    C531DC93
+     ( 46/ 51)    2D -> Hypoelasticity -> HLLD -> Shear guard -> ...   15.26    A96DA754
+     ( 47/ 51)    2D -> Axisymmetric -> Hypoelasticity -> HLLD ->...   14.61    DC6D7467
+     ( 48/ 51)    2D -> Hypoelasticity -> HLLD -> WENO5 RK3            18.48    D58700BB
+     ( 49/ 51)    2D -> Axisymmetric -> Hypoelasticity -> HLLD ->...   18.46    7F964063
+     ( 50/ 51)    2D -> Example -> axisym_hypoelasticity               15.46    9C9B2CBC
+
+  
+
+╭──────────────────────────────── Test Summary ────────────────────────────────╮
+│                                                                              │
+│  ✗ 1 TEST FAILED                                                             │
+│                                                                              │
+│      50 passed                                                               │
+│       1 failed                                                               │
+│     709 skipped                                                              │
+│    ────────────                                                              │
+│     760 total                                                                │
+│                                                                              │
+│    Time: 7m 37.6s                                                            │
+│                                                                              │
+│    Failed Tests:                                                             │
+│      • 3D -> 2 Fluid(s) -> riemann_solver=2 ...                              │
+│        UUID: F0E6771E                                                        │
+│        (tolerance mismatch)                                                  │
+│                                                                              │
+│    Next Steps:                                                               │
+│      • Run with --generate to update golden files (if changes are            │
+│  intentional)                                                                │
+│      • Check individual test output in tests/<UUID>/                         │
+│      • Run specific test: ./mfc.sh test --only <UUID>                        │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+
+mfc: ERROR > main.py finished with a 1 exit code.
+mfc: (venv) Exiting the Python virtual environment.
