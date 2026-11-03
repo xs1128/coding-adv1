@@ -25,7 +25,8 @@ for r in $(seq 1 "$ROUNDS"); do
     rlv=RUNLOCAL_$(tr a-z A-Z <<<"$v"); armrl=${!rlv:-${RUNLOCAL:-0}}   # per-arm RUNLOCAL_A..F (run.sbatch)
     nlv=NOLIBPATH_$(tr a-z A-Z <<<"$v"); armnl=${!nlv:-${NOLIBPATH:-0}}   # per-arm NOLIBPATH_A..F (run.sbatch)
     lav=LAUNCH_$(tr a-z A-Z <<<"$v"); armla=${!lav:-${LAUNCH:-mpirun}}   # per-arm LAUNCH_A..F (run.sbatch)
-    LABEL=$base/$v$r MFC_DIR=${!dir} RUN_ENV="${RUN_ENV:-} $armenv" RUNLOCAL=$armrl NOLIBPATH=$armnl LAUNCH=$armla bash "$ROOT/harness/run.sbatch" \
+    vav=VARS_$(tr a-z A-Z <<<"$v"); armvars=${!vav:-}; armvars=${armvars//@/ }   # per-arm run.sbatch variables, VAR=value@VAR=value
+    LABEL=$base/$v$r MFC_DIR=${!dir} RUN_ENV="${RUN_ENV:-} $armenv" RUNLOCAL=$armrl NOLIBPATH=$armnl LAUNCH=$armla env $armvars bash "$ROOT/harness/run.sbatch" \
       || echo "$v$r failed" >&2
   done
 done
