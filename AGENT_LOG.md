@@ -166,6 +166,10 @@ the figure script disagreed. Rule: derived numbers come from raw files, in one s
   A/Bs were deleted: 14 files in `runs/exp/{cbcdevset_4g_rdma,cbcdevset_4g_rdma_r2,haloyz_4g_rdma,haloxs_4g_rdma,
   rsdev_4g_rdma,rsdev_1g}` (their logs and inputs kept; timings and bitwise checks are in `results/` and the ladder).
   15 GB free afterwards. No GPU cost. `runs/prof` (29 GB) and `runs/final` (18 GB) are untouched.
+- **11-04 (later): 9 GB free again.** The 153 restart dumps (`restart_data/*.dat`) left by finished profile runs
+  under `runs/prof/` were deleted. No profile is ever compared bitwise, and every profile's CSV extracts are in
+  `results/prof/`; the `.nsys-rep`/`.ncu-rep` files were kept. `runs/prof` went from 31 GB to 1.4 GB, and the
+  quota from 9 to 39 GB free. No GPU cost. `runs/final` (18 GB) is untouched.
 
 ## Code the student must be able to defend
 (filled in as optimizations land)
