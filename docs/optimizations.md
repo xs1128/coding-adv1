@@ -329,7 +329,7 @@ directory in `/dev/shm` and copying it back afterwards (`RUNLOCAL=1`) cut wall t
 it lists 6 NVHPC folders on Lustre, and the loader tries each of them for every library (1842 attempts for `mpirun
 --version`), while the binaries' RPATHs already find the same files. With it unset (`NOLIBPATH=1`) the same 187 objects
 load (696781) and the wall median goes 3.551 / 3.648 → **2.792 / 2.822 s (−21 % / −23 %)** on 0038 (696791, 2 rounds × 5
-reps, `ob1` + `/dev/shm`); final state bitwise. At 4 GPUs (UCX with CUDA transports) it also works: wall median 7.324 / 7.192 → 6.468 / 6.582 s, grindtime unchanged, bitwise (696824).
+reps, `ob1` + `/dev/shm`); final state bitwise. At 4 GPUs (UCX with CUDA transports) it also works: wall median 7.324 / 7.192 → 6.468 / 6.582 s, grindtime unchanged, bitwise (696824). With NOLIBPATH on, also running the case directory in `/dev/shm` at 4 GPUs gives 6.362 / 6.555 → 6.183 / 6.346 s (−3 %, ranges overlap), bitwise (696970).
 
 **Save experiments.** ROMIO hints from [research-env-tuning.md](background/research-env-tuning.md) §4: no change
 (669396). Restart I/O makes temporary array copies. Two fixes were rejected: *iomem*
