@@ -1,0 +1,77 @@
+mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn030 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 2
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | 
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Build | syscheck and pre_process
+
+
+ Build | syscheck and simulation
+
+
+
+ Test pre_process and simulation | Only 0BDC8E40, 16C03D8E, 18BDCBC8, 212401B4, 2274CB4E, 38C2159F, 3AE495F4, 3FC6FC4A, 4129A23A, 48CCE072, 5010B814, 557FF170, 5EC236F2, 5F877BC9, 61FFF3D3, 63CD6ADF, 727F72ED, 730DFD6D, 8FDEE23A, 9C9B2CBC, A60691E7, A6846AD4, A6E65782, ABAC3AE3, AED93D34, B96AC58F, BF46F657, C5B79059, C93BE9B5, D0045756, D7107B89, E09A12D9, E84967E7, and EB6687AB (34 tests)
+  
+     Progress      Test Name                                        Time(s)   UUID
+  
+     (  1/ 34)    1D -> bc=-6                                          16.97    5EC236F2
+     (  2/ 34)    1D -> bc=-5                                          16.97    3AE495F4
+     (  3/ 34)    1D -> bc=-8                                          16.42    AED93D34
+     (  4/ 34)    1D -> bc=-7                                          16.48    48CCE072
+     (  5/ 34)    1D -> bc=-10                                         16.08    727F72ED
+     (  6/ 34)    1D -> bc=-9                                          16.13    C5B79059
+     (  7/ 34)    1D -> bc=-11                                         15.63    A60691E7
+     (  8/ 34)    1D -> bc=-12                                         15.58    3FC6FC4A
+     (  9/ 34)    1D -> 1 Fluid(s) -> riemann_solver=2 -> mixture...   15.67    18BDCBC8
+     ( 10/ 34)    1D -> grcbc x                                        15.72    63CD6ADF
+     ( 11/ 34)    2D -> bc=-5                                          16.02    A6E65782
+     ( 12/ 34)    1D -> 2 Fluid(s) -> eos=mie_gruneisen -> bc=-5       16.07    A6846AD4
+     ( 13/ 34)    2D -> bc=-6                                          16.73    4129A23A
+     ( 14/ 34)    2D -> bc=-7                                          16.68    E84967E7
+     ( 15/ 34)    2D -> bc=-8                                          16.65    5F877BC9
+     ( 16/ 34)    2D -> bc=-9                                          16.61    16C03D8E
+     ( 17/ 34)    2D -> bc=-10                                         16.49    B96AC58F
+     ( 18/ 34)    2D -> bc=-11                                         16.45    8FDEE23A
+     ( 19/ 34)    2D -> bc=-12                                         16.24    BF46F657
+     ( 20/ 34)    2D -> grcbc x                                        16.20    212401B4
+     ( 21/ 34)    2D -> grcbc y                                        16.19    EB6687AB
+     ( 22/ 34)    3D -> bc=-5                                          16.56    E09A12D9
+     ( 23/ 34)    3D -> bc=-6                                          18.17    5010B814
+     ( 24/ 34)    3D -> bc=-7                                          17.75    730DFD6D
+     ( 25/ 34)    3D -> bc=-8                                          16.99    ABAC3AE3
+     ( 26/ 34)    3D -> bc=-9                                          16.96    C93BE9B5
+     ( 27/ 34)    3D -> bc=-10                                         17.61    D0045756
+     ( 28/ 34)    3D -> bc=-11                                         17.57    557FF170
+     ( 29/ 34)    3D -> grcbc x                                        17.92    0BDC8E40
+     ( 30/ 34)    3D -> bc=-12                                         18.35    61FFF3D3
+     ( 31/ 34)    3D -> grcbc y                                        16.67    38C2159F
+     ( 32/ 34)    3D -> grcbc z                                        16.98    D7107B89
+     ( 33/ 34)    2D -> Example -> axisym_hypoelasticity               16.31    9C9B2CBC
+     ( 34/ 34)    2D -> Hypoelasticity -> HLLD -> CBC uniform pre...   18.45    2274CB4E
+
+  
+
+╭──────────────────────────────── Test Summary ────────────────────────────────╮
+│                                                                              │
+│  ✓ ALL TESTS PASSED                                                          │
+│                                                                              │
+│      34 passed                                                               │
+│       0 failed                                                               │
+│     726 skipped                                                              │
+│    ────────────                                                              │
+│     760 total                                                                │
+│                                                                              │
+│    Time: 4m 46.8s                                                            │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+
+mfc: (venv) Exiting the Python virtual environment.

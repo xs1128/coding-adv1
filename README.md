@@ -72,6 +72,11 @@ On 1 GPU these six save about 4.75 % per step (above). On 4 GPUs they save more,
 A/B jobs (685059, 685274, 685404), because there the other GPUs wait for the one with the most boundary work. The full
 suite (713 tests, ladder row 67) gives exactly the 23 known failures, with the same errors as P20.
 
+**Waiting for the full test suite** ([`patches/pending/`](patches/pending/)): 0031 sets the boundary code's few
+numbers on the GPU with one tiny kernel instead of 9 small copies from the CPU per call. That removes a 21 ms one-off
+cost in the first step (the GPU runtime had to set up a pinned copy buffer for the second queue) and makes each step
+0.3 % faster (job 686808, bitwise); all 34 CBC tests pass (686876).
+
 **Run settings (disclosed, no code change):** at 1 GPU, Open MPI without UCX (`ob1`) and a run directory in node-local
 memory (`/dev/shm`) cut the wall time of a whole run, start-up and save included, to about 3.8 s (job 684750).
 
@@ -83,7 +88,8 @@ memory (`/dev/shm`) cut the wall time of a whole run, start-up and save included
 |---|---|
 | [`report.md`](report.md) | The full write-up (also built as `dist/report.pdf` by `tools/build_pdf.py`) |
 | [`slides/`](slides/) | Slides for the 11-11 talk ([Slidev](https://sli.dev)): `cd slides && npm install && npm run dev`; `npm run export` writes `dist/slides.pdf` |
-| [`patches/opt/`](patches/opt/) | Our 24 changes to MFC, one per file |
+| [`patches/opt/`](patches/opt/) | Our 30 changes to MFC, one per file |
+| [`patches/pending/`](patches/pending/) | One newer change (0031) that is faster and gives the same answers, but has not had the full test suite yet |
 | [`patches/exp/`](patches/exp/) | Experiments we tried, most of them rejected |
 | [`docs/`](docs/) | Explanations: each optimization, the ladder of attempts, how the test harness works, the code layout |
 | [`docs/background/`](docs/background/) | Research notes and papers we read |

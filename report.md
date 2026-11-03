@@ -221,6 +221,9 @@ Measured directly against v5.7.0 and P20 (job 686551, hgpn030, 2 rounds × 3 run
 P21 is 4.75 % faster per step than P20; the wall time is the same within noise. The chained estimate above (about
 2.73×) was close. P21's first step takes 57 ms instead of 36: the first host-to-device copy on the CBC queue (0028)
 makes the OpenACC runtime allocate a pinned staging buffer (21 ms `cuMemHostAlloc`, nsys 685403), once per run.
+Queuing those copies on the default queue instead removes the 21 ms but costs 0.15 % per step (686710, ladder row 68).
+0031 (pending) writes the same values on the GPU with one single-block kernel that takes them as arguments: first step
+56.6 / 57.6 → 35.7 / 35.8 ms, grind 0.14566 → 0.14522 ns (−0.30 %), bitwise (686808); all 34 CBC tests pass (686876).
 
 **Several GPUs** (`rdma_mpi`, same node, P11 vs P18; bitwise):
 
