@@ -1,0 +1,15 @@
+total 816
+drwx------+ 1 u1131128 ACD110018      0 Nov  3 21:51 .
+drwx------+ 1 u1131128 ACD110018      0 Nov  3 21:51 ..
+-rw-------  1 u1131128 ACD110018    886 Nov  3 21:51 env.txt
+-rw-------  1 u1131128 ACD110018   1498 Nov  3 21:51 nsys_rank0_cuda_api_sum.csv
+-rw-------  1 u1131128 ACD110018 383250 Nov  3 21:51 nsys_rank0_cuda_api_trace.csv
+-rw-------  1 u1131128 ACD110018   3280 Nov  3 21:51 nsys_rank0_cuda_gpu_kern_sum.csv
+-rw-------  1 u1131128 ACD110018    320 Nov  3 21:51 nsys_rank0_cuda_gpu_mem_time_sum.csv
+-rw-------  1 u1131128 ACD110018 363756 Nov  3 21:51 nsys_rank0_cuda_gpu_trace.csv
+-rw-------  1 u1131128 ACD110018   1026 Nov  3 21:51 nsys_rank0_mpi_event_sum.csv
+-rw-------  1 u1131128 ACD110018  45853 Nov  3 21:51 nsys_rank0_nvtx_pushpop_trace.csv
+-rw-------  1 u1131128 ACD110018   1267 Nov  3 21:51 nsys_rank0_nvtx_sum.csv
+-rw-------  1 u1131128 ACD110018   6580 Nov  3 21:51 prep.log
+-rw-------  1 u1131128 ACD110018   1604 Nov  3 21:51 run.log
+-rw-------  1 u1131128 ACD110018      0 Nov  3 21:51 slurm-690689.out
