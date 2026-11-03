@@ -1,0 +1,34 @@
+From b8bc6ed9e2a1140c50b0d2f9e4773d7617df54a3 Mon Sep 17 00:00:00 2001
+From: xs1128 <ooixinsheng@gmail.com>
+Date: Tue, 3 Nov 2026 08:50:18 +0800
+Subject: [PATCH] Boundaries: skip the per-cell BC kernel on faces whose cells
+ the fast ghost-cell kernels already filled
+
+On the fast path (no chemistry, hypoelasticity or QBMM) extrapolation/CBC and reflective cells are filled by one thread
+per ghost value, and the per-cell kernel then does nothing for them but read each cell's code. When every cell of the
+face has such a code (checked on the host copy of bc_type, which is filled on the host and then copied to the GPU), that
+launch is skipped: 6 launches of ~10 us per RK stage on the benchmark. No value changes.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ src/common/m_boundary_common.fpp | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/src/common/m_boundary_common.fpp b/src/common/m_boundary_common.fpp
+index 972d68c..b21f902 100644
+--- a/src/common/m_boundary_common.fpp
++++ b/src/common/m_boundary_common.fpp
+@@ -193,6 +193,10 @@ contains
+                     $:END_GPU_PARALLEL_LOOP()
+                 end if
+             #:endfor
++            ! The kernel below would do nothing on this face if every cell is an extrapolation/CBC or reflective one (the
++            ! kernels above filled them): skip launching it. bc_type is filled on the host and then copied to the GPU.
++            if (all((bc_type_edge%sf >= BC_CHAR_SUP_OUTFLOW .and. bc_type_edge%sf <= BC_GHOST_EXTRAP) &
++                & .or. bc_type_edge%sf == BC_REFLECTIVE)) return
+         end if
+ 
+         $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, private='[l, k, bc_code]', collapse=2, firstprivate='[bc_fast]')
+-- 
+2.47.3
+
