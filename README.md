@@ -65,6 +65,7 @@ boundary-condition tests give 45 passes and the 4 known failures, unchanged from
 On 4 GPUs the three of them make each step 5.4 % faster than P20 (8.99 → 8.52 ms, job 685059, bitwise).
 0028 runs the small boundary (CBC) kernels on a second GPU queue next to the main solver kernel: −0.7 % more at 1 GPU
 (685237, bitwise), −2.8 % at 4 GPUs (685274); the 5 tests that use it pass (685267).
+0029 puts that second queue on a high-priority GPU stream: −0.35 % at 1 GPU, another −2.8 % at 4 GPUs (685381, 685404, bitwise).
 
 **Run settings (disclosed, no code change):** at 1 GPU, Open MPI without UCX (`ob1`) and a run directory in node-local
 memory (`/dev/shm`) cut the wall time of a whole run, start-up and save included, to about 3.8 s (job 684750).
@@ -78,7 +79,7 @@ memory (`/dev/shm`) cut the wall time of a whole run, start-up and save included
 | [`report.md`](report.md) | The full write-up (also built as `dist/report.pdf` by `tools/build_pdf.py`) |
 | [`slides/`](slides/) | Slides for the 11-11 talk ([Slidev](https://sli.dev)): `cd slides && npm install && npm run dev`; `npm run export` writes `dist/slides.pdf` |
 | [`patches/opt/`](patches/opt/) | Our 24 changes to MFC, one per file |
-| [`patches/pending/`](patches/pending/) | Four newer changes that are faster and give the same answers, but have not had the full test suite yet |
+| [`patches/pending/`](patches/pending/) | Five newer changes that are faster and give the same answers, but have not had the full test suite yet |
 | [`patches/exp/`](patches/exp/) | Experiments we tried, most of them rejected |
 | [`docs/`](docs/) | Explanations: each optimization, the ladder of attempts, how the test harness works, the code layout |
 | [`docs/background/`](docs/background/) | Research notes and papers we read |

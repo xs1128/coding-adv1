@@ -202,7 +202,9 @@ boundary-condition tests give 45 passes and the 4 known failures, unchanged from
 28.813 / 28.772 → 28.586 / 28.585 ms at 1 GPU (−0.7 %, job 685237, bitwise); the 5 suite tests that take that path pass
 (685267). On 4 GPUs it takes 8.556 → 8.315 ms (−2.8 %, 685274, bitwise), because there the other ranks wait for
 the rank with the most CBC faces. Chaining the A/Bs: about 28.8 ms at 1 GPU (about 2.70× v5.7.0) and about −8 % per
-step vs P20 at 4 GPUs.
+step vs P20 at 4 GPUs. 0029 (pending) runs that second queue on a high-priority CUDA stream, found through dlopen/dlsym so no
+build flag changes: −0.35 % at 1 GPU (685381) and 8.299 → 8.065 ms (−2.8 %) at 4 GPUs (685404), bitwise. With all five
+pending patches, about −11 % per step vs P20 at 4 GPUs (chained A/Bs).
 
 **Several GPUs** (`rdma_mpi`, same node, P11 vs P18; bitwise):
 

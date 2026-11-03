@@ -1,0 +1,130 @@
+From 025073b6bf42930760fc054da6bc5b6f9eb46610 Mon Sep 17 00:00:00 2001
+From: xs1128 <ooixinsheng@gmail.com>
+Date: Tue, 3 Nov 2026 08:26:29 +0800
+Subject: [PATCH] CBC: run the CBC OpenACC queue on a high-priority CUDA stream
+ (NVHPC)
+
+On an ordinary stream only the first of the CBC kernels queued ahead of the Riemann solve overlaps it: each later one
+waits until all of the solve's blocks have been placed (nsys: 1.09 of 1.28 ms per step still exposed). With the highest
+stream priority the CBC blocks take the SM slots the solve frees. The CUDA driver, already loaded by the OpenACC runtime,
+is reached through dlopen/dlsym, so no build flag changes; any failure leaves the queue on its ordinary stream, so only
+timing can change.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ src/simulation/m_cbc.fpp | 78 ++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 78 insertions(+)
+
+diff --git a/src/simulation/m_cbc.fpp b/src/simulation/m_cbc.fpp
+index e921308..5456bc3 100644
+--- a/src/simulation/m_cbc.fpp
++++ b/src/simulation/m_cbc.fpp
+@@ -16,6 +16,7 @@ module m_cbc
+         & BC_CHAR_SUP_OUTFLOW
+ #if defined(MFC_OpenACC) && defined(MFC_NVHPC)
+     use openacc, only: acc_set_default_async, acc_get_default_async
++    use iso_c_binding, only: c_ptr, c_funptr, c_int, c_char, c_null_char, c_associated, c_f_procpointer
+ #endif
+     use m_thermochem, only: get_mixture_energy_mass, get_mixture_specific_heat_cv_mass, get_mixture_specific_heat_cp_mass, &
+         & gas_constant, get_mixture_molecular_weight, get_species_enthalpies_rt, molecular_weights, get_species_specific_heats_r, &
+@@ -86,6 +87,55 @@ module m_cbc
+     !> OpenACC queue for CBC kernels queued ahead of the Riemann solve
+     integer, parameter :: cbc_queue = 2
+ 
++#if defined(MFC_OpenACC) && defined(MFC_NVHPC)
++    !> cbc_queue runs on a high-priority CUDA stream (s_cbc_priority_stream): the CBC kernels are a chain of small kernels, and on
++    !! an ordinary stream each one after the first waits until the Riemann solve's blocks have all been placed.
++    logical :: cbc_stream_tried = .false.
++    interface
++        function cbc_dlopen(file, mode) bind(C, name='dlopen') result(h)
++
++            import :: c_ptr, c_char, c_int
++            character(kind=c_char), dimension(*), intent(in) :: file
++            integer(c_int), value                            :: mode
++            type(c_ptr)                                      :: h
++
++        end function cbc_dlopen
++        function cbc_dlsym(h, sym) bind(C, name='dlsym') result(f)
++
++            import :: c_ptr, c_char, c_funptr
++            type(c_ptr), value                               :: h
++            character(kind=c_char), dimension(*), intent(in) :: sym
++            type(c_funptr)                                   :: f
++
++        end function cbc_dlsym
++        function cbc_acc_set_cuda_stream(async, stream) bind(C, name='acc_set_cuda_stream') result(r)
++
++            import :: c_int, c_ptr
++            integer(c_int), value :: async
++            type(c_ptr), value    :: stream
++            integer(c_int)        :: r
++
++        end function cbc_acc_set_cuda_stream
++    end interface
++    abstract interface
++        function cbc_cu_prio_range(least, greatest) bind(C) result(r)
++
++            import :: c_int
++            integer(c_int), intent(out) :: least, greatest
++            integer(c_int)              :: r
++
++        end function cbc_cu_prio_range
++        function cbc_cu_stream_create(stream, flags, priority) bind(C) result(r)
++
++            import :: c_int, c_ptr
++            type(c_ptr), intent(out) :: stream
++            integer(c_int), value    :: flags, priority
++            integer(c_int)           :: r
++
++        end function cbc_cu_stream_create
++    end interface
++#endif
++
+     ! GRCBC inputs for subsonic inflow and outflow conditions consisting of inflow velocities, pressure, density and void fraction
+     ! as well as outflow velocities and pressure
+ 
+@@ -562,6 +612,7 @@ contains
+             ! Start only after everything already queued (the halo fill of q_prim_vf and the previous direction's copy-back),
+             ! then send this routine's async work, including the conversion it calls, to cbc_queue so it runs alongside the
+             ! Riemann solve queued next on the default queue.
++            if (.not. cbc_stream_tried) call s_cbc_priority_stream()
+             $:GPU_WAIT(extraAccArgs='async(cbc_queue)')
+             default_queue = acc_get_default_async()
+             call acc_set_default_async(cbc_queue)
+@@ -982,6 +1033,33 @@ contains
+ 
+     end subroutine s_cbc
+ 
++#if defined(MFC_OpenACC) && defined(MFC_NVHPC)
++    !> Put cbc_queue on a CUDA stream of the highest priority, so its small kernels get each SM slot the Riemann solve frees instead
++    !! of waiting for all of its blocks. The CUDA driver, already loaded by the OpenACC runtime, is reached through dlopen/dlsym, so
++    !! no build flag changes. Any failure leaves cbc_queue on its ordinary stream: only timing can change.
++    impure subroutine s_cbc_priority_stream()
++
++        type(c_ptr)    :: h, stream
++        type(c_funptr) :: f_range, f_create
++        procedure(cbc_cu_prio_range), pointer :: get_range
++        procedure(cbc_cu_stream_create), pointer :: create
++        integer(c_int) :: least, greatest, ierr
++
++        cbc_stream_tried = .true.
++        h = cbc_dlopen('libcuda.so.1' // c_null_char, 2_c_int)  ! RTLD_NOW
++        if (.not. c_associated(h)) return
++        f_range = cbc_dlsym(h, 'cuCtxGetStreamPriorityRange' // c_null_char)
++        f_create = cbc_dlsym(h, 'cuStreamCreateWithPriority' // c_null_char)
++        if (.not. (c_associated(f_range) .and. c_associated(f_create))) return
++        call c_f_procpointer(f_range, get_range)
++        call c_f_procpointer(f_create, create)
++        if (get_range(least, greatest) /= 0) return
++        if (create(stream, 1_c_int, greatest) /= 0) return  ! CU_STREAM_NON_BLOCKING
++        ierr = cbc_acc_set_cuda_stream(int(cbc_queue, c_int), stream)
++
++    end subroutine s_cbc_priority_stream
++#endif
++
+     !> Whether direction cbc_dir_in's CBC can run its kernels alongside the Riemann solve (s_cbc phase 1 before it, the copy-back
+     !! after): OpenACC with NVHPC async queues, CBC kernels that never read the Riemann fluxes (cbc_flux_overwritten), and CBC on
+     !! exactly one side of the direction, since both sides share this direction's work arrays. loc: that side.
+-- 
+2.47.3
+
