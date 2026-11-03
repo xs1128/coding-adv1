@@ -65,6 +65,32 @@ smi "$out/smi_after.csv"
 # LAUNCHPROBE=1 (untimed, after the reps): how long launching alone takes. Times mpirun and srun of /bin/true (3 each,
 # each under a timeout), records the dynamic loader's statistics for one mpirun of the simulation, and times launches
 # without hwloc's GPU plugins (srun of the simulation fails in orte_init with this Open MPI, 696467/696471).
+# LAUNCHPROBE=3 (untimed, after the reps): the simulation with LD_LIBRARY_PATH unset (the binaries' RPATHs find their
+# libraries; each LD_LIBRARY_PATH miss is a Lustre lookup), alternating with the default; the loaded objects of both
+# (LD_DEBUG=files) and the final states are compared
+if [[ ${LAUNCHPROBE:-0} == 3 ]]; then
+  pf=$out/launchprobe3.tsv; printf 'what\trep\twall_s\trc\n' > "$pf"
+  tm() { local w=$1 r=$2; shift 2; local t0 t1 rc=0; t0=$(date +%s.%N); "$@" > "$out/launchprobe3_$w.log" 2>&1 || rc=$?
+         t1=$(date +%s.%N); printf '%s\t%s\t%.3f\t%s\n' "$w" "$r" "$(echo "$t1 - $t0" | bc)" "$rc" >> "$pf"; }
+  last=$(ls restart_data/ | sed -nE 's/^lustre_([0-9]+)\.dat$/\1/p' | sort -n | tail -1)
+  cp restart_data/lustre_${last}.dat restart_data/lustre_${last}.dat.reps
+  for r in 1 2 3; do
+    tm version_default $r timeout 60 mpirun --version
+    tm version_nolibpath $r env -u LD_LIBRARY_PATH timeout 60 mpirun --version
+    tm sim_default $r env $RUN_ENV timeout 90 mpirun -np 1 $MPIRUN_ARGS "$sim"
+    tm sim_nolibpath $r env -u LD_LIBRARY_PATH $RUN_ENV timeout 90 mpirun -np 1 $MPIRUN_ARGS "$sim"
+    cmp -s restart_data/lustre_${last}.dat restart_data/lustre_${last}.dat.reps && echo "nolibpath rep $r: final state identical" \
+      >> "$out/launchprobe3_cmp.txt" || echo "nolibpath rep $r: final state DIFFERS" >> "$out/launchprobe3_cmp.txt"
+  done
+  objs() { grep -oE 'file=[^ ]+ \[0\];  generating link map' "$1" | sed -E 's/^file=([^ ]+).*/\1/' | xargs -r -n1 readlink -f | sort -u; }
+  env $RUN_ENV LD_DEBUG=files LD_DEBUG_OUTPUT=$run/ldd_default timeout 90 mpirun -np 1 $MPIRUN_ARGS "$sim" > /dev/null 2>&1 || true
+  env -u LD_LIBRARY_PATH $RUN_ENV LD_DEBUG=files LD_DEBUG_OUTPUT=$run/ldd_nolib timeout 90 mpirun -np 1 $MPIRUN_ARGS "$sim" > /dev/null 2>&1 || true
+  cat $run/ldd_default.* | objs /dev/stdin > "$out/launchprobe3_objs_default.txt" || true
+  cat $run/ldd_nolib.* | objs /dev/stdin > "$out/launchprobe3_objs_nolibpath.txt" || true
+  diff "$out/launchprobe3_objs_default.txt" "$out/launchprobe3_objs_nolibpath.txt" > "$out/launchprobe3_objs.diff" \
+    && echo "loaded objects: identical" >> "$out/launchprobe3_cmp.txt" || echo "loaded objects: DIFFER" >> "$out/launchprobe3_cmp.txt"
+  rm -f $run/ldd_default.* $run/ldd_nolib.*
+fi
 # LAUNCHPROBE=2 (untimed, after the reps): mpirun -np 1 /bin/true under Open MPI start-up settings, 3 times each
 if [[ ${LAUNCHPROBE:-0} == 2 ]]; then
   pf=$out/launchprobe2.tsv; printf 'what\trep\twall_s\trc\n' > "$pf"

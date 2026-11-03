@@ -194,6 +194,10 @@ the figure script disagreed. Rule: derived numbers come from raw files, in one s
   option). Inside the Slurm job it hung before printing anything, presumably in `MPI_Init`, and the job ran to its 15-min
   limit: ~12 GPU-min lost, arm A's 5 reps (3.443–3.569 s) kept. The option was removed again. Rule: try a new launch mode
   once under a short `timeout` before timing it.
+- **11-04 (night): 14 GB free.** Same practice: 22 final-state dumps (0.52 GB each) of finished, verified runs deleted from
+  `runs/exp/{readpack_1g,eagerload_1g,direct_1g,launchprobe_1g,launchprobe_1g_r2..r5,nogpuhwloc_1g}` (each compared bitwise
+  with its A arm or the v5.7.0 reference, or from an already verified binary; results in `results/` and the ladder).
+  `runs/exp/readtype_1g` (0038) and `runs/final` are untouched. No GPU cost.
 
 ## Code the student must be able to defend
 (filled in as optimizations land)
