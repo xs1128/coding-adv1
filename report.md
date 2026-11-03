@@ -248,6 +248,14 @@ neighbour in y or z and RDMA halos. 4 GPUs (690856): step 7.921 → 7.781 ms (�
 of which the 3D RDMA case takes the new path. It stays in `patches/pending/` because its full suite (~120 GPU-min) was
 not run (ladder row 71).
 
+**Pending 0033 (on 0032; not in P22).** A profile of P22 + 0032 on 4 GPUs (690931) cut GPU idle per step from 0.65–0.88
+to 0.43–0.55 ms (vs 690700) and showed the next gap: before every Riemann solve, 10 tiny asynchronous host-to-device
+copies of the direction's index bounds and direction arrays, which the GPU runs one after another with 3–5 µs between
+them (~50 µs per direction where no CBC work hides them). 0033 writes the same values with one single-thread kernel, as
+0031 did for CBC. 4 GPUs (691553): 7.780 → 7.721 ms per step (−0.76 %), grind −0.62 %, bitwise; 1 GPU (691872): no
+change, bitwise. 155 targeted tests (every hypoelastic and Riemann-solver test) pass apart from the 6 known failures
+in that set (ladder row 72). Full suite not run.
+
 **Several GPUs** (`rdma_mpi`, same node, P11 vs P18; bitwise):
 
 | GPUs | P11 step | P18 step | Change | Job |

@@ -82,6 +82,10 @@ GPU runtime had to set up a pinned copy buffer for the second queue) and makes e
 the x sweep (ghost cells filled on a second queue). 4 GPUs: 7.921 → 7.781 ms per step (−1.8 %, job 690856), bitwise;
 the 7 two-rank MPI tests with RDMA pass (690903). Full suite not run, so it stays in `patches/pending/` (ladder row 71).
 
+**Pending 0033 (on 0032, not in P22):** before each Riemann solve, 10 tiny CPU-to-GPU copies ran one after another while
+the GPU waited; one tiny kernel now writes the same values. 4 GPUs: 7.780 → 7.721 ms per step (−0.76 %, job 691553);
+1 GPU unchanged (691872); bitwise; 155 targeted tests clean apart from the known failures (ladder row 72).
+
 **Run settings (disclosed, no code change):** at 1 GPU, Open MPI without UCX (`ob1`) and a run directory in node-local
 memory (`/dev/shm`) cut the wall time of a whole run, start-up and save included, to about 3.8 s (job 684750).
 

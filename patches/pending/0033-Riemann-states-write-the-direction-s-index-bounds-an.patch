@@ -1,0 +1,81 @@
+From 4efa7b2ee0eab6fe7899f76a03e000f2feacfa86 Mon Sep 17 00:00:00 2001
+From: xs1128 <ooixinsheng@gmail.com>
+Date: Tue, 3 Nov 2026 22:59:01 +0800
+Subject: [PATCH] Riemann states: write the direction's index bounds and
+ direction arrays on the GPU with one small kernel
+
+s_populate_riemann_states_variables_buffers updated is1-3, isx-z, dir_idx, dir_flg, dir_idx_tau and stress_perm with
+10 small asynchronous host-to-device copies before every Riemann solve. On the GPU they wait for the previous
+direction's solve and then run one after another with the GPU idle in between, so the next solve starts ~50 us late
+wherever no other queue has work (4 GPUs, rdma_mpi: directions with an MPI neighbour). One single-thread kernel on the
+same queue, taking the host values as arguments, writes the same device values.
+---
+ src/simulation/m_riemann_state.fpp | 38 +++++++++++++++++++++++++-----
+ 1 file changed, 32 insertions(+), 6 deletions(-)
+
+diff --git a/src/simulation/m_riemann_state.fpp b/src/simulation/m_riemann_state.fpp
+index 5ca1dd1..0e86915 100644
+--- a/src/simulation/m_riemann_state.fpp
++++ b/src/simulation/m_riemann_state.fpp
+@@ -307,6 +307,36 @@ contains
+ 
+     end subroutine s_compute_viscous_source_flux
+ 
++    !> Write the direction's index bounds and direction arrays to their GPU copies with one single-thread kernel that takes the host
++    !! values as arguments, on the same queue as the 10 small host-to-device copies it replaces. Those copies ran one after another
++    !! before each Riemann solve with the GPU idle between them (~50 us per direction).
++    subroutine s_riemann_set_device_state()
++
++        integer  :: i, b1, e1, b2, e2, b3, e3, bx, ex, by, ey, bz, ez, i1, i2, i3, t1, t2, t3, p1, p2, p3, p4, p5, p6
++        real(wp) :: f1, f2, f3
++
++        b1 = is1%beg; e1 = is1%end; b2 = is2%beg; e2 = is2%end; b3 = is3%beg; e3 = is3%end
++        bx = isx%beg; ex = isx%end; by = isy%beg; ey = isy%end; bz = isz%beg; ez = isz%end
++        i1 = dir_idx(1); i2 = dir_idx(2); i3 = dir_idx(3); f1 = dir_flg(1); f2 = dir_flg(2); f3 = dir_flg(3)
++        t1 = dir_idx_tau(1); t2 = dir_idx_tau(2); t3 = dir_idx_tau(3)
++        p1 = stress_perm(1); p2 = stress_perm(2); p3 = stress_perm(3)
++        p4 = stress_perm(4); p5 = stress_perm(5); p6 = stress_perm(6)
++
++        $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, private='[i]', firstprivate='[b1, e1, b2, e2, b3, e3, bx, ex, by, ey, bz, ez, &
++                            & i1, i2, i3, f1, f2, f3, t1, t2, t3, p1, p2, p3, p4, p5, p6]')
++        do i = 1, 1
++            is1%beg = b1; is1%end = e1; is2%beg = b2; is2%end = e2; is3%beg = b3; is3%end = e3
++            isx%beg = bx; isx%end = ex; isy%beg = by; isy%end = ey; isz%beg = bz; isz%end = ez
++            dir_idx(1) = i1; dir_idx(2) = i2; dir_idx(3) = i3
++            dir_flg(1) = f1; dir_flg(2) = f2; dir_flg(3) = f3
++            dir_idx_tau(1) = t1; dir_idx_tau(2) = t2; dir_idx_tau(3) = t3
++            stress_perm(1) = p1; stress_perm(2) = p2; stress_perm(3) = p3
++            stress_perm(4) = p4; stress_perm(5) = p5; stress_perm(6) = p6
++        end do
++        $:END_GPU_PARALLEL_LOOP()
++
++    end subroutine s_riemann_set_device_state
++
+     !> Populate the left and right Riemann state variable buffers based on boundary conditions
+     subroutine s_populate_riemann_states_variables_buffers(qL_prim_rsx_vf, dqL_prim_dx_vf, dqL_prim_dy_vf, dqL_prim_dz_vf, &
+         & qR_prim_rsx_vf, dqR_prim_dx_vf, dqR_prim_dy_vf, dqR_prim_dz_vf, norm_dir, ix, iy, iz)
+@@ -330,8 +360,6 @@ contains
+             dir_idx = (/3, 1, 2/); dir_flg = (/0._wp, 0._wp, 1._wp/)
+         end if
+ 
+-        $:GPU_UPDATE(device='[is1, is2, is3]', extraAccArgs=GPU_ASYNC)
+-
+         if (hypoelasticity) then
+             ! dir_idx_tau(1:3) = (nn, nt, nt2): face-normal stress row for wave speeds and momentum flux. stress_perm(1:n_stress) =
+             ! full tensor permutation mapping F_HLL local basis index -> physical storage index. Local order: (nn, nt, tt, nt2,
+@@ -349,10 +377,8 @@ contains
+         end if
+ 
+         isx = ix; isy = iy; isz = iz
+-        ! for stuff in the same module
+-        $:GPU_UPDATE(device='[isx, isy, isz]', extraAccArgs=GPU_ASYNC)
+-        ! for stuff in different modules
+-        $:GPU_UPDATE(device='[dir_idx, dir_flg, dir_idx_tau, stress_perm]', extraAccArgs=GPU_ASYNC)
++        ! is1-3 and isx-z for this module, dir_idx, dir_flg, dir_idx_tau and stress_perm for others: written on the GPU
++        call s_riemann_set_device_state()
+ 
+         ! Population of Buffers in x-direction
+         if (norm_dir == 1) then
+-- 
+2.47.3
+
