@@ -191,3 +191,15 @@ Applied 0001–0030 to a local v5.7.0 copy and read the result:
 - Idea (exp-haloyz): the x sweep reads interior y/z cells only, so the y/z halo work can wait until the x sweep is
   queued and then run on OpenACC queue 2 while the host sits in MPI. Expected: most of the y exchange's ~70–80 µs of GPU
   idle per stage, about 3 % at 4 GPUs; nothing at 1 GPU (no MPI neighbour, path off).
+
+### P22 + 0032 at 4 GPUs (nsys 690931, same settings as 690700, `results/prof/nsys_haloyz_4g`)
+- `tools/step_idle.py` (median of steps 2–10, GPU busy = union of all streams): step under nsys 8.31–8.33 → 7.95–8.06 ms,
+  GPU idle per step 0.65–0.88 → 0.43–0.55 ms (P22 690700 → 690931). Almost all of it is inside COMPUTE-RHS; outside it
+  only ~0.04 ms per step. Idle inside RHS-COMMUNICATION per stage 0.11–0.16 → 0.04–0.06 ms (`tools/stage_idle.py`).
+- `tools/step_gaps.py` on rank 0: the biggest gap left is the MPI peer-to-peer copy of each exchange (~250 µs per step).
+  Next: before every HLLC solve, `s_populate_riemann_states_variables_buffers` issues 10 tiny asynchronous host-to-device
+  copies (`is1–3`, `isx–z`, `dir_idx`, `dir_flg`, `dir_idx_tau`, `stress_perm`). On the GPU they queue behind the previous
+  direction's HLLC kernel and then run one at a time (~1.5 µs each plus 3–5 µs between), so the next HLLC kernel starts
+  ~50 µs late, in every direction whose copies are not hidden behind CBC work: ~160 µs of gaps per step on rank 0. The
+  same happens at 1 GPU (~0.3 ms per 28 ms step, which matches its 0.9 % idle, nsys 690689).
+- Idea (exp-rsdev): write those values with one single-thread kernel that takes them as arguments, as 0031 did for CBC.

@@ -1,0 +1,27 @@
+Time (%),Total Time (ns),Instances,Avg (ns),Med (ns),Min (ns),Max (ns),StdDev (ns),Name
+23.8,18439785,30,614659.5,617055.0,579872,619455,8440.0,m_riemann_solver_hllc_s_hllc_riemann_solver_952_gpu
+23.4,18136392,30,604546.4,604383.0,602591,606975,1053.8,m_riemann_solver_hllc_s_hllc_riemann_solver_952_gpu_1
+22.9,17803144,30,593438.1,593663.0,589375,595903,1465.7,m_riemann_solver_hllc_s_hllc_riemann_solver_952_gpu_2
+15.0,11663636,30,388787.9,371360.0,369504,425503,25746.4,m_rhs_s_add_flux_differences_rk_update_slabs_2138_gpu
+5.2,4036669,30,134555.6,134432.0,133376,137696,897.5,m_variables_conversion_s_convert_conservative_to_primitive_variables_504_gpu
+2.4,1847165,1,1847165.0,1847165.0,1847165,1847165,0.0,m_rhs_s_initialize_rhs_module_557_gpu
+1.4,1119551,30,37318.4,37968.0,25664,39424,2540.9,m_cbc_s_cbc_716_gpu_2
+0.9,725247,60,12087.5,7888.0,5696,24672,6862.8,m_boundary_common_s_populate_bc_direction_222_gpu__2
+0.6,449567,30,14985.6,16511.5,8544,20288,3066.3,m_mpi_common_s_mpi_sendrecv_variables_buffers_956_gpu
+0.6,429374,30,14312.5,14256.0,13888,15008,297.1,m_boundary_common_s_populate_bc_direction_222_gpu
+0.5,364607,30,12153.6,11952.0,11456,18976,1321.2,m_boundary_common_s_populate_bc_direction_222_gpu__1
+0.4,341823,30,11394.1,11296.0,10848,12512,407.9,m_mpi_common_s_mpi_sendrecv_variables_buffers_706_gpu
+0.4,324703,30,10823.4,10784.0,10432,11616,278.0,m_mpi_common_s_mpi_sendrecv_variables_buffers_648_gpu
+0.3,260640,30,8688.0,8592.0,8384,9664,303.8,m_mpi_common_s_mpi_sendrecv_variables_buffers_886_gpu
+0.3,208928,30,6964.3,6816.0,6400,8064,468.7,m_variables_conversion_s_convert_primitive_to_flux_variables_1072_gpu
+0.3,208159,30,6938.6,6832.0,6368,7648,405.6,m_cbc_s_initialize_cbc_1319_gpu
+0.3,207008,1,207008.0,207008.0,207008,207008,0.0,m_start_up_s_save_data_741_gpu
+0.2,193664,30,6455.5,6432.0,6112,7008,197.4,m_cbc_s_finalize_cbc_1513_gpu
+0.2,160160,30,5338.7,5312.0,4032,6560,480.4,m_cbc_s_cbc_681_gpu_2
+0.2,146784,1,146784.0,146784.0,146784,146784,0.0,m_start_up_s_save_data_760_gpu
+0.2,143424,30,4780.8,5056.0,2656,5376,761.7,m_cbc_s_cbc_697_gpu_2
+0.2,126080,30,4202.7,4832.0,2304,5472,1169.0,m_cbc_s_initialize_cbc_1331_gpu
+0.1,81920,1,81920.0,81920.0,81920,81920,0.0,m_start_up_s_save_data_760_gpu__red
+0.1,80256,30,2675.2,2672.0,2496,3200,145.7,m_cbc_s_finalize_cbc_1548_gpu
+0.1,66720,30,2224.0,2208.0,2144,2336,47.4,m_cbc_s_finalize_cbc_1525_gpu
+0.1,62624,30,2087.5,1600.0,1472,4576,1043.1,m_cbc_s_cbc_set_device_state_1132_gpu
