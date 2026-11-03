@@ -63,7 +63,8 @@ done
 smi "$out/smi_after.csv"
 
 # LAUNCHPROBE=1 (untimed, after the reps): how long launching alone takes. Times mpirun and srun of /bin/true (3 each,
-# each under a timeout), records the dynamic loader's statistics for one mpirun of the simulation, and times one srun of it.
+# each under a timeout), records the dynamic loader's statistics for one mpirun of the simulation, and times launches
+# without hwloc's GPU plugins (srun of the simulation fails in orte_init with this Open MPI, 696467/696471).
 if [[ ${LAUNCHPROBE:-0} == 1 ]]; then
   SRUN_ENV=${SRUN_ENV:-}; SRUN_ENV=${SRUN_ENV//+/,}; SRUN_ENV=${SRUN_ENV//@/ }   # extra env for the srun launches only
   echo "srun_env=$SRUN_ENV" >> "$out/env.txt"
@@ -76,18 +77,22 @@ if [[ ${LAUNCHPROBE:-0} == 1 ]]; then
     tm srun_true $r env $RUN_ENV $SRUN_ENV timeout 60 srun -n 1 --mpi=pmix /bin/true
   done
   tm lddebug_sim 1 env $RUN_ENV LD_DEBUG=statistics timeout 90 mpirun -np 1 $MPIRUN_ARGS "$sim"
-  # where mpirun's own start-up goes: a syscall summary (results/) and a full timeline (runs/, large), and the same
-  # launch with a pre-generated hwloc topology (discovery on a 112-core, 8-GPU node is a usual cost)
-  timeout 60 strace -f -c -o "$out/launchprobe_strace_summary.txt" env $RUN_ENV mpirun -np 1 $MPIRUN_ARGS /bin/true || true
-  timeout 60 strace -f -ttt -T -o "$keep/strace_mpirun_true.txt" env $RUN_ENV mpirun -np 1 $MPIRUN_ARGS /bin/true || true
-  lstopo-no-graphics --of xml "$run/topo.xml" > /dev/null 2>&1 || true
+  # hwloc's GPU plugins start NVML/CUDA during topology discovery, in mpirun and again in MPI_Init: try without them,
+  # and with a pre-generated topology (v1 XML, which the hwloc inside Open MPI 4.1 reads)
+  hwx=HWLOC_COMPONENTS=-cuda,-nvml,-opencl,-rsmi,-levelzero,-gl
+  lstopo-no-graphics --of xml --export-xml-flags v1 "$run/topo.xml" > /dev/null 2>&1 || true
   for r in 1 2 3; do
-    tm mpirun_true_topo $r env $RUN_ENV OMPI_MCA_hwloc_base_topo_file=$run/topo.xml timeout 60 mpirun -np 1 $MPIRUN_ARGS /bin/true
+    tm mpirun_true_nogpuhwloc $r env $RUN_ENV $hwx timeout 60 mpirun -np 1 $MPIRUN_ARGS /bin/true
+    tm mpirun_true_topov1 $r env $RUN_ENV OMPI_MCA_hwloc_base_topo_file=$run/topo.xml timeout 60 mpirun -np 1 $MPIRUN_ARGS /bin/true
   done
-  # one srun (PMIx) launch of the simulation; the timed reps' final state is kept beside it as *.dat.reps for verify
   last=$(ls restart_data/ | sed -nE 's/^lustre_([0-9]+)\.dat$/\1/p' | sort -n | tail -1)
   cp restart_data/lustre_${last}.dat restart_data/lustre_${last}.dat.reps
-  tm srun_sim 1 env $RUN_ENV $SRUN_ENV timeout 90 srun -n 1 --mpi=pmix "$sim"
+  for r in 1 2 3; do
+    tm mpirun_sim $r env $RUN_ENV timeout 90 mpirun -np 1 $MPIRUN_ARGS "$sim"
+    tm mpirun_sim_nogpuhwloc $r env $RUN_ENV $hwx timeout 90 mpirun -np 1 $MPIRUN_ARGS "$sim"
+    cmp -s restart_data/lustre_${last}.dat restart_data/lustre_${last}.dat.reps && echo "nogpuhwloc rep $r: final state identical" \
+      >> "$out/launchprobe_cmp.txt" || echo "nogpuhwloc rep $r: final state DIFFERS" >> "$out/launchprobe_cmp.txt"
+  done
 fi
 
 # extra rep under NVTX-only nsys: per-rank step times (grind is only the min stage)

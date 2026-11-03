@@ -1,0 +1,164 @@
+   2615355:	
+   2615355:	runtime linker statistics:
+   2615355:	  total startup time in dynamic loader: 6949748 cycles
+   2615355:	            time needed for relocation: 5569 cycles (.0%)
+   2615355:	                 number of relocations: 176
+   2615355:	      number of relocations from cache: 3
+   2615355:	        number of relative relocations: 1350
+   2615355:	           time needed to load objects: 6907606 cycles (99.3%)
+   2615356:	
+   2615356:	runtime linker statistics:
+   2615356:	  total startup time in dynamic loader: 9373908 cycles
+   2615356:	            time needed for relocation: 28392 cycles (.3%)
+   2615356:	                 number of relocations: 543
+   2615356:	      number of relocations from cache: 3
+   2615356:	        number of relative relocations: 5171
+   2615356:	           time needed to load objects: 9306064 cycles (99.2%)
+   2615357:	
+   2615357:	runtime linker statistics:
+   2615357:	  total startup time in dynamic loader: 7289581 cycles
+   2615357:	            time needed for relocation: 13859 cycles (.1%)
+   2615357:	                 number of relocations: 359
+   2615357:	      number of relocations from cache: 3
+   2615357:	        number of relative relocations: 1399
+   2615357:	           time needed to load objects: 7235018 cycles (99.2%)
+   2615359:	
+   2615359:	runtime linker statistics:
+   2615359:	  total startup time in dynamic loader: 6745543 cycles
+   2615359:	            time needed for relocation: 3976 cycles (.0%)
+   2615359:	                 number of relocations: 149
+   2615359:	      number of relocations from cache: 3
+   2615359:	        number of relative relocations: 1356
+   2615359:	           time needed to load objects: 6704559 cycles (99.3%)
+   2615360:	
+   2615360:	runtime linker statistics:
+   2615360:	  total startup time in dynamic loader: 7550422 cycles
+   2615360:	            time needed for relocation: 14022 cycles (.1%)
+   2615360:	                 number of relocations: 390
+   2615360:	      number of relocations from cache: 3
+   2615360:	        number of relative relocations: 1412
+   2615360:	           time needed to load objects: 7494943 cycles (99.2%)
+   2615361:	
+   2615361:	runtime linker statistics:
+   2615361:	  total startup time in dynamic loader: 7711059 cycles
+   2615361:	            time needed for relocation: 46836 cycles (.6%)
+   2615361:	                 number of relocations: 1546
+   2615361:	      number of relocations from cache: 680
+   2615361:	        number of relative relocations: 3702
+   2615361:	           time needed to load objects: 7626107 cycles (98.8%)
+   2615361:	
+   2615361:	runtime linker statistics:
+   2615361:	           final number of relocations: 2609
+   2615361:	final number of relocations from cache: 680
+   2615363:	
+   2615363:	runtime linker statistics:
+   2615363:	  total startup time in dynamic loader: 6797547 cycles
+   2615363:	            time needed for relocation: 4204 cycles (.0%)
+   2615363:	                 number of relocations: 150
+   2615363:	      number of relocations from cache: 3
+   2615363:	        number of relative relocations: 1348
+   2615363:	           time needed to load objects: 6757819 cycles (99.4%)
+   2615364:	
+   2615364:	runtime linker statistics:
+   2615364:	  total startup time in dynamic loader: 6895481 cycles
+   2615364:	            time needed for relocation: 4245 cycles (.0%)
+   2615364:	                 number of relocations: 155
+   2615364:	      number of relocations from cache: 3
+   2615364:	        number of relative relocations: 1353
+   2615364:	           time needed to load objects: 6855860 cycles (99.4%)
+   2615365:	
+   2615365:	runtime linker statistics:
+   2615365:	  total startup time in dynamic loader: 6767450 cycles
+   2615365:	            time needed for relocation: 4321 cycles (.0%)
+   2615365:	                 number of relocations: 145
+   2615365:	      number of relocations from cache: 3
+   2615365:	        number of relative relocations: 1344
+   2615365:	           time needed to load objects: 6722529 cycles (99.3%)
+   2615366:	
+   2615366:	runtime linker statistics:
+   2615366:	  total startup time in dynamic loader: 6971521 cycles
+   2615366:	            time needed for relocation: 4096 cycles (.0%)
+   2615366:	                 number of relocations: 155
+   2615366:	      number of relocations from cache: 3
+   2615366:	        number of relative relocations: 1353
+   2615366:	           time needed to load objects: 6932319 cycles (99.4%)
+   2615367:	
+   2615367:	runtime linker statistics:
+   2615367:	  total startup time in dynamic loader: 6889053 cycles
+   2615367:	            time needed for relocation: 4923 cycles (.0%)
+   2615367:	                 number of relocations: 155
+   2615367:	      number of relocations from cache: 3
+   2615367:	        number of relative relocations: 1353
+   2615367:	           time needed to load objects: 6845626 cycles (99.3%)
+   2615369:	
+   2615369:	runtime linker statistics:
+   2615369:	  total startup time in dynamic loader: 7179052 cycles
+   2615369:	            time needed for relocation: 4619 cycles (.0%)
+   2615369:	                 number of relocations: 145
+   2615369:	      number of relocations from cache: 3
+   2615369:	        number of relative relocations: 1344
+   2615369:	           time needed to load objects: 7138167 cycles (99.4%)
+   2615368:	
+   2615368:	runtime linker statistics:
+   2615368:	           final number of relocations: 543
+   2615368:	final number of relocations from cache: 3
+   2615370:	
+   2615370:	runtime linker statistics:
+   2615370:	  total startup time in dynamic loader: 24324013 cycles
+   2615370:	            time needed for relocation: 46644 cycles (.1%)
+   2615370:	                 number of relocations: 1286
+   2615370:	      number of relocations from cache: 227
+   2615370:	        number of relative relocations: 2371
+   2615370:	           time needed to load objects: 24227477 cycles (99.6%)
+   2615374:	
+   2615374:	runtime linker statistics:
+   2615374:	  total startup time in dynamic loader: 35678688 cycles
+   2615374:	            time needed for relocation: 655731 cycles (1.8%)
+   2615374:	                 number of relocations: 8384
+   2615374:	      number of relocations from cache: 11873
+   2615374:	        number of relative relocations: 21153
+   2615374:	           time needed to load objects: 34951716 cycles (97.9%)
+ Simulating a case-optimized 200x200x200 case on 1 rank(s) with OpenACC offloading.
+ [  0%] step 1 of 31 (t_step 0) t/step  0.00E+00s (avg  0.00E+00s) ETA 0:00:00
+ [  4%] step 2 of 31 (t_step 1) t/step  3.57E-02s (avg  0.00E+00s) ETA 0:00:00
+ [  7%] step 3 of 31 (t_step 2) t/step  2.76E-02s (avg  0.00E+00s) ETA 0:00:00
+ [ 10%] step 4 of 31 (t_step 3) t/step  2.76E-02s (avg  2.76E-02s) ETA 0:00:00
+ [ 13%] step 5 of 31 (t_step 4) t/step  2.77E-02s (avg  2.76E-02s) ETA 0:00:00
+ [ 17%] step 6 of 31 (t_step 5) t/step  2.76E-02s (avg  2.76E-02s) ETA 0:00:00
+ [ 20%] step 7 of 31 (t_step 6) t/step  2.76E-02s (avg  2.76E-02s) ETA 0:00:00
+ [ 23%] step 8 of 31 (t_step 7) t/step  2.76E-02s (avg  2.76E-02s) ETA 0:00:00
+ [ 26%] step 9 of 31 (t_step 8) t/step  2.76E-02s (avg  2.76E-02s) ETA 0:00:00
+ [ 30%] step 10 of 31 (t_step 9) t/step  2.76E-02s (avg  2.76E-02s) ETA 0:00:00
+ [ 33%] step 11 of 31 (t_step 10) t/step  2.76E-02s (avg  2.76E-02s) ETA 0:00:00
+ [ 36%] step 12 of 31 (t_step 11) t/step  2.76E-02s (avg  2.76E-02s) ETA 0:00:00
+ [ 39%] step 13 of 31 (t_step 12) t/step  2.76E-02s (avg  2.76E-02s) ETA 0:00:00
+ [ 42%] step 14 of 31 (t_step 13) t/step  2.76E-02s (avg  2.76E-02s) ETA 0:00:00
+ [ 46%] step 15 of 31 (t_step 14) t/step  2.76E-02s (avg  2.76E-02s) ETA 0:00:00
+ [ 49%] step 16 of 31 (t_step 15) t/step  2.76E-02s (avg  2.76E-02s) ETA 0:00:00
+ [ 52%] step 17 of 31 (t_step 16) t/step  2.76E-02s (avg  2.76E-02s) ETA 0:00:00
+ [ 55%] step 18 of 31 (t_step 17) t/step  2.76E-02s (avg  2.76E-02s) ETA 0:00:00
+ [ 59%] step 19 of 31 (t_step 18) t/step  2.76E-02s (avg  2.76E-02s) ETA 0:00:00
+ [ 62%] step 20 of 31 (t_step 19) t/step  2.76E-02s (avg  2.76E-02s) ETA 0:00:00
+ [ 65%] step 21 of 31 (t_step 20) t/step  2.76E-02s (avg  2.76E-02s) ETA 0:00:00
+ [ 68%] step 22 of 31 (t_step 21) t/step  2.76E-02s (avg  2.76E-02s) ETA 0:00:00
+ [ 71%] step 23 of 31 (t_step 22) t/step  2.76E-02s (avg  2.76E-02s) ETA 0:00:00
+ [ 75%] step 24 of 31 (t_step 23) t/step  2.76E-02s (avg  2.76E-02s) ETA 0:00:00
+ [ 78%] step 25 of 31 (t_step 24) t/step  2.76E-02s (avg  2.76E-02s) ETA 0:00:00
+ [ 81%] step 26 of 31 (t_step 25) t/step  2.76E-02s (avg  2.76E-02s) ETA 0:00:00
+ [ 84%] step 27 of 31 (t_step 26) t/step  2.76E-02s (avg  2.76E-02s) ETA 0:00:00
+ [ 88%] step 28 of 31 (t_step 27) t/step  2.76E-02s (avg  2.76E-02s) ETA 0:00:00
+ [ 91%] step 29 of 31 (t_step 28) t/step  2.76E-02s (avg  2.76E-02s) ETA 0:00:00
+ [ 94%] step 30 of 31 (t_step 29) t/step  2.76E-02s (avg  2.76E-02s) ETA 0:00:00
+ Performance:   0.1429062500000000      ns/gp/eq/rhs
+   2615374:	
+   2615374:	runtime linker statistics:
+   2615374:	           final number of relocations: 15529
+   2615374:	final number of relocations from cache: 12729
+   2615370:	
+   2615370:	runtime linker statistics:
+   2615370:	           final number of relocations: 5983
+   2615370:	final number of relocations from cache: 416
+   2615356:	
+   2615356:	runtime linker statistics:
+   2615356:	           final number of relocations: 543
+   2615356:	final number of relocations from cache: 3
