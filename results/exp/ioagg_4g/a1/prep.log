@@ -1,0 +1,62 @@
+mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn005 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 1
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | --targets pre_process and simulation
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Acquiring /dev/shm/u1131128_697612_run/exp/ioagg_4g/a1/case.py...
+ Acquiring /dev/shm/u1131128_697612_run/exp/ioagg_4g/a1/case.py...
+ Build | syscheck, syscheck, pre_process, and simulation | Case Optimized: /dev/shm/u1131128_697612_run/exp/ioagg_4g/a1/case.py
+
+
+ Run
+   Using queue system Interactive.
+   Using baked-in template for default.
+   Generating input files for syscheck...
+     Generating syscheck.inp:
+       INFO: Forwarded 0/92 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
+   Generating input files for pre_process...
+     Generating pre_process.inp:
+       INFO: Forwarded 73/92 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
+   Generating input files for simulation...
+     Generating simulation.inp:
+       INFO: Forwarded 37/92 parameters.
+    
+     Generating case.fpp.
+       Case optimization is enabled.
+       Writing a (new) custom case.fpp file.
++-----------------------------------------------------------------------------------------------------------+ 
+| MFC case # MFC @ /dev/shm/u1131128_697612_run/exp/ioagg_4g/a1/case.py:                                    |
++-----------------------------------------------------------------------------------------------------------+ 
+| * Start-time     05:51:57                            * Start-date     05:51:57                            |
+| * Partition      N/A                                 * Walltime       01:00:00                            |
+| * Account        N/A                                 * Nodes          1                                   |
+| * Job Name       MFC                                 * Engine         interactive                         |
+| * QoS            N/A                                 * Binary         mpirun                              |
+| * Queue System   Interactive                         * Email          N/A                                 |
++-----------------------------------------------------------------------------------------------------------+ 
+
+mfc: WARNING > This is the default template.
+mfc: WARNING > It is not intended to support all systems and execution engines.
+mfc: WARNING > Consider using a different template via the --computer option if you encounter problems.
+mfc: OK > :) Selected MPI launcher mpirun. Use --binary to override.
+mfc: OK > :) Running syscheck:
+
++ mpirun -np 4 /work/u1131128/coding-adv1/mfc-readtype/build/install/gpu-acc-869e78ff84/bin/syscheck
+ [TEST] MPI: call mpi_init(ierr)
+ [TEST] MPI: call mpi_init(ierr)
+ [TEST] MPI: call mpi_init(ierr)
+ [TEST] MPI: call mpi_init(ierr)

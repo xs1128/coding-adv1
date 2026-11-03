@@ -1,0 +1,21 @@
+# job 697602, 4 GPUs, row-92 settings, under nsys (cuda,nvtx,osrt, cpu sampling); per-rank NVTX phases in ms (start in ms from first range)
+rank0: INIT 5111.3 (at 0); INIT-MPI 4634.7 (at 0); INIT-MODULES 456.1 (at 4635); INIT-GPU-VARS 20.4 (at 5091); SIMULATION-TIME-MARCH 695.7 (at 5111); SAVE-DATA 432.1 (at 5374); FINALIZE-MODULES 51.7 (at 5807)
+  SAVE-DATA osrt: epoll_wait 1296.3 ms x3, poll 791.8 ms x42, pwrite 174.1 ms x32, ioctl 3.2 ms x184, open 0.0 ms x2
+  SAVE-DATA cuda api: cuMemcpyDtoHAsync_v2 10.4 ms x9, cuStreamSynchronize 0.7 ms x28, cuMemRetainAllocationHandle 0.5 ms x416, cuLaunchKernel 0.1 ms x11
+  INIT-MODULES osrt: epoll_wait 1368.4 ms x3, poll 835.9 ms x43, pread 110.9 ms x35, ioctl 46.9 ms x359, open 0.0 ms x5
+  INIT-MODULES cuda api: cuMemAlloc_v2 24.8 ms x261, cuMemHostAlloc 24.4 ms x1, cuStreamSynchronize 4.3 ms x449, cuMemcpyHtoDAsync_v2 1.9 ms x638
+rank1: INIT 4000.2 (at 0); INIT-MPI 3524.1 (at 0); INIT-MODULES 457.7 (at 3524); INIT-GPU-VARS 18.3 (at 3982); SIMULATION-TIME-MARCH 696.1 (at 4000); SAVE-DATA 432.2 (at 4264); FINALIZE-MODULES 52.6 (at 4696)
+  SAVE-DATA osrt: epoll_wait 1296.5 ms x3, poll 1222.0 ms x49, open 0.0 ms x1, close 0.0 ms x1
+  SAVE-DATA cuda api: cuMemcpyDtoHAsync_v2 9.4 ms x9, cuStreamSynchronize 0.7 ms x28, cuMemRetainAllocationHandle 0.3 ms x244, cuLaunchKernel 0.2 ms x11
+  INIT-MODULES osrt: epoll_wait 1373.2 ms x3, poll 1294.7 ms x50, ioctl 47.1 ms x342, open 0.1 ms x4, close 0.0 ms x2
+  INIT-MODULES cuda api: cuMemHostAlloc 27.0 ms x1, cuMemAlloc_v2 22.3 ms x263, cuStreamSynchronize 4.3 ms x451, cuMemcpyHtoDAsync_v2 2.5 ms x647
+rank2: INIT 2139.9 (at 0); INIT-MPI 1664.6 (at 0); INIT-MODULES 457.1 (at 1665); INIT-GPU-VARS 18.2 (at 2122); SIMULATION-TIME-MARCH 696.8 (at 2140); SAVE-DATA 432.0 (at 2404); FINALIZE-MODULES 50.5 (at 2837)
+  SAVE-DATA osrt: epoll_wait 1295.9 ms x3, poll 1223.7 ms x47, open 0.0 ms x1, close 0.0 ms x1
+  SAVE-DATA cuda api: cuMemcpyDtoHAsync_v2 9.5 ms x9, cuStreamSynchronize 0.7 ms x28, cuMemRetainAllocationHandle 0.2 ms x244, cuLaunchKernel 0.1 ms x11
+  INIT-MODULES osrt: epoll_wait 1371.4 ms x3, poll 1295.0 ms x49, ioctl 47.1 ms x342, close 0.0 ms x2, open 0.0 ms x4
+  INIT-MODULES cuda api: cuMemHostAlloc 26.3 ms x1, cuMemAlloc_v2 23.0 ms x263, cuStreamSynchronize 4.2 ms x451, cuMemcpyHtoDAsync_v2 2.5 ms x647
+rank3: INIT 3044.7 (at 0); INIT-MPI 2569.2 (at 0); INIT-MODULES 457.5 (at 2569); INIT-GPU-VARS 18.0 (at 3027); SIMULATION-TIME-MARCH 696.7 (at 3045); SAVE-DATA 431.6 (at 3309); FINALIZE-MODULES 49.8 (at 3741)
+  SAVE-DATA osrt: epoll_wait 1294.8 ms x3, poll 1222.5 ms x47, open 0.0 ms x1, close 0.0 ms x1
+  SAVE-DATA cuda api: cuMemcpyDtoHAsync_v2 9.2 ms x9, cuStreamSynchronize 0.7 ms x28, cuMemRetainAllocationHandle 0.2 ms x288, cuLaunchKernel 0.1 ms x11
+  INIT-MODULES osrt: epoll_wait 1372.5 ms x3, poll 1296.2 ms x49, ioctl 46.0 ms x342, open 0.1 ms x4, pread 0.0 ms x3
+  INIT-MODULES cuda api: cuMemHostAlloc 26.3 ms x1, cuMemAlloc_v2 21.8 ms x265, cuStreamSynchronize 4.2 ms x453, cuMemcpyHtoDAsync_v2 2.0 ms x656
