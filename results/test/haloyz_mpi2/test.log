@@ -1,0 +1,50 @@
+mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn012 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 4
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | 
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Build | syscheck and pre_process
+
+
+ Build | syscheck and simulation
+
+
+
+ Test pre_process and simulation | Only 0FCCE9F1, FA4D8FEF, 8C7AA13B, 1B300F28, CE232828, 2C9844EF, and AFBACA70 (7 tests)
+  
+     Progress      Test Name                                        Time(s)   UUID
+  
+     (  1/  7)    1D -> 2 MPI Ranks                                    28.50    0FCCE9F1
+     (  2/  7)    1D -> 2 MPI Ranks -> RDMA MPI                        28.50    FA4D8FEF
+     (  3/  7)    2D -> 2 MPI Ranks                                    29.01    8C7AA13B
+     (  4/  7)    2D -> 2 MPI Ranks -> RDMA MPI                        28.97    1B300F28
+     (  5/  7)    3D -> 2 MPI Ranks -> RDMA MPI                        33.69    2C9844EF
+     (  6/  7)    3D -> 2 MPI Ranks                                    33.76    CE232828
+     (  7/  7)    3D -> 2 MPI Ranks -> IBM Sphere                      28.88    AFBACA70
+
+  
+
+╭──────────────────────────────── Test Summary ────────────────────────────────╮
+│                                                                              │
+│  ✓ ALL TESTS PASSED                                                          │
+│                                                                              │
+│       7 passed                                                               │
+│       0 failed                                                               │
+│     756 skipped                                                              │
+│    ────────────                                                              │
+│     763 total                                                                │
+│                                                                              │
+│    Time: 2m 0.7s                                                             │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+
+mfc: (venv) Exiting the Python virtual environment.
