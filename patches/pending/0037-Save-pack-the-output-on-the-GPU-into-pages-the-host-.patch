@@ -1,0 +1,131 @@
+From e4767735b8ca1dbea3a69ce8f4cae59529a47e3d Mon Sep 17 00:00:00 2001
+From: xs1128 <ooixinsheng@gmail.com>
+Date: Wed, 4 Nov 2026 03:02:48 +0800
+Subject: [PATCH] Save: pack the output on the GPU into pages the host already
+ holds
+
+At a save the output was copied to the host per equation, and MPI-IO then
+made a temporary contiguous copy of each interior section (0:m, 0:n, 0:p)
+in fresh memory: at 201^3 about half of the save was that copy. Now each
+equation interior is packed contiguously on the GPU into the storage of
+q_cons_ts(1) (q_cons_ts(2) holds its copy), copied to the host there,
+where the pages hold the initial state, and written from views of it
+without a temporary. q_cons_ts(1) is then restored on the GPU from
+q_cons_ts(2). Only parallel I/O of the plain state takes this path; the
+written files are the same.
+---
+ src/simulation/m_start_up.fpp | 76 ++++++++++++++++++++++++++++++-----
+ 1 file changed, 66 insertions(+), 10 deletions(-)
+
+diff --git a/src/simulation/m_start_up.fpp b/src/simulation/m_start_up.fpp
+index c3761a8..2731eac 100644
+--- a/src/simulation/m_start_up.fpp
++++ b/src/simulation/m_start_up.fpp
+@@ -720,16 +720,18 @@ contains
+     !> Save conservative variable data to disk at the current time step
+     impure subroutine s_save_data(t_step, start, finish, io_time_avg, nt)
+ 
+-        integer, intent(inout)     :: t_step
+-        real(wp), intent(inout)    :: start, finish, io_time_avg
+-        integer, intent(inout)     :: nt
+-        integer(kind=8)            :: i, j, k, l
+-        integer                    :: stor
+-        integer                    :: save_count
+-        integer                    :: nan_cnt  !< NaNs in the state about to be written (device count)
+-        integer(kind=8)            :: bits
+-        integer(kind=8), parameter :: nan_exp_mask = int(z'7FF0000000000000', kind=8)
+-        integer(kind=8), parameter :: nan_man_mask = int(z'000FFFFFFFFFFFFF', kind=8)
++        integer, intent(inout)                  :: t_step
++        real(wp), intent(inout)                 :: start, finish, io_time_avg
++        integer, intent(inout)                  :: nt
++        integer(kind=8)                         :: i, j, k, l
++        integer                                 :: stor
++        integer                                 :: save_count
++        integer                                 :: nan_cnt   !< NaNs in the state about to be written (device count)
++        integer(kind=8)                         :: bits
++        integer(kind=8), parameter              :: nan_exp_mask = int(z'7FF0000000000000', kind=8)
++        integer(kind=8), parameter              :: nan_man_mask = int(z'000FFFFFFFFFFFFF', kind=8)
++        logical                                 :: pack_out  !< write the packed interior (s_pack_save_state)
++        type(scalar_field), dimension(sys_size) :: q_out
+ 
+         if (down_sample) then
+             call s_populate_variables_buffers(bc_type, q_cons_ts(1)%vf)
+@@ -776,7 +778,17 @@ contains
+             end do
+         end do
+         $:END_GPU_PARALLEL_LOOP()
++        ! Packed output (s_pack_save_state): parallel I/O of the plain state, with q_cons_ts(2) holding a copy of q_cons_ts(1)
++        pack_out = parallel_io .and. stor == 1 .and. time_stepper /= time_stepper_rk1 .and. nan_cnt == 0 .and. .not. (down_sample &
++            & .or. bubbles_lagrange)
++        if (pack_out) then
++            do i = 1, sys_size
++                pack_out = pack_out .and. is_contiguous(q_cons_ts(1)%vf(i)%sf)
++            end do
++        end if
++        if (pack_out) call s_pack_save_state(q_out)
+         do i = 1, sys_size
++            if (pack_out) exit
+ #ifndef FRONTIER_UNIFIED
+             $:GPU_UPDATE(host='[q_cons_ts(stor)%vf(i)%sf]')
+ #endif
+@@ -819,6 +831,20 @@ contains
+             $:GPU_UPDATE(host='[Rmax_stats, Rmin_stats, gas_p, gas_mv, intfc_vel]')
+             call s_write_restart_lag_bubbles(save_count)  ! parallel
+             if (lag_params%write_bubbles_stats) call s_write_lag_bubble_stats()
++        else if (pack_out) then
++            call s_write_data_files(q_out, q_T_sf, q_prim_vf, save_count, bc_type)
++            ! The packing overwrote q_cons_ts(1) on the GPU; put the state back from its copy
++            $:GPU_PARALLEL_LOOP(collapse=4, copyin='[idwbuff]')
++            do i = 1, sys_size
++                do l = idwbuff(3)%beg, idwbuff(3)%end
++                    do k = idwbuff(2)%beg, idwbuff(2)%end
++                        do j = idwbuff(1)%beg, idwbuff(1)%end
++                            q_cons_ts(1)%vf(i)%sf(j, k, l) = q_cons_ts(2)%vf(i)%sf(j, k, l)
++                        end do
++                    end do
++                end do
++            end do
++            $:END_GPU_PARALLEL_LOOP()
+         else
+             call s_write_data_files(q_cons_ts(stor)%vf, q_T_sf, q_prim_vf, save_count, bc_type)
+         end if
+@@ -842,6 +868,36 @@ contains
+ 
+     end subroutine s_save_data
+ 
++    !> For a save: pack each equation's interior (0:m, 0:n, 0:p) of q_cons_ts(2), a copy of q_cons_ts(1), contiguously into the
++    !! storage of q_cons_ts(1) on the GPU and copy it to the host there. Those host pages already hold the initial state, so the
++    !! copy does not first-touch fresh memory, and q_out views the packed data as (0:m, 0:n, 0:p) arrays, which MPI-IO writes
++    !! without the temporary contiguous copy a ghost-cell section needs. The caller restores q_cons_ts(1) on the GPU afterwards.
++    impure subroutine s_pack_save_state(q_out)
++
++        use, intrinsic :: iso_c_binding, only: c_loc, c_f_pointer
++
++        type(scalar_field), dimension(sys_size), intent(inout) :: q_out
++        real(stp), pointer, dimension(:)                       :: flat
++        integer                                                :: i, j, k, l, mm, nn
++
++        mm = m + 1; nn = n + 1
++        do i = 1, sys_size
++            call c_f_pointer(c_loc(q_cons_ts(1)%vf(i)%sf(idwbuff(1)%beg, idwbuff(2)%beg, idwbuff(3)%beg)), flat, [mm*nn*(p + 1)])
++            $:GPU_PARALLEL_LOOP(collapse=3, firstprivate='[mm, nn, i]')
++            do l = 0, p
++                do k = 0, n
++                    do j = 0, m
++                        flat(1 + j + mm*(k + nn*l)) = q_cons_ts(2)%vf(i)%sf(j, k, l)
++                    end do
++                end do
++            end do
++            $:END_GPU_PARALLEL_LOOP()
++            $:GPU_UPDATE(host='[flat]')
++            q_out(i)%sf(0:m,0:n,0:p) => flat
++        end do
++
++    end subroutine s_pack_save_state
++
+     !> Initialize all simulation sub-modules in the required dependency order
+     impure subroutine s_initialize_modules
+ 
+-- 
+2.47.3
+

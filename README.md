@@ -102,6 +102,11 @@ that had never been used, so the operating system had to set up every page durin
 that already holds the starting state; the file written is the same. Saving takes about 0.42 s instead of 0.66–0.85 s,
 and a whole run (with the `ob1` and `/dev/shm` settings) 3.72–3.91 s instead of 3.96–4.33 s (jobs 693750, 693774; ladder row 77).
 
+**Pending 0037 (on 0036, not in P22):** the file writer was handed each variable with its border cells cut off, which is
+not one block of memory, so it first copied it into fresh memory. Now the GPU packs the data into one block before the
+copy to the CPU, and the writer uses it as is. Saving takes about 0.24 s instead of 0.34–0.38 s; a whole run 3.40–3.41 s
+instead of 3.51–3.64 s (job 694651); the file is the same, also with saves in the middle of a run (694653; ladder row 78).
+
 **Run settings (disclosed, no code change):** at 1 GPU, Open MPI without UCX (`ob1`) and a run directory in node-local
 memory (`/dev/shm`) cut the wall time of a whole run, start-up and save included, to about 3.8 s (job 684750).
 

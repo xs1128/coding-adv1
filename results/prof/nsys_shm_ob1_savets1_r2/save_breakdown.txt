@@ -1,0 +1,15 @@
+# generated from runs/prof/nsysout_savets1/nsys_rank0.nsys-rep (job 693834) by an sqlite query
+nvtx INIT ms 1263.3
+nvtx SIMULATION-TIME-MARCH ms 1227.1
+nvtx SAVE-DATA ms 363.1
+save memcpy kind 2 ms 61.6 MB 584 n 9
+save osrt poll ms 492.0 n 31
+save osrt pwrite ms 160.7 n 8
+save osrt open ms 0.0 n 2
+save osrt close ms 0.0 n 2
+save cpu samples 132
+save samples 74 pgf90_copy_f77_argl
+save samples 20 0x14ab5181e90c
+save samples 12 0x14ab5181e864
+save samples 3 0x14ab5181e8f8
+save samples 2 0xffffffff95c00b90

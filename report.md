@@ -284,7 +284,14 @@ Uncapped that needs 179 registers (2 blocks per SM) and is slower (28.932 / 28.9
 which nothing had touched, so the pageable copy also faulted in ~0.5 GB of pages (the 311 ms at 1.9 GB/s seen in nsys
 684808). 0036 copies and writes `q_cons_ts(1)` instead, equal at that point, whose host copy holds the initial state.
 With `ob1` and `/dev/shm` (1 GPU, 693774, 3 rounds × 5 reps): save 0.706 / 0.656 / 0.847 → 0.423 / 0.407 / 0.444 s,
-wall median 3.986 / 3.958 / 4.328 → 3.719 / 3.731 / 3.908 s; the restart file is bitwise the same (ladder row 77). Single-file recompiles with `-gpu=nounroll` or `loadcache`
+wall median 3.986 / 3.958 / 4.328 → 3.719 / 3.731 / 3.908 s; the restart file is bitwise the same (ladder row 77).
+
+**Pending 0037 (on 0036; not in P22).** A CPU-sampling profile of the new save (693834: 363 ms, of which 61.6 ms is the
+584 MB device-to-host copy and 160.7 ms `pwrite`) puts 74 of 132 samples in the Fortran runtime's copy of each
+non-contiguous interior section `sf(0:m, 0:n, 0:p)` before MPI-IO. 0037 packs each interior on the GPU into the storage
+of `q_cons_ts(1)` (its copy in `q_cons_ts(2)` restores it afterwards), copies that to the host, and writes contiguous
+views. 1 GPU (694651, `ob1` + `/dev/shm`, 2 rounds × 5 reps): save 0.375 / 0.340 → 0.237 / 0.241 s, wall median
+3.638 / 3.509 → 3.404 / 3.413 s. Bitwise, also for the final state of a run with saves at steps 10 and 20 (694653). Single-file recompiles with `-gpu=nounroll` or `loadcache`
 changed no register or spill counts (ladder rows 75–76). Full suite not run.
 
 **Several GPUs** (`rdma_mpi`, same node, P11 vs P18; bitwise):
