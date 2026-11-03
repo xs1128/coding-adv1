@@ -256,6 +256,13 @@ them (~50 µs per direction where no CBC work hides them). 0033 writes the same 
 change, bitwise. 155 targeted tests (every hypoelastic and Riemann-solver test) pass apart from the 6 known failures
 in that set (ladder row 72). Full suite not run.
 
+**Tried and rejected: overlap the x exchange too (exp-haloxs).** On 0033, the x sweep was split so that the faces that
+read no x ghost cell on an MPI side run while the host waits on the x exchange, and the 3 faces next to that side run
+after it. 4 GPUs (692179): 7.698 → 7.725 ms per step (+0.35 %), bitwise. A profile (692237) shows why: the exchange
+waits for the neighbour rank, not for the transfer (17 µs), so the wait moves into the y/z exchange, and the edge
+faces add a 37 µs kernel. The ranks with more CBC sides set the pace: rank 3 (CBC on 3 sides) runs 701 µs of CBC
+kernels per step, rank 0 (1 side) 239 µs (ladder row 73).
+
 **Several GPUs** (`rdma_mpi`, same node, P11 vs P18; bitwise):
 
 | GPUs | P11 step | P18 step | Change | Job |
