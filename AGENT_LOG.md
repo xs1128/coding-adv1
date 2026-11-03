@@ -130,5 +130,9 @@ the figure script disagreed. Rule: derived numbers come from raw files, in one s
   wall 9.2–10.0 s vs 7.5 s). Cost: ~13 GPU-min, no usable result; rerun under a new label. Rule: after a submit error,
   wait a minute and look the job up by name with `sacct` before trying again.
 
+- **11-03: a watcher on a mistyped job id, again.** The profile job was 690689; the watcher was started on 690918
+  (read-only `sacct`, stopped at once, no GPU cost). Same slip as the earlier guessed ids. Rule kept: paste the id from
+  the `submit.sh` output, never retype it.
+
 ## Code the student must be able to defend
 (filled in as optimizations land)
