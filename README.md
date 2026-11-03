@@ -25,6 +25,7 @@ All runs in one job on one node, taking turns (job 680943, 2026-11-03). Every ru
 | Ours + 2 newer patches (0025–0026, still waiting for the full test suite) | 29.5 ms | 2.64× |
 | Ours + 3 newer patches (0025–0027, same; 0027 measured in a second A/B, so this is an estimate) | about 29.0 ms | about 2.68× |
 | Ours + 4 newer patches (0025–0028, same; 0028 in a third A/B) | about 28.8 ms | about 2.70× |
+| Ours + 6 newer patches (0025–0030, same; 0029 and 0030 in two more A/Bs) | about 28.5 ms | about 2.73× |
 
 For comparison, the 10-31 report ("P4", patches 0001–0006) was 1.27× faster at 1 GPU (60.38 ms vs 76.74 ms, two
 chained A/Bs). On 4 and 8 GPUs the 10-31 numbers are 1.35× and 2.23×; later multi-GPU results are in [`report.md`](report.md) §11.
@@ -66,6 +67,8 @@ On 4 GPUs the three of them make each step 5.4 % faster than P20 (8.99 → 8.52 
 0028 runs the small boundary (CBC) kernels on a second GPU queue next to the main solver kernel: −0.7 % more at 1 GPU
 (685237, bitwise), −2.8 % at 4 GPUs (685274); the 5 tests that use it pass (685267).
 0029 puts that second queue on a high-priority GPU stream: −0.35 % at 1 GPU, another −2.8 % at 4 GPUs (685381, 685404, bitwise).
+0030 skips the per-cell boundary kernel on faces where it would only read the cell codes: −0.75 % at 1 GPU
+(685452, 28.67 → 28.46 ms, bitwise); its 83-test boundary and CBC subset ran as job 685533 (result not yet read back).
 
 **Run settings (disclosed, no code change):** at 1 GPU, Open MPI without UCX (`ob1`) and a run directory in node-local
 memory (`/dev/shm`) cut the wall time of a whole run, start-up and save included, to about 3.8 s (job 684750).
@@ -79,7 +82,7 @@ memory (`/dev/shm`) cut the wall time of a whole run, start-up and save included
 | [`report.md`](report.md) | The full write-up (also built as `dist/report.pdf` by `tools/build_pdf.py`) |
 | [`slides/`](slides/) | Slides for the 11-11 talk ([Slidev](https://sli.dev)): `cd slides && npm install && npm run dev`; `npm run export` writes `dist/slides.pdf` |
 | [`patches/opt/`](patches/opt/) | Our 24 changes to MFC, one per file |
-| [`patches/pending/`](patches/pending/) | Five newer changes that are faster and give the same answers, but have not had the full test suite yet |
+| [`patches/pending/`](patches/pending/) | Six newer changes that are faster and give the same answers, but have not had the full test suite yet |
 | [`patches/exp/`](patches/exp/) | Experiments we tried, most of them rejected |
 | [`docs/`](docs/) | Explanations: each optimization, the ladder of attempts, how the test harness works, the code layout |
 | [`docs/background/`](docs/background/) | Research notes and papers we read |
