@@ -142,3 +142,13 @@ Every experiment we ran, oldest first. Each kept change is the starting point fo
   thread (its small per-point arrays live in local memory). Its ~316 blocks all fit at once, so its 39 µs is one thread's
   chain of dependent steps. Shortening it would mean making those arrays register-resident (full unrolling), a deeper
   rewrite; with 0028 hiding most of it behind HLLC, at most about 1 % is left there.
+
+### What is left at 1 GPU after 0029 (nsys 685403, no new GPU run)
+- Outside the three big kernels, about 1.2 ms of small-kernel time per step is not overlapped: the ghost-cell fills
+  (~0.6 ms), the CBC copy-in/copy-back kernels (~0.38 ms), and 147 tiny host-to-device copies (0.14 ms of GPU time,
+  ~0.4 ms of CPU time). Another 0.56 ms per step the GPU sits idle.
+- That idle time follows one host wait per RK stage (`cuStreamSynchronize`, 11 ms per step in total): the synchronous
+  `GPU_UPDATE(device='[mytime]')` right before MFC's own per-stage timer (`system_clock`), which is what the grind time is
+  measured from. Letting the host run ahead would change what that timer measures, so it stays.
+- The 9 `cuEventSynchronize` per step (15.9 ms of host waiting) come from 0028's "default queue waits for the CBC
+  queue": NVHPC implements that wait on the host. The Riemann solve is still running then, so the GPU does not starve.
