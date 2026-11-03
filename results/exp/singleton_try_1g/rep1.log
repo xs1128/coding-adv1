@@ -1,0 +1,28 @@
+--------------------------------------------------------------------------
+A requested component was not found, or was unable to be opened.  This
+means that this component is either not installed or is unable to be
+used on your system (e.g., sometimes this means that shared libraries
+that the component requires are unable to be found/loaded).  Note that
+Open MPI stopped checking at the first component that it did not find.
+
+Host:      25a-hgpn022
+Framework: pml
+Component: ob1
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+It looks like MPI_INIT failed for some reason; your parallel process is
+likely to abort.  There are many reasons that a parallel process can
+fail during MPI_INIT; some of which are due to configuration or environment
+problems.  This failure appears to be an internal failure; here's some
+additional information (which may only be relevant to an Open MPI
+developer):
+
+  mca_pml_base_open() failed
+  --> Returned "Not found" (-13) instead of "Success" (0)
+--------------------------------------------------------------------------
+[25a-hgpn022:3220098] *** An error occurred in MPI_Init
+[25a-hgpn022:3220098] *** reported by process [1,0]
+[25a-hgpn022:3220098] *** on a NULL communicator
+[25a-hgpn022:3220098] *** Unknown error
+[25a-hgpn022:3220098] *** MPI_ERRORS_ARE_FATAL (processes in this communicator will now abort,
+[25a-hgpn022:3220098] ***    and potentially your MPI job)

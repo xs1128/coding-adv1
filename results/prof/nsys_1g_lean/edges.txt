@@ -1,0 +1,4 @@
+# job 697697 (1 GPU, all adopted settings, under nsys): what runs before the first NVTX range and after the last one
+PROCESSES: [(310767542861824, 1745973, 'weka-aio-A06-1'), (310767123431424, 1745948, 'weka-aio-A00-0'), (318078718050304, 2181753, 'kworker/76:0-events')]
+OSRT_API: first -63.9 ms from first NVTX, last +32.5 ms after last NVTX end
+CUPTI_ACTIVITY_KIND_RUNTIME: first +543.0 ms from first NVTX, last +24.9 ms after last NVTX end

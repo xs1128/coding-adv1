@@ -63,7 +63,11 @@ echo "nolibpath=${NOLIBPATH:-0}" >> "$out/env.txt"
 launch=(mpirun -np "$NGPU" $MPIRUN_ARGS)
 if [[ ${LAUNCH:-mpirun} == singleton ]]; then
   [[ $NGPU == 1 ]] || { echo "LAUNCH=singleton needs NGPU=1" >&2; exit 2; }
-  launch=(timeout "${LAUNCH_TIMEOUT:-60}" env OMPI_MCA_ess_singleton_isolated=1)
+  # mpirun gives the processes it starts Open MPI's library folders in LD_LIBRARY_PATH even when it is unset; without
+  # them the singleton cannot open its components (697728: pml ob1 not found). Take the same value from mpirun, untimed.
+  ldp=$(env "${libu[@]}" $RUN_ENV timeout 30 mpirun -np 1 printenv LD_LIBRARY_PATH)
+  echo "singleton_ld_library_path=$ldp" >> "$out/env.txt"
+  launch=(timeout "${LAUNCH_TIMEOUT:-60}" env OMPI_MCA_ess_singleton_isolated=1 "LD_LIBRARY_PATH=$ldp")
 fi
 echo "launch=${LAUNCH:-mpirun}" >> "$out/env.txt"
 for r in $(seq 1 "$REPS"); do
