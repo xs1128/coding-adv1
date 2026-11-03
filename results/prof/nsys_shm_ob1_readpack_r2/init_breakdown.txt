@@ -1,0 +1,29 @@
+# generated from runs/prof/nsysout_readpack/nsys_rank0.sqlite (job 695706) by an sqlite query (logs/initbd.py)
+nvtx INIT ms 1384.7
+nvtx INIT-MPI ms 816.5
+nvtx INIT-MODULES ms 499.0
+nvtx INIT-GPU-VARS ms 69.1
+INIT-MODULES cpu samples 105
+INIT-MODULES samples 72 m_start_up_s_read_field_in_place_
+INIT-MODULES samples 8 __memset_avx512_unaligned_erms
+INIT-MODULES samples 7 0xffffffff84a00b90
+INIT-MODULES samples 1 0x149aadcf632c
+INIT-MODULES osrt poll ms 923.3 n 47
+INIT-MODULES osrt pread ms 332.8 n 10
+INIT-MODULES osrt ioctl ms 39.7 n 342
+INIT-MODULES osrt open ms 0.0 n 4
+INIT-MPI cpu samples 185
+INIT-MPI samples 63 0xffffffff84a00b90
+INIT-MPI samples 11 __memset_avx512_unaligned_erms
+INIT-MPI samples 4 do_lookup_x
+INIT-MPI samples 4 __memchr_evex
+INIT-MPI osrt epoll_wait ms 4996.8 n 35
+INIT-MPI osrt poll ms 815.2 n 41
+INIT-MPI osrt ioctl ms 203.1 n 646
+INIT-MPI osrt read ms 29.0 n 848
+INIT-GPU-VARS cpu samples 72
+INIT-GPU-VARS samples 18 0x149aadc1e864
+INIT-GPU-VARS samples 15 0x149aadc1e8fc
+INIT-GPU-VARS samples 9 0x149aadc1e90c
+INIT-GPU-VARS samples 7 0x149aadc1e874
+INIT-GPU-VARS osrt poll ms 125.5 n 6
