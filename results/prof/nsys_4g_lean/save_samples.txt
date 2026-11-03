@@ -1,0 +1,35 @@
+# job 697602: CPU samples inside SAVE-DATA, main thread, top frame and first MFC/MPI frame (logs-style sqlite query)
+rank0: SAVE-DATA 432.1 ms, 253 samples on the main thread
+  top     69 __memcpy_avx512_unaligned_erms
+  top     36 _int_free
+  top     22 __libc_malloc
+  top     18 _int_malloc
+  top     10 __libc_calloc
+  top      9 opal_datatype_add
+  top      7 opal_datatype_commit
+  top      6 ADIOI_Heap_merge
+  first   78 ompi_request_default_wait_all
+  first   41 ompi_datatype_create
+  first   36 ompi_datatype_destroy
+  first   23 ompi_datatype_set_args
+  first   16 MPIOI_File_write_all
+  first   14 PMPI_Type_commit
+  first   11 m_start_up_s_pack_save_state_
+  first   11 ompi_datatype_create_hindexed
+rank1: SAVE-DATA 432.2 ms, 449 samples on the main thread
+  top     90 ucp_worker_progress
+  top     85 uct_cuda_base_iface_progress
+  top     78 uct_mm_iface_progress
+  top     66 opal_progress
+  top     36 ompi_coll_libnbc_progress
+  top     26 opal_timer_linux_get_cycles_sys_timer
+  top     20 _init
+  top     15 opal_progress_events
+  first  347 ompi_request_default_wait_all
+  first   40 ompi_request_default_wait
+  first   36 ompi_coll_libnbc_progress
+  first   10 m_start_up_s_pack_save_state_
+  first    7 mca_pml_ucx_progress
+  first    4 MPIOI_File_write_all
+  first    2 mca_common_cuda_is_gpu_buffer
+  first    2 mca_io_romio_dist_MPI_File_set_view

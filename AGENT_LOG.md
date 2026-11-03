@@ -201,6 +201,8 @@ the figure script disagreed. Rule: derived numbers come from raw files, in one s
 - **2026-11-04, `/work` at 11 GB free (submit.sh refuses below 10 GB).** Deleted 8 more run dumps whose final states had
   passed their bitwise checks (nolibpath_1g, nolibpath_4g, runlocal_4g, nohcoll_1g, nohcoll_4g, smcuda_4g_probe,
   launchprobe2_1g, launchprobe3_1g; results in `results/` and ladder rows 85–89): 22 GB free afterwards. No GPU cost.
+- **2026-11-04, `/work` at 15 GB free.** Deleted 4 more verified run dumps (iocomp_4g, ioagg_4g, romiohints_4g,
+  ucxlean_4g; every arm bitwise against its A arm; results in `results/`, ladder rows 92, 94, 95). No GPU cost.
 
 ## Code the student must be able to defend
 (filled in as optimizations land)
