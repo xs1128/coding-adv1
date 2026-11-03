@@ -1,0 +1,128 @@
+diff --git a/src/simulation/m_cbc.fpp b/src/simulation/m_cbc.fpp
+index 5456bc3..f5432d9 100644
+--- a/src/simulation/m_cbc.fpp
++++ b/src/simulation/m_cbc.fpp
+@@ -419,6 +419,7 @@ contains
+         ! Associating CBC coefficients pointers
+ 
+         call s_associate_cbc_coefficients_pointers(cbc_dir_in, cbc_loc_in)
++        $:GPU_UPDATE(device='[ds]', extraAccArgs='async')
+ 
+         ! Determining the cell-boundary locations in the s-direction
+         s_cb(0) = 0._wp
+@@ -535,7 +536,6 @@ contains
+             end if
+         end if
+ 
+-        $:GPU_UPDATE(device='[ds]', extraAccArgs='async')
+ 
+     end subroutine s_associate_cbc_coefficients_pointers
+ 
+@@ -619,11 +619,26 @@ contains
+         end if
+ #endif
+ 
+-        $:GPU_UPDATE(device='[cbc_dir, cbc_loc]', extraAccArgs='async')
++        ! Direction indexes and flags and the cell widths of this boundary: set on the host, and on the GPU by one small kernel
++        ! that takes them as arguments. No host-to-device copy, so with 0028 the CBC queue never needs a pinned staging buffer
++        ! (its first use cost ~21 ms per run), and nothing extra lands on the default queue.
++        if (cbc_dir == 1) then
++            is1%beg = 0; is1%end = buff_size; is2 = iy; is3 = iz
++            dir_idx = (/1, 2, 3/); dir_flg = (/1._wp, 0._wp, 0._wp/)
++        else if (cbc_dir == 2) then
++            is1%beg = 0; is1%end = buff_size; is2 = ix; is3 = iz
++            dir_idx = (/2, 1, 3/); dir_flg = (/0._wp, 1._wp, 0._wp/)
++        else
++            is1%beg = 0; is1%end = buff_size; is2 = iy; is3 = ix
++            dir_idx = (/3, 1, 2/); dir_flg = (/0._wp, 0._wp, 1._wp/)
++        end if
+ 
+-        call s_initialize_cbc(q_prim_vf, flux_vf, flux_src_vf, ix, iy, iz)
++        dj = max(0, cbc_loc)
+ 
+         call s_associate_cbc_coefficients_pointers(cbc_dir, cbc_loc)
++        call s_cbc_set_device_state()
++
++        call s_initialize_cbc(q_prim_vf, flux_vf, flux_src_vf)
+ 
+         #:for CBC_DIR, XYZ in [(1, 'x'), (2, 'y'), (3, 'z')]
+             if (cbc_dir == ${CBC_DIR}$ .and. recon_type == recon_type_weno) then
+@@ -1092,33 +1107,56 @@ contains
+ 
+     end function f_cbc_split
+ 
++    !> Copy this boundary's direction, location, index bounds, direction flags and cell widths (set on the host just before) to
++    !! the GPU with one kernel that receives them as arguments. The widths are read from the GPU's copy of dx, dy or dz, which
++    !! holds the same values as the host copy that s_associate_cbc_coefficients_pointers used.
++    subroutine s_cbc_set_device_state()
++
++        integer  :: i, c_dir, c_loc, b1, e1, b2, e2, b3, e3, dj_h, i1, i2, i3, off, sgn
++        real(wp) :: f1, f2, f3
++
++        c_dir = cbc_dir; c_loc = cbc_loc; dj_h = dj
++        b1 = is1%beg; e1 = is1%end; b2 = is2%beg; e2 = is2%end; b3 = is3%beg; e3 = is3%end
++        i1 = dir_idx(1); i2 = dir_idx(2); i3 = dir_idx(3); f1 = dir_flg(1); f2 = dir_flg(2); f3 = dir_flg(3)
++        off = 0; sgn = 1
++        if (cbc_loc /= -1) then
++            sgn = -1
++            if (cbc_dir == 1) then
++                off = m
++            else if (cbc_dir == 2) then
++                off = n
++            else
++                off = p
++            end if
++        end if
++
++        $:GPU_PARALLEL_LOOP(extraAccArgs='async', private='[i]', firstprivate='[c_dir, c_loc, b1, e1, b2, e2, b3, e3, dj_h, &
++                            & i1, i2, i3, f1, f2, f3, off, sgn]')
++        do i = 0, buff_size
++            if (c_dir == 1) then
++                ds(i) = dx(off + sgn*i)
++            else if (c_dir == 2) then
++                ds(i) = dy(off + sgn*i)
++            else
++                ds(i) = dz(off + sgn*i)
++            end if
++            if (i == 0) then
++                cbc_dir = c_dir; cbc_loc = c_loc; dj = dj_h
++                is1%beg = b1; is1%end = e1; is2%beg = b2; is2%end = e2; is3%beg = b3; is3%end = e3
++                dir_idx(1) = i1; dir_idx(2) = i2; dir_idx(3) = i3
++                dir_flg(1) = f1; dir_flg(2) = f2; dir_flg(3) = f3
++            end if
++        end do
++        $:END_GPU_PARALLEL_LOOP()
++
++    end subroutine s_cbc_set_device_state
++
+     !> Set up the selected CBC for the current boundary
+-    subroutine s_initialize_cbc(q_prim_vf, flux_vf, flux_src_vf, ix, iy, iz)
++    subroutine s_initialize_cbc(q_prim_vf, flux_vf, flux_src_vf)
+ 
+         type(scalar_field), dimension(sys_size), intent(in) :: q_prim_vf
+         type(scalar_field), dimension(sys_size), intent(in) :: flux_vf, flux_src_vf
+-        type(int_bounds_info), intent(in)                   :: ix, iy, iz
+         integer                                             :: i, j, k, r  !< Generic loop iterators
+-        ! Configuring the coordinate direction indexes and flags
+-
+-        ! Determining the indicial shift based on CBC location
+-
+-        ! END: Allocation/Association of Primitive and Flux Variables
+-
+-        if (cbc_dir == 1) then
+-            is1%beg = 0; is1%end = buff_size; is2 = iy; is3 = iz
+-            dir_idx = (/1, 2, 3/); dir_flg = (/1._wp, 0._wp, 0._wp/)
+-        else if (cbc_dir == 2) then
+-            is1%beg = 0; is1%end = buff_size; is2 = ix; is3 = iz
+-            dir_idx = (/2, 1, 3/); dir_flg = (/0._wp, 1._wp, 0._wp/)
+-        else
+-            is1%beg = 0; is1%end = buff_size; is2 = iy; is3 = ix
+-            dir_idx = (/3, 1, 2/); dir_flg = (/0._wp, 0._wp, 1._wp/)
+-        end if
+-
+-        dj = max(0, cbc_loc)
+-        $:GPU_UPDATE(device='[is1, is2, is3, dj]', extraAccArgs='async')
+-        $:GPU_UPDATE(device='[dir_idx, dir_flg]', extraAccArgs='async')
+ 
+         ! Reshaping Inputted Data in x-direction
+         if (cbc_dir == 1) then
