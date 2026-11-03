@@ -1,0 +1,83 @@
+uct_cuda=/work/envstack/apps/nvhpc/26.3/Linux_x86_64/26.3/comm_libs/13.1/hpcx/hpcx-2.25.1/ucx/mt/lib/ucx/libuct_cuda.so.0.0.0
+0, Enabled, P0
+1, Enabled, P0
+2, Enabled, P0
+3, Enabled, P0
+alone rep1 nvml	0.016	ret=0
+x4 rep1 nvml	0.023	ret=0
+x4 rep1 nvml	0.039	ret=0
+x4 rep1 nvml	0.043	ret=0
+x4 rep1 nvml	0.048	ret=0
+alone rep1 cuinit	1.110	ret=0
+x4 rep1 cuinit	1.410	ret=0
+x4 rep1 cuinit	1.417	ret=0
+x4 rep1 cuinit	1.422	ret=0
+x4 rep1 cuinit	1.438	ret=0
+Traceback (most recent call last):
+  File "<stdin>", line 9, in <module>
+AttributeError: module 'ctypes' has no attribute 'RTLD_NOW'
+alone rep1 
+Traceback (most recent call last):
+  File "<stdin>", line 9, in <module>
+AttributeError: module 'ctypes' has no attribute 'RTLD_NOW'
+Traceback (most recent call last):
+  File "<stdin>", line 9, in <module>
+Traceback (most recent call last):
+  File "<stdin>", line 9, in <module>
+AttributeError: module 'ctypes' has no attribute 'RTLD_NOW'
+AttributeError: module 'ctypes' has no attribute 'RTLD_NOW'
+Traceback (most recent call last):
+  File "<stdin>", line 9, in <module>
+AttributeError: module 'ctypes' has no attribute 'RTLD_NOW'
+alone rep2 nvml	0.017	ret=0
+x4 rep2 nvml	0.027	ret=0
+x4 rep2 nvml	0.035	ret=0
+x4 rep2 nvml	0.043	ret=0
+x4 rep2 nvml	0.049	ret=0
+alone rep2 cuinit	1.112	ret=0
+x4 rep2 cuinit	1.399	ret=0
+x4 rep2 cuinit	1.414	ret=0
+x4 rep2 cuinit	1.424	ret=0
+x4 rep2 cuinit	1.467	ret=0
+Traceback (most recent call last):
+  File "<stdin>", line 9, in <module>
+AttributeError: module 'ctypes' has no attribute 'RTLD_NOW'
+alone rep2 
+Traceback (most recent call last):
+  File "<stdin>", line 9, in <module>
+Traceback (most recent call last):
+  File "<stdin>", line 9, in <module>
+AttributeError: module 'ctypes' has no attribute 'RTLD_NOW'
+AttributeError: module 'ctypes' has no attribute 'RTLD_NOW'
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "<stdin>", line 9, in <module>
+  File "<stdin>", line 9, in <module>
+AttributeError: module 'ctypes' has no attribute 'RTLD_NOW'
+AttributeError: module 'ctypes' has no attribute 'RTLD_NOW'
+alone rep3 nvml	0.017	ret=0
+x4 rep3 nvml	0.025	ret=0
+x4 rep3 nvml	0.036	ret=0
+x4 rep3 nvml	0.045	ret=0
+x4 rep3 nvml	0.048	ret=0
+alone rep3 cuinit	1.096	ret=0
+x4 rep3 cuinit	1.376	ret=0
+x4 rep3 cuinit	1.398	ret=0
+x4 rep3 cuinit	1.406	ret=0
+x4 rep3 cuinit	1.449	ret=0
+Traceback (most recent call last):
+  File "<stdin>", line 9, in <module>
+AttributeError: module 'ctypes' has no attribute 'RTLD_NOW'
+alone rep3 
+Traceback (most recent call last):
+  File "<stdin>", line 9, in <module>
+AttributeError: module 'ctypes' has no attribute 'RTLD_NOW'
+Traceback (most recent call last):
+  File "<stdin>", line 9, in <module>
+AttributeError: module 'ctypes' has no attribute 'RTLD_NOW'
+Traceback (most recent call last):
+  File "<stdin>", line 9, in <module>
+Traceback (most recent call last):
+  File "<stdin>", line 9, in <module>
+AttributeError: module 'ctypes' has no attribute 'RTLD_NOW'
+AttributeError: module 'ctypes' has no attribute 'RTLD_NOW'
