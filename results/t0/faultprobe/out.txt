@@ -1,0 +1,18 @@
+[always] madvise never
+always defer defer+madvise [madvise] never
+AnonHugePages:  19806208 kB
+fresh_malloc	0.150 s
+same_again	0.112 s
+madv_hugepage	0.149 s	(madvise 0)
+populate_then_copy	0.118 s
+(populate itself not timed separately; see mmap above, 0.118 s since)
+fresh_malloc	0.146 s
+same_again	0.112 s
+madv_hugepage	0.147 s	(madvise 0)
+populate_then_copy	0.117 s
+(populate itself not timed separately; see mmap above, 0.117 s since)
+fresh_malloc	0.146 s
+same_again	0.112 s
+madv_hugepage	0.146 s	(madvise 0)
+populate_then_copy	0.118 s
+(populate itself not timed separately; see mmap above, 0.118 s since)

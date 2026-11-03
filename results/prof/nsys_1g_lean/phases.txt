@@ -1,0 +1,36 @@
+# job 697697, 1 GPU, ob1 + /dev/shm + NOLIBPATH, on 0038, under nsys (cuda,nvtx,osrt, cpu sampling); NVTX phases in ms
+INIT 1006.9 (at 0)
+INIT-MPI 657.1 (at 0)
+INIT-MODULES 284.0 (at 657)
+INIT-GPU-VARS 65.7 (at 941)
+SIMULATION-TIME-MARCH 1067.6 (at 1007)
+SAVE-DATA 219.1 (at 1855)
+FINALIZE-MODULES 48.2 (at 2075)
+first range to last range end 2122.7 ms
+INIT-MPI: 138 main-thread samples
+    15 __memset_avx512_unaligned_erms < 0x152a7c98b760 < 0x152a6236a58c
+     5 __memcpy_sse2_unaligned_erms < 0x152a36464bec < 0x152a364fb3df
+     4 0xffffffff9f800080 < ucm_bistro_apply_patch_atomic < ucm_bistro_patch
+     4 __memcpy_avx512_unaligned_erms < 0x152a42a79081 < 0x152a42a5d279
+     3 0x152a37172cb6 < 0x152a367047b7 < 0x152a3670e96d
+     2 do_lookup_x < _dl_lookup_symbol_x < _dl_relocate_object
+  cuda api: cuModuleLoadDataEx 71.7 ms x1, cuMemHostAlloc 24.2 ms x1, cuMemAllocHost_v2 1.0 ms x1, cuMemcpyHtoDAsync_v2 0.3 ms x11
+  osrt: ioctl 190.4 ms x624, read 36.5 ms x832, openat 19.1 ms x5526, pthread_cond_wait 8.2 ms x20
+INIT-MODULES: 83 main-thread samples
+    61 __memcpy_avx512_unaligned_erms < ADIOI_GEN_ReadStrided < ADIOI_GEN_ReadStridedColl
+     2 0x152a36429119 < 0x152a364ef3fd < 0x152a3714e680
+     2 0x152a3665eae3 < 0x152a3641c8ad < 0x152a3645b516
+     2 0x152a3665eb71 < 0x152a3641c8ad < 0x152a3645b516
+     2 ADIOI_Flatten < ADIOI_Flatten < ADIOI_Flatten
+     1 0x152a42b1a498 < 0x152a42b1a63a < 0x152a364df6d8
+  cuda api: cuMemHostAlloc 23.5 ms x1, cuMemAlloc_v2 9.8 ms x264, cuStreamSynchronize 9.4 ms x453, cuMemcpyHtoDAsync_v2 2.1 ms x656
+  osrt: pread 95.9 ms x131, ioctl 31.2 ms x342, open 0.0 ms x3, close 0.0 ms x1
+SAVE-DATA: 48 main-thread samples
+    19 0x152a3641e90c < 0x152a364c5d55 < 0x152a366126c9
+    11 0x152a3641e864 < 0x152a364c5d55 < 0x152a366126c9
+     3 0x152a3641e880 < 0x152a364c5d55 < 0x152a366126c9
+     2 0x152a3641e860 < 0x152a364c5d55 < 0x152a366126c9
+     2 0x152a3641e868 < 0x152a364c5d55 < 0x152a366126c9
+     1 0x152a3665eb38 < 0x152a3641c8ad < 0x152a3645b516
+  cuda api: cuMemcpyDtoHAsync_v2 44.1 ms x9, cuStreamSynchronize 2.0 ms x28, cuLaunchKernel 0.1 ms x11, cuMemAlloc_v2 0.0 ms x2
+  osrt: pwrite 171.9 ms x8, open 0.0 ms x2, close 0.0 ms x2
