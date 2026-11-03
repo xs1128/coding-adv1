@@ -62,6 +62,20 @@ for r in $(seq 1 "$REPS"); do
 done
 smi "$out/smi_after.csv"
 
+# LAUNCHPROBE=1 (untimed, after the reps): how long launching alone takes. Times mpirun and srun of /bin/true (3 each,
+# each under a timeout) and records the dynamic loader's statistics for one mpirun of the simulation.
+if [[ ${LAUNCHPROBE:-0} == 1 ]]; then
+  pf=$out/launchprobe.tsv; printf 'what\trep\twall_s\trc\n' > "$pf"
+  tm() { local w=$1 r=$2; shift 2; local t0 t1 rc=0; t0=$(date +%s.%N); "$@" > "$out/launchprobe_$w.log" 2>&1 || rc=$?
+         t1=$(date +%s.%N); printf '%s\t%s\t%.3f\t%s\n' "$w" "$r" "$(echo "$t1 - $t0" | bc)" "$rc" >> "$pf"; }
+  srun --mpi=list > "$out/launchprobe_srun_mpi_list.log" 2>&1 || true
+  for r in 1 2 3; do
+    tm mpirun_true $r env $RUN_ENV timeout 60 mpirun -np 1 $MPIRUN_ARGS /bin/true
+    tm srun_true $r env $RUN_ENV timeout 60 srun -n 1 --mpi=pmix /bin/true
+  done
+  tm lddebug_sim 1 env $RUN_ENV LD_DEBUG=statistics timeout 90 mpirun -np 1 $MPIRUN_ARGS "$sim"
+fi
+
 # extra rep under NVTX-only nsys: per-rank step times (grind is only the min stage)
 if [[ $STEPPROF == 1 ]]; then
   export TMPDIR=/dev/shm/${USER}_${SLURM_JOB_ID}; mkdir -p "$TMPDIR"
