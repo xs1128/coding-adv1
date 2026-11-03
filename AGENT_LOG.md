@@ -161,6 +161,11 @@ the figure script disagreed. Rule: derived numbers come from raw files, in one s
   kept running and the edit in the same command never ran. Found on the next look; the build was stopped by PID and
   with patterns anchored at `^`, the edit was rerun. No GPU cost. Rule: in `hpc` commands, kill by PID or with an
   anchored pattern, never `pkill -f` on a string the command line itself contains.
+- **11-04: the disk filled up again.** `submit.sh` refused the exp-cbcdirect A/B (8 GB free of the shared 700 GB
+  quota). As on 11-03, the final-state dumps (`restart_data/lustre_30.dat`, 0.5 GB each) of six finished, verified
+  A/Bs were deleted: 14 files in `runs/exp/{cbcdevset_4g_rdma,cbcdevset_4g_rdma_r2,haloyz_4g_rdma,haloxs_4g_rdma,
+  rsdev_4g_rdma,rsdev_1g}` (their logs and inputs kept; timings and bitwise checks are in `results/` and the ladder).
+  15 GB free afterwards. No GPU cost. `runs/prof` (29 GB) and `runs/final` (18 GB) are untouched.
 
 ## Code the student must be able to defend
 (filled in as optimizations land)
