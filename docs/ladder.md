@@ -200,6 +200,7 @@ Applied 0001–0030 to a local v5.7.0 copy and read the result:
   Next: before every HLLC solve, `s_populate_riemann_states_variables_buffers` issues 10 tiny asynchronous host-to-device
   copies (`is1–3`, `isx–z`, `dir_idx`, `dir_flg`, `dir_idx_tau`, `stress_perm`). On the GPU they queue behind the previous
   direction's HLLC kernel and then run one at a time (~1.5 µs each plus 3–5 µs between), so the next HLLC kernel starts
-  ~50 µs late, in every direction whose copies are not hidden behind CBC work: ~160 µs of gaps per step on rank 0. The
-  same happens at 1 GPU (~0.3 ms per 28 ms step, which matches its 0.9 % idle, nsys 690689).
+  ~50 µs late, in every direction whose copies are not hidden behind CBC work: ~160 µs of gaps per step on rank 0. At
+  1 GPU they do not show (`tools/step_gaps.py` on 690689 has no copy-to-copy gaps): there every direction has CBC work on
+  the second queue to hide them; at 4 GPUs x and y have an MPI neighbour on one side instead. So no gain expected at 1 GPU.
 - Idea (exp-rsdev): write those values with one single-thread kernel that takes them as arguments, as 0031 did for CBC.
