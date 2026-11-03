@@ -1,0 +1,82 @@
+mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn019 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 2
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | 
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Build | syscheck and pre_process
+
+
+ Build | syscheck and simulation
+
+
+
+ Test pre_process and simulation | Only 879C490D, 6103FA4F, 4FBA4023, 891C8626, 34F3999B, 29C5D458, E04B6502, D222AFB8, 4E2849D9, 34336A1F, 03EB2617, 345BC486, 6AF90F3C, 421A6AD9, F31EAABF, 17E2C6D1, 2097140E, 43CADBB8, 6BB67897, 5D536A45, DA44D68D, B76C4F04, 4E7B3DE0, 481CA4B4, 6736AFD0, D41FFB94, CF11AA56, 5D405BF9, 026AA23F, 36DF737F, F5705D1B, 9AEC024A, 0648E422, 19981E38, AB56B056, E6F54696, CC89283B, 1A379909, and C3A4DBAE (39 tests)
+  
+     Progress      Test Name                                        Time(s)   UUID
+  
+     (  1/ 39)    2D -> Hypoelasticity -> HLLD -> alt_soundspeed=T     16.21    6103FA4F
+     (  2/ 39)    2D -> Hypoelasticity -> HLLD -> alt_soundspeed=F     16.22    879C490D
+     (  3/ 39)    2D -> Hypoelasticity -> HLLD -> ADC -> alt_soun...   15.69    4FBA4023
+     (  4/ 39)    2D -> Hypoelasticity -> HLLD -> ADC -> alt_soun...   15.65    891C8626
+     (  5/ 39)    2D -> Hypoelasticity -> HLLC -> alt_soundspeed=T     15.34    29C5D458
+     (  6/ 39)    2D -> Hypoelasticity -> HLLC -> alt_soundspeed=F     15.40    34F3999B
+     (  7/ 39)    2D -> Hypoelasticity -> HLLC -> ADC -> alt_soun...   15.44    D222AFB8
+     (  8/ 39)    2D -> Hypoelasticity -> HLLC -> ADC -> alt_soun...   15.51    E04B6502
+     (  9/ 39)    2D -> Hypoelasticity -> HLL -> Interface RHS ->...   15.37    4E2849D9
+     ( 10/ 39)    2D -> Hypoelasticity -> HLL -> Interface RHS ->...   15.33    34336A1F
+     ( 11/ 39)    2D -> Hypoelasticity -> HLL -> u-interface -> I...   15.50    345BC486
+     ( 12/ 39)    2D -> Hypoelasticity -> HLL -> u-interface -> I...   15.55    03EB2617
+     ( 13/ 39)    2D -> Axisymmetric -> Hypoelasticity -> HLLD ->...   15.55    6AF90F3C
+     ( 14/ 39)    2D -> Axisymmetric -> Hypoelasticity -> HLLD ->...   15.51    421A6AD9
+     ( 15/ 39)    2D -> Axisymmetric -> Hypoelasticity -> HLLD ->...   16.89    17E2C6D1
+     ( 16/ 39)    2D -> Axisymmetric -> Hypoelasticity -> HLLD ->...   16.95    F31EAABF
+     ( 17/ 39)    2D -> Axisymmetric -> Hypoelasticity -> HLLC ->...   16.57    2097140E
+     ( 18/ 39)    2D -> Axisymmetric -> Hypoelasticity -> HLLC ->...   16.52    43CADBB8
+     ( 19/ 39)    2D -> Axisymmetric -> Hypoelasticity -> HLLC ->...   16.19    6BB67897
+     ( 20/ 39)    2D -> Axisymmetric -> Hypoelasticity -> HLLC ->...   16.79    5D536A45
+     ( 21/ 39)    2D -> Axisymmetric -> Hypoelasticity -> HLL -> ...   17.77    B76C4F04
+     ( 22/ 39)    2D -> Axisymmetric -> Hypoelasticity -> HLL -> ...   18.43    DA44D68D
+     ( 23/ 39)    3D -> Hypoelasticity -> HLLD -> alt_soundspeed=F     16.55    481CA4B4
+     ( 24/ 39)    2D -> Axisymmetric -> Hypoelasticity -> HLL -> ...   17.22    4E7B3DE0
+     ( 25/ 39)    3D -> Hypoelasticity -> HLLD -> ADC -> alt_soun...   22.20    D41FFB94
+     ( 26/ 39)    3D -> Hypoelasticity -> HLLD -> alt_soundspeed=T     22.85    6736AFD0
+     ( 27/ 39)    3D -> Hypoelasticity -> HLLD -> ADC -> alt_soun...   21.91    CF11AA56
+     ( 28/ 39)    3D -> Hypoelasticity -> HLLC -> alt_soundspeed=F     21.87    5D405BF9
+     ( 29/ 39)    3D -> Hypoelasticity -> HLLC -> ADC -> alt_soun...   21.81    36DF737F
+     ( 30/ 39)    3D -> Hypoelasticity -> HLLC -> alt_soundspeed=T     21.88    026AA23F
+     ( 31/ 39)    3D -> Hypoelasticity -> HLL -> Interface RHS ->...   22.97    9AEC024A
+     ( 32/ 39)    3D -> Hypoelasticity -> HLLC -> ADC -> alt_soun...   23.05    F5705D1B
+     ( 33/ 39)    3D -> Hypoelasticity -> HLL -> u-interface -> I...   23.30    19981E38
+     ( 34/ 39)    3D -> Hypoelasticity -> HLL -> Interface RHS ->...   23.37    0648E422
+     ( 35/ 39)    2D -> Hypoelasticity -> 3 Fluid(s) -> HLL -> u-...   19.77    E6F54696
+     ( 36/ 39)    3D -> Hypoelasticity -> HLL -> u-interface -> I...   21.19    AB56B056
+     ( 37/ 39)    2D -> Hypoelasticity -> 3 Fluid(s) -> HLLC -> a...   18.60    CC89283B
+     ( 38/ 39)    Restart Roundtrip -> 1D                              48.96    1A379909
+     ( 39/ 39)    Restart Roundtrip -> 3D                              49.27    C3A4DBAE
+
+  
+
+╭──────────────────────────────── Test Summary ────────────────────────────────╮
+│                                                                              │
+│  ✓ ALL TESTS PASSED                                                          │
+│                                                                              │
+│      39 passed                                                               │
+│       0 failed                                                               │
+│     721 skipped                                                              │
+│    ────────────                                                              │
+│     760 total                                                                │
+│                                                                              │
+│    Time: 6m 36.5s                                                            │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+
+mfc: (venv) Exiting the Python virtual environment.

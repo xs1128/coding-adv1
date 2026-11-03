@@ -114,7 +114,7 @@ instead of 3.51–3.64 s (job 694651); the file is the same, also with saves in 
 **Pending 0038 (on 0037, not in P22):** reading the starting state had the same problem the other way round: the reader
 filled a fresh block and the runtime then copied it into place. Now the reader is told where each value goes and fills the
 variable's own memory directly. A whole run takes about 3.3 s instead of 3.46–3.53 s (median, jobs 694689 and 696366); the
-answer is the same (ladder rows 79–80).
+answer is the same (ladder rows 79–80). The 39 MFC tests that save and read restart files this way all pass (job 697852, row 102).
 
 **Run settings (disclosed, no code change):** at 1 GPU, Open MPI without UCX (`ob1`) and a run directory in node-local
 memory (`/dev/shm`) cut the wall time of a whole run, start-up and save included, to about 3.8 s (job 684750).
