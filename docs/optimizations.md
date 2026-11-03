@@ -251,7 +251,7 @@ Chemistry GPU builds stopped linking after 0012, for the same linker reason. 001
 - **0035, RK update loads two equations ahead.** The fused RK update waits on memory (2.25 TB/s, 3 blocks per SM,
   681191) with one equation of loads in flight per thread; it now keeps two. That alone needs 179 registers and 2 blocks
   per SM, which is 3.8–3.9 % slower; with `m_rhs` capped at 168 registers (3 blocks, 32 B stack) it is −0.78 % / −0.67 %
-  per step at 1 GPU (693627). Bitwise. The cap is a disclosed build change.
+  per step at 1 GPU (693627) and −0.85 % at 4 GPUs (693693). Bitwise. The cap is a disclosed build change.
 - **Rejected on the way:** splitting the x sweep around the x halo exchange (exp-haloxs, +0.35 % at 4 GPUs, 692179). The
   exchange waits for the neighbour rank, and the ranks with more CBC sides are the slow ones (nsys 692237), which is
   what led to 0034.

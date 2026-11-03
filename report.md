@@ -277,7 +277,8 @@ this path, so the full suite (not run) would check only that nothing else change
 SM, waiting on loads). Each thread loaded equation j + 1 while computing equation j; 0035 keeps j + 1 and j + 2 in flight.
 Uncapped that needs 179 registers (2 blocks per SM) and is slower (28.932 / 28.956 ms vs 27.863 / 27.858); compiling
 `m_rhs` with `-gpu=maxregcount:168` keeps 3 blocks for a 32 B stack: 27.645 / 27.671 ms (−0.78 % / −0.67 %), grind
-−0.40 % / −0.31 %, bitwise (1 GPU, job 693627, 2 rounds). Single-file recompiles with `-gpu=nounroll` or `loadcache`
+−0.40 % / −0.31 %, bitwise (1 GPU, job 693627, 2 rounds); 4 GPUs (693693): 7.548 → 7.484 ms
+(−0.85 %), grind −0.57 %, bitwise. Single-file recompiles with `-gpu=nounroll` or `loadcache`
 changed no register or spill counts (ladder rows 75–76). Full suite not run.
 
 **Several GPUs** (`rdma_mpi`, same node, P11 vs P18; bitwise):
