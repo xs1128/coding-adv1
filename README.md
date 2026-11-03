@@ -78,6 +78,10 @@ tiny kernel instead of 9 small copies from the CPU per call. That removes a 21 m
 GPU runtime had to set up a pinned copy buffer for the second queue) and makes each step 0.3 % faster at 1 GPU (job
 686808) and 1.3 % faster at 4 GPUs (686954), bitwise. Full suite: the 23 known failures, same errors (ladder row 70).
 
+**Pending 0032 (not in P22, multi-GPU only):** while the host waits on MPI for the y/z halo exchange, the GPU now runs
+the x sweep (ghost cells filled on a second queue). 4 GPUs: 7.921 → 7.781 ms per step (−1.8 %, job 690856), bitwise;
+the 7 two-rank MPI tests with RDMA pass (690903). Full suite not run, so it stays in `patches/pending/` (ladder row 71).
+
 **Run settings (disclosed, no code change):** at 1 GPU, Open MPI without UCX (`ob1`) and a run directory in node-local
 memory (`/dev/shm`) cut the wall time of a whole run, start-up and save included, to about 3.8 s (job 684750).
 

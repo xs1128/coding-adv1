@@ -134,5 +134,10 @@ the figure script disagreed. Rule: derived numbers come from raw files, in one s
   (read-only `sacct`, stopped at once, no GPU cost). Same slip as the earlier guessed ids. Rule kept: paste the id from
   the `submit.sh` output, never retype it.
 
+- **11-03: a grind figure written as a mean.** Ladder row 71 (exp-haloyz, job 690856) first gave grind as the mean of
+  the 3 runs (0.04082 → 0.04011 ns, −1.7 %) where the ladder uses medians (0.04080 → 0.04013, −1.6 %). Found when
+  rechecking the row against `summary.tsv` before promoting it to pending 0032; no GPU cost, the step figure was right.
+  Rule kept: recompute every number from the raw files before it goes into a doc.
+
 ## Code the student must be able to defend
 (filled in as optimizations land)

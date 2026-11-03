@@ -1,0 +1,289 @@
+From 23fb678cf75ca6d91242fff103a244597acc1fab Mon Sep 17 00:00:00 2001
+From: xs1128 <ooixinsheng@gmail.com>
+Date: Tue, 3 Nov 2026 22:03:13 +0800
+Subject: [PATCH] Halos: with an MPI neighbour in y or z, fill the y/z ghost
+ cells on a second OpenACC queue while the x sweep runs
+
+On the fused per-direction path the x sweep reads interior y/z cells only, so the y and z ghost cells are not needed
+until the y sweep. With RDMA halo exchange and an MPI neighbour in y or z (OpenACC with NVHPC), s_compute_rhs now fills
+the x ghost cells first, queues the x sweep, and only then fills the y and z ghost cells, with the exchange's pack and
+unpack kernels on OpenACC queue 2 and its waits limited to that queue, so the host sits in MPI while the GPU runs the x
+sweep. Queue 2 first waits for the x ghost cells; the default queue waits for queue 2 before the y sweep. The exchange
+also sends v_size to the GPU only when it changes. Off when anything that runs before the y sweep reads y/z ghost
+cells (viscous, QBMM, surface tension, chemistry, hypoelasticity, IGR, IB, bubbles, MTHINC) and on the call that
+returns after filling the buffers. Same values, so bitwise.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ src/common/m_boundary_common.fpp | 63 +++++++++++++++++++++++++++-----
+ src/common/m_mpi_common.fpp      | 29 ++++++++++++++-
+ src/simulation/m_rhs.fpp         | 53 ++++++++++++++++++++++++++-
+ 3 files changed, 133 insertions(+), 12 deletions(-)
+
+diff --git a/src/common/m_boundary_common.fpp b/src/common/m_boundary_common.fpp
+index b21f902..aab4b79 100644
+--- a/src/common/m_boundary_common.fpp
++++ b/src/common/m_boundary_common.fpp
+@@ -15,11 +15,15 @@ module m_boundary_common
+     use m_constants
+     use m_boundary_primitives
+     use m_boundary_io
++#if defined(MFC_OpenACC) && defined(MFC_NVHPC)
++    use openacc, only: acc_set_default_async, acc_get_default_async
++#endif
+ 
+     implicit none
+ 
+-    private; public :: s_initialize_boundary_common_module, s_populate_variables_buffers, s_populate_capillary_buffers, &
+-        & s_populate_F_igr_buffers, s_populate_grid_variables_buffers, s_finalize_boundary_common_module, s_populate_beta_buffers
++    private; public :: s_initialize_boundary_common_module, s_populate_variables_buffers, s_populate_variables_buffers_yz, &
++        & s_populate_capillary_buffers, s_populate_F_igr_buffers, s_populate_grid_variables_buffers, &
++        & s_finalize_boundary_common_module, s_populate_beta_buffers
+ 
+     public :: bc_buffers
+ 
+@@ -89,31 +93,72 @@ contains
+     end subroutine s_initialize_boundary_common_module
+ 
+     !> Populate the buffers of the primitive variables based on the selected boundary conditions.
+-    impure subroutine s_populate_variables_buffers(bc_type, q_prim_vf, pb_in, mv_in, q_T_sf)
++    impure subroutine s_populate_variables_buffers(bc_type, q_prim_vf, pb_in, mv_in, q_T_sf, defer_yz)
+ 
+         type(scalar_field), dimension(sys_size), intent(inout)                                               :: q_prim_vf
+         real(stp), optional, dimension(idwbuff(1)%beg:,idwbuff(2)%beg:,idwbuff(3)%beg:,1:,1:), intent(inout) :: pb_in, mv_in
+         type(integer_field), dimension(1:num_dims,1:2), intent(in)                                           :: bc_type
+         type(scalar_field), optional, intent(inout)                                                          :: q_T_sf
++        !> Fill the x ghost cells only; the caller fills y and z later with s_populate_variables_buffers_yz
++        logical, optional, intent(in) :: defer_yz
+ 
+         call s_populate_bc_direction(1, -1, bc_x, bc_type(1, 1), q_prim_vf, pb_in, mv_in, q_T_sf)
+         call s_populate_bc_direction(1, 1, bc_x, bc_type(1, 2), q_prim_vf, pb_in, mv_in, q_T_sf)
+ 
++        if (present(defer_yz)) then
++            if (defer_yz) return
++        end if
++
++        call s_populate_variables_buffers_yz(bc_type, q_prim_vf, pb_in, mv_in, q_T_sf)
++
++    end subroutine s_populate_variables_buffers
++
++    !> The y and z part of s_populate_variables_buffers. With on_queue (OpenACC with NVHPC), its kernels, including the halo
++    !! exchange's pack and unpack, go on that OpenACC queue and the exchange waits only for it, so the host can sit in MPI while the
++    !! default queue keeps working; the caller must have made on_queue wait for the x ghost cells, and must make the default queue
++    !! wait for on_queue before anything reads a y or z ghost cell.
++    impure subroutine s_populate_variables_buffers_yz(bc_type, q_prim_vf, pb_in, mv_in, q_T_sf, on_queue)
++
++        type(scalar_field), dimension(sys_size), intent(inout)                                               :: q_prim_vf
++        real(stp), optional, dimension(idwbuff(1)%beg:,idwbuff(2)%beg:,idwbuff(3)%beg:,1:,1:), intent(inout) :: pb_in, mv_in
++        type(integer_field), dimension(1:num_dims,1:2), intent(in)                                           :: bc_type
++        type(scalar_field), optional, intent(inout)                                                          :: q_T_sf
++        integer, optional, intent(in)                                                                        :: on_queue
++
++#if defined(MFC_OpenACC) && defined(MFC_NVHPC)
++        integer :: default_queue
++#endif
++
+         if (n == 0) return
+ 
++#if defined(MFC_OpenACC) && defined(MFC_NVHPC)
++        if (present(on_queue)) then
++            default_queue = acc_get_default_async()
++            call acc_set_default_async(on_queue)
++            halo_wait_queue = on_queue
++        end if
++#endif
++
+         #:if not MFC_CASE_OPTIMIZATION or num_dims > 1
+             call s_populate_bc_direction(2, -1, bc_y, bc_type(2, 1), q_prim_vf, pb_in, mv_in, q_T_sf)
+             call s_populate_bc_direction(2, 1, bc_y, bc_type(2, 2), q_prim_vf, pb_in, mv_in, q_T_sf)
+         #:endif
+ 
+-        if (p == 0) return
++        if (p > 0) then
++            #:if not MFC_CASE_OPTIMIZATION or num_dims > 2
++                call s_populate_bc_direction(3, -1, bc_z, bc_type(3, 1), q_prim_vf, pb_in, mv_in, q_T_sf)
++                call s_populate_bc_direction(3, 1, bc_z, bc_type(3, 2), q_prim_vf, pb_in, mv_in, q_T_sf)
++            #:endif
++        end if
+ 
+-        #:if not MFC_CASE_OPTIMIZATION or num_dims > 2
+-            call s_populate_bc_direction(3, -1, bc_z, bc_type(3, 1), q_prim_vf, pb_in, mv_in, q_T_sf)
+-            call s_populate_bc_direction(3, 1, bc_z, bc_type(3, 2), q_prim_vf, pb_in, mv_in, q_T_sf)
+-        #:endif
++#if defined(MFC_OpenACC) && defined(MFC_NVHPC)
++        if (present(on_queue)) then
++            halo_wait_queue = 0
++            call acc_set_default_async(default_queue)
++        end if
++#endif
+ 
+-    end subroutine s_populate_variables_buffers
++    end subroutine s_populate_variables_buffers_yz
+ 
+     !> Populate the variable buffers along one direction and location, via MPI exchange for processor boundaries or by dispatching
+     !! the per-cell BC routines over the boundary face.
+diff --git a/src/common/m_mpi_common.fpp b/src/common/m_mpi_common.fpp
+index 061734d..803a119 100644
+--- a/src/common/m_mpi_common.fpp
++++ b/src/common/m_mpi_common.fpp
+@@ -25,7 +25,10 @@ module m_mpi_common
+ 
+     integer, private :: v_size
+     $:GPU_DECLARE(create='[v_size]')
+-
++    integer, private :: v_size_dev = -1  !< value of v_size last sent to the GPU (it rarely changes)
++    !> 0: the halo exchange waits for every OpenACC queue before and after MPI; q > 0: only for queue q (the caller has put the
++    !! pack/unpack kernels on queue q while other work runs on the default queue; m_boundary_common, deferred y/z halos)
++    integer, public                              :: halo_wait_queue = 0
+     real(wp), private, allocatable, dimension(:) :: buff_send  !< Primitive variable send buffer for halo exchange
+     !> Primitive variable receive buffer for halo exchange Variables for EL bubbles communication
+     real(wp), private, allocatable, dimension(:) :: buff_recv
+@@ -80,6 +83,7 @@ contains
+         end if
+ 
+         $:GPU_UPDATE(device='[halo_size, v_size]')
++        v_size_dev = v_size
+ 
+ #ifndef __NVCOMPILER_GPU_UNIFIED_MEM
+         @:ALLOCATE(buff_send(0:halo_size), buff_recv(0:halo_size))
+@@ -603,7 +607,12 @@ contains
+                              & buff_size*v_size*(m + 2*buff_size + 1)*(n + 2*buff_size + 1)/)
+         end if
+ 
+-        $:GPU_UPDATE(device='[v_size]', extraAccArgs=GPU_ASYNC)
++        ! Sent only when it changes: a host-to-device copy on a second OpenACC queue would make the runtime set up a pinned
++        ! staging buffer for that queue (deferred y/z halos)
++        if (v_size /= v_size_dev) then
++            $:GPU_UPDATE(device='[v_size]', extraAccArgs=GPU_ASYNC)
++            v_size_dev = v_size
++        end if
+ 
+         buffer_count = buffer_counts(mpi_dir)
+         boundary_conditions = (/bc_x, bc_y, bc_z/)
+@@ -825,7 +834,15 @@ contains
+             if (use_rdma_transport .eqv. ${'.true.' if rdma_mpi else '.false.'}$) then
+                 #:if rdma_mpi
+                     ! buff_send is packed asynchronously
++#if defined(MFC_OpenACC) && defined(MFC_NVHPC)
++                    if (halo_wait_queue > 0) then
++                        $:GPU_WAIT(extraAccArgs='(halo_wait_queue)')
++                    else
++                        $:GPU_WAIT()
++                    end if
++#else
+                     $:GPU_WAIT()
++#endif
+                     #:call GPU_HOST_DATA(use_device_addr='[buff_send, buff_recv]')
+                         call nvtxStartRange("RHS-COMM-SENDRECV-RDMA")
+ 
+@@ -834,7 +851,15 @@ contains
+ 
+                         call nvtxEndRange  ! RHS-MPI-SENDRECV-(NO)-RDMA
+                     #:endcall GPU_HOST_DATA
++#if defined(MFC_OpenACC) && defined(MFC_NVHPC)
++                    if (halo_wait_queue > 0) then
++                        $:GPU_WAIT(extraAccArgs='(halo_wait_queue)')
++                    else
++                        $:GPU_WAIT()
++                    end if
++#else
+                     $:GPU_WAIT()
++#endif
+                 #:else
+                     call nvtxStartRange("RHS-COMM-DEV2HOST")
+                     $:GPU_UPDATE(host='[buff_send]')
+diff --git a/src/simulation/m_rhs.fpp b/src/simulation/m_rhs.fpp
+index eafe5cd..a4de6d5 100644
+--- a/src/simulation/m_rhs.fpp
++++ b/src/simulation/m_rhs.fpp
+@@ -58,6 +58,12 @@ module m_rhs
+     $:GPU_DECLARE(create='[q_slab, q_stor_slab, qp_layer]')
+     logical :: rk_slabs = .false.
+ 
++    !> With an MPI neighbour in y or z (OpenACC with NVHPC, RDMA halos, the fused per-direction path and nothing else that reads y/z
++    !! ghost cells before the y sweep), the y/z halos are filled on OpenACC queue halo_queue while the x sweep runs: the x sweep
++    !! reads interior y/z cells only. halo_yz_deferred is decided on the first call; defer_yz_now is set per call.
++    integer, parameter :: halo_queue = 2
++    logical            :: halo_yz_decided = .false., halo_yz_deferred = .false., defer_yz_now = .false.
++
+     !> On the plain path the RK stage state is q_cons_qp itself (m_time_steppers points q_cons_ts(1) at it), so s_compute_rhs skips
+     !! the per-stage copy. The conversion writes the cont/adv entries back unchanged and reads the interior only; the halo fill then
+     !! writes the ghost cells, which the RK update never touches. Physics that change q_cons_qp in place, or read the stage state's
+@@ -740,7 +746,19 @@ contains
+             call nvtxEndRange
+ 
+             call nvtxStartRange("RHS-COMMUNICATION")
+-            call s_populate_variables_buffers(bc_type, q_prim_qp%vf, pb_in, mv_in, q_T_sf)
++            defer_yz_now = .false.
++#if defined(MFC_OpenACC) && defined(MFC_NVHPC)
++            if (.not. halo_yz_decided) call s_decide_halo_yz()
++            if (halo_yz_deferred) then
++                ! Not on the call that returns right below with only the buffers filled
++                if (cfl_dt) then
++                    defer_yz_now = mytime < t_stop
++                else
++                    defer_yz_now = t_step /= t_step_stop
++                end if
++            end if
++#endif
++            call s_populate_variables_buffers(bc_type, q_prim_qp%vf, pb_in, mv_in, q_T_sf, defer_yz=defer_yz_now)
+             call nvtxEndRange
+         end if
+ 
+@@ -809,6 +827,13 @@ contains
+ 
+                     call s_compute_directional_rhs(id, rhs_vf, .false.)
+ 
++                    if (defer_yz_now .and. id == 1) then
++                        ! The x sweep is queued: the host can now sit in the y/z halo exchange while the GPU runs it
++                        call nvtxStartRange("RHS-COMMUNICATION-YZ")
++                        call s_populate_variables_buffers_yz(bc_type, q_prim_qp%vf, pb_in, mv_in, q_T_sf, on_queue=halo_queue)
++                        call nvtxEndRange
++                    end if
++
+                     ! RHS additions for hypoelasticity
+                     if (hypo_nc_mode == hypo_nc_mode_finite_diff) then
+                         call nvtxStartRange("RHS-HYPOELASTICITY-FD-PER-SWEEP")
+@@ -1129,6 +1154,18 @@ contains
+         end if
+         irx%end = m; iry%end = n; irz%end = p
+ 
++#if defined(MFC_OpenACC) && defined(MFC_NVHPC)
++        if (defer_yz_now) then
++            if (id == 1) then
++                ! The y/z halo work that s_compute_rhs queues on halo_queue after this sweep reads the x ghost cells
++                $:GPU_WAIT(extraAccArgs='async(halo_queue)')
++            else if (id == 2) then
++                ! The y and z ghost cells are filled on halo_queue
++                $:GPU_WAIT(extraAccArgs='(halo_queue) async')
++            end if
++        end if
++#endif
++
+         ! CBC on one side of this direction whose kernels do not read the Riemann fluxes: queue them now on their own OpenACC
+         ! queue so they run alongside the Riemann solve; the s_cbc call in s_compute_advection_source_term then only copies back.
+         if (f_cbc_split(id, cbc_side)) then
+@@ -1154,6 +1191,20 @@ contains
+ 
+     end subroutine s_compute_directional_rhs
+ 
++    !> Whether the y/z halos can be filled alongside the x sweep (halo_yz_deferred): only when something in y or z is an MPI
++    !! neighbour, and nothing that runs before the y sweep reads y/z ghost cells.
++    subroutine s_decide_halo_yz()
++
++        halo_yz_decided = .true.
++        halo_yz_deferred = .false.
++        if (.not. (flux_per_dir .and. rdma_mpi) .or. n == 0) return
++        if (viscous .or. qbmm .or. surface_tension .or. chemistry .or. hypoelasticity .or. igr .or. ib) return
++        if (bubbles_euler .or. bubbles_lagrange .or. int_comp == int_comp_mthinc) return
++        halo_yz_deferred = bc_y%beg >= 0 .or. bc_y%end >= 0
++        if (p > 0) halo_yz_deferred = halo_yz_deferred .or. bc_z%beg >= 0 .or. bc_z%end >= 0
++
++    end subroutine s_decide_halo_yz
++
+     !> Accumulate advection source contributions from a given coordinate direction into the RHS
+     subroutine s_compute_advection_source_term(idir, rhs_vf, q_cons_vf, q_prim_vf, flux_src_n_vf, is_hat_L)
+ 
+-- 
+2.47.3
+

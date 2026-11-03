@@ -240,6 +240,14 @@ runs, P21 and P22 arms bitwise):
 | Grind (ns, median of 6 runs) | 0.4021 | 0.1468 | 0.1464 |
 | Wall (s, median of 6 runs; range) | 8.47 (7.36–10.28) | 5.63 (5.37–5.92) | 5.48 (5.24–5.89) |
 
+**Pending 0032 (multi-GPU only; not in P22).** An nsys profile of P22 on 4 GPUs (690700) showed the GPU 10–12 % idle,
+with two 14–19 µs gaps in each halo exchange while the host waited on MPI. 0032 fills the y/z ghost cells on a
+second OpenACC queue after the x sweep is queued, so that sweep runs while the host waits; it applies only with an MPI
+neighbour in y or z and RDMA halos. 4 GPUs (690856): step 7.921 → 7.781 ms (−1.8 %), halo exchange 0.29–0.36 →
+0.20–0.22 ms per step, bitwise; 1 GPU unchanged (path off). The 7 two-rank MPI tests with `--rdma-mpi` pass (690903),
+of which the 3D RDMA case takes the new path. It stays in `patches/pending/` because its full suite (~120 GPU-min) was
+not run (ladder row 71).
+
 **Several GPUs** (`rdma_mpi`, same node, P11 vs P18; bitwise):
 
 | GPUs | P11 step | P18 step | Change | Job |
