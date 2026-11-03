@@ -206,6 +206,8 @@ the figure script disagreed. Rule: derived numbers come from raw files, in one s
 - **2026-11-04, `/work` at 12 GB free.** Deleted 9 more run folders: 7 verified A/B and try dumps (romiox4_4g, singleton_1g,
   singletonldp_1g, directread_1g, romio_1g, singleton_try_1g, singleton_try2_1g; ladder rows 95–99) and the run folders
   of the two profiles (their reports stay in `runs/prof/nsysout_*_lean`). No GPU cost.
+- **2026-11-04, `/work` at 11 GB free.** Deleted 4 more verified run folders (ldpwrap_4g, accbufsmall_1g: bitwise vs their
+  A arms; repro/w1g, repro/w4g: `reproduce.sh verify` PASS; ladder rows 100, 101, 104). No GPU cost.
 - **2026-11-04: `harness/reproduce.sh` built the wrong final version.** Its `git am` glob `patches/opt/00[0-2][0-9]-*.patch`
   stopped at 0029, so 0030–0031 of P22 were left out; the same kind of fixed range had already gone stale once (5d822ac).
   Found while adding the wall-time step; the glob is now `patches/opt/*.patch`. The script had never been run (no `repro/`
