@@ -57,9 +57,18 @@ printf 'rep\twall_s\tgrind_ns\n' > "$out/summary.tsv"
 # libraries (696781: the same 187 loaded objects), and every LD_LIBRARY_PATH miss was a metadata lookup on Lustre.
 libu=(); [[ ${NOLIBPATH:-0} == 1 ]] && libu=(-u LD_LIBRARY_PATH)
 echo "nolibpath=${NOLIBPATH:-0}" >> "$out/env.txt"
+# LAUNCH=singleton (1 rank only; setting, disclosed): start the simulation without mpirun, as an MPI singleton that
+# starts no helper daemon (OMPI_MCA_ess_singleton_isolated=1). A plain singleton hung in MPI_Init (696387), so every
+# rep runs under a timeout.
+launch=(mpirun -np "$NGPU" $MPIRUN_ARGS)
+if [[ ${LAUNCH:-mpirun} == singleton ]]; then
+  [[ $NGPU == 1 ]] || { echo "LAUNCH=singleton needs NGPU=1" >&2; exit 2; }
+  launch=(timeout "${LAUNCH_TIMEOUT:-60}" env OMPI_MCA_ess_singleton_isolated=1)
+fi
+echo "launch=${LAUNCH:-mpirun}" >> "$out/env.txt"
 for r in $(seq 1 "$REPS"); do
   t0=$(date +%s.%N)
-  env "${libu[@]}" $RUN_ENV mpirun -np "$NGPU" $MPIRUN_ARGS $WRAP "$sim" > "$out/rep$r.log" 2>&1
+  env "${libu[@]}" $RUN_ENV "${launch[@]}" $WRAP "$sim" > "$out/rep$r.log" 2>&1
   t1=$(date +%s.%N)
   g=$(awk '/Performance:/{print $2}' "$out/rep$r.log" | tail -1)
   printf '%s\t%.3f\t%s\n' "$r" "$(echo "$t1 - $t0" | bc)" "$g" >> "$out/summary.tsv"

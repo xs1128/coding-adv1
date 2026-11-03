@@ -23,8 +23,9 @@ for r in $(seq 1 "$ROUNDS"); do
     # (ENV_B="UCX_TLS=self+sm+cuda_copy+cuda_ipc"): a comma-separated value arrives cut at its first comma.
     envv=ENV_$(tr a-z A-Z <<<"$v"); armenv=${!envv:-}; armenv=${armenv//+/,}; armenv=${armenv//@/ }
     rlv=RUNLOCAL_$(tr a-z A-Z <<<"$v"); armrl=${!rlv:-${RUNLOCAL:-0}}   # per-arm RUNLOCAL_A..F (run.sbatch)
-    nlv=NOLIBPATH_$(tr a-z A-Z <<<"$v"); armnl=${!nlv:-${NOLIBPATH:-0}}   # per-arm NOLIBPATH_A..F (run.sbatch)
-    LABEL=$base/$v$r MFC_DIR=${!dir} RUN_ENV="${RUN_ENV:-} $armenv" RUNLOCAL=$armrl NOLIBPATH=$armnl bash "$ROOT/harness/run.sbatch" \
+    nlv=NOLIBPATH_$(tr a-z A-Z <<<"$v"); armnl=${!nlv:-${NOLIBPATH:-0}}
+    lav=LAUNCH_$(tr a-z A-Z <<<"$v"); armla=${!lav:-${LAUNCH:-mpirun}}   # per-arm LAUNCH_A..F (run.sbatch)   # per-arm NOLIBPATH_A..F (run.sbatch)
+    LABEL=$base/$v$r MFC_DIR=${!dir} RUN_ENV="${RUN_ENV:-} $armenv" RUNLOCAL=$armrl NOLIBPATH=$armnl LAUNCH=$armla bash "$ROOT/harness/run.sbatch" \
       || echo "$v$r failed" >&2
   done
 done
