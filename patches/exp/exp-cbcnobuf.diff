@@ -1,0 +1,90 @@
+diff --git a/src/simulation/m_cbc.fpp b/src/simulation/m_cbc.fpp
+index 5456bc3..78eecff 100644
+--- a/src/simulation/m_cbc.fpp
++++ b/src/simulation/m_cbc.fpp
+@@ -608,10 +608,35 @@ contains
+             call s_finalize_cbc(flux_vf, flux_src_vf)
+             return
+         end if
++#endif
++
++        ! Direction indexes and flags, then the FD/PI coefficients of this boundary. Their small host-to-device updates are queued
++        ! before the switch to cbc_queue below, so that queue never stages a host copy (the runtime would allocate a pinned
++        ! staging buffer for it on first use, ~21 ms once per run).
++        $:GPU_UPDATE(device='[cbc_dir, cbc_loc]', extraAccArgs='async')
++
++        if (cbc_dir == 1) then
++            is1%beg = 0; is1%end = buff_size; is2 = iy; is3 = iz
++            dir_idx = (/1, 2, 3/); dir_flg = (/1._wp, 0._wp, 0._wp/)
++        else if (cbc_dir == 2) then
++            is1%beg = 0; is1%end = buff_size; is2 = ix; is3 = iz
++            dir_idx = (/2, 1, 3/); dir_flg = (/0._wp, 1._wp, 0._wp/)
++        else
++            is1%beg = 0; is1%end = buff_size; is2 = iy; is3 = ix
++            dir_idx = (/3, 1, 2/); dir_flg = (/0._wp, 0._wp, 1._wp/)
++        end if
++
++        dj = max(0, cbc_loc)
++        $:GPU_UPDATE(device='[is1, is2, is3, dj]', extraAccArgs='async')
++        $:GPU_UPDATE(device='[dir_idx, dir_flg]', extraAccArgs='async')
++
++        call s_associate_cbc_coefficients_pointers(cbc_dir, cbc_loc)
++
++#if defined(MFC_OpenACC) && defined(MFC_NVHPC)
+         if (present(phase)) then
+-            ! Start only after everything already queued (the halo fill of q_prim_vf and the previous direction's copy-back),
+-            ! then send this routine's async work, including the conversion it calls, to cbc_queue so it runs alongside the
+-            ! Riemann solve queued next on the default queue.
++            ! Start only after everything already queued (the halo fill of q_prim_vf, the previous direction's copy-back and the
++            ! updates above), then send this routine's async work, including the conversion it calls, to cbc_queue so it runs
++            ! alongside the Riemann solve queued next on the default queue.
+             if (.not. cbc_stream_tried) call s_cbc_priority_stream()
+             $:GPU_WAIT(extraAccArgs='async(cbc_queue)')
+             default_queue = acc_get_default_async()
+@@ -619,11 +644,7 @@ contains
+         end if
+ #endif
+ 
+-        $:GPU_UPDATE(device='[cbc_dir, cbc_loc]', extraAccArgs='async')
+-
+-        call s_initialize_cbc(q_prim_vf, flux_vf, flux_src_vf, ix, iy, iz)
+-
+-        call s_associate_cbc_coefficients_pointers(cbc_dir, cbc_loc)
++        call s_initialize_cbc(q_prim_vf, flux_vf, flux_src_vf)
+ 
+         #:for CBC_DIR, XYZ in [(1, 'x'), (2, 'y'), (3, 'z')]
+             if (cbc_dir == ${CBC_DIR}$ .and. recon_type == recon_type_weno) then
+@@ -1093,32 +1114,11 @@ contains
+     end function f_cbc_split
+ 
+     !> Set up the selected CBC for the current boundary
+-    subroutine s_initialize_cbc(q_prim_vf, flux_vf, flux_src_vf, ix, iy, iz)
++    subroutine s_initialize_cbc(q_prim_vf, flux_vf, flux_src_vf)
+ 
+         type(scalar_field), dimension(sys_size), intent(in) :: q_prim_vf
+         type(scalar_field), dimension(sys_size), intent(in) :: flux_vf, flux_src_vf
+-        type(int_bounds_info), intent(in)                   :: ix, iy, iz
+         integer                                             :: i, j, k, r  !< Generic loop iterators
+-        ! Configuring the coordinate direction indexes and flags
+-
+-        ! Determining the indicial shift based on CBC location
+-
+-        ! END: Allocation/Association of Primitive and Flux Variables
+-
+-        if (cbc_dir == 1) then
+-            is1%beg = 0; is1%end = buff_size; is2 = iy; is3 = iz
+-            dir_idx = (/1, 2, 3/); dir_flg = (/1._wp, 0._wp, 0._wp/)
+-        else if (cbc_dir == 2) then
+-            is1%beg = 0; is1%end = buff_size; is2 = ix; is3 = iz
+-            dir_idx = (/2, 1, 3/); dir_flg = (/0._wp, 1._wp, 0._wp/)
+-        else
+-            is1%beg = 0; is1%end = buff_size; is2 = iy; is3 = ix
+-            dir_idx = (/3, 1, 2/); dir_flg = (/0._wp, 0._wp, 1._wp/)
+-        end if
+-
+-        dj = max(0, cbc_loc)
+-        $:GPU_UPDATE(device='[is1, is2, is3, dj]', extraAccArgs='async')
+-        $:GPU_UPDATE(device='[dir_idx, dir_flg]', extraAccArgs='async')
+ 
+         ! Reshaping Inputted Data in x-direction
+         if (cbc_dir == 1) then
