@@ -1,0 +1,545 @@
+[1793742003.487244] [25a-hgpn005:3623849:0]           debug.c:1158 UCX  DEBUG using signal stack 0x1536dae18000 size 141824
+[1793742003.489316] [25a-hgpn005:3623849:0]             cpu.c:339  UCX  DEBUG measured tsc frequency 1997.939 MHz after 0.68 ms
+[1793742003.489333] [25a-hgpn005:3623849:0]            init.c:121  UCX  DEBUG /work/envstack/apps/nvhpc/26.3/Linux_x86_64/26.3/comm_libs/13.1/hpcx/hpcx-2.25.1/ucx/mt/lib/libucs.so.0 loaded at 0x1536d5c69000
+[1793742003.489349] [25a-hgpn005:3623849:0]            init.c:122  UCX  DEBUG cmd line: /work/u1131128/coding-adv1/build-tools/mpiinit 
+[1793742003.489359] [25a-hgpn005:3623849:0]          module.c:72   UCX  DEBUG ucs library path: /work/envstack/apps/nvhpc/26.3/Linux_x86_64/26.3/comm_libs/13.1/hpcx/hpcx-2.25.1/ucx/mt/lib/libucs.so.0
+[1793742003.489362] [25a-hgpn005:3623849:0]          module.c:304  UCX  DEBUG loading modules for ucs
+[1793742003.489365] [25a-hgpn005:3623849:0]          module.c:257  UCX  DEBUG loading module 'fuse' with mode 0x101
+[1793742003.489837] [25a-hgpn005:3623849:0]          module.c:192  UCX  DEBUG loaded /work/envstack/apps/nvhpc/26.3/Linux_x86_64/26.3/comm_libs/13.1/hpcx/hpcx-2.25.1/ucx/mt/lib/ucx/libucs_fuse.so.0.0.0 [0xbb0fb0]
+[1793742003.489912] [25a-hgpn005:3623849:f]        vfs_fuse.c:425  UCX  DEBUG connecting vfs socket 19 to daemon on '/run/user/38810/ucx/vfs.sock'
+[1793742003.489931] [25a-hgpn005:3623849:f]        vfs_fuse.c:433  UCX  DEBUG failed to connect to vfs socket '/run/user/38810/ucx/vfs.sock': No such file or directory
+[1793742003.489941] [25a-hgpn005:3623849:f]        vfs_sock.c:64   UCX  DIAG  failed to create directory '/run/user/38810/ucx': No such file or directory
+[1793742003.489947] [25a-hgpn005:3623849:f]        vfs_fuse.c:441  UCX  DIAG  failed to watch on '/run/user/38810/ucx/vfs.sock': Input/output error, VFS will be disabled
+[1793742003.490751] [25a-hgpn005:3623849:0]            time.c:22   UCX  DEBUG arch clock frequency: 1997938686.13 Hz
+[1793742003.490811] [25a-hgpn005:3623849:0]     ucp_context.c:2431 UCX  INFO  Version 1.20.0 (loaded from /work/envstack/apps/nvhpc/26.3/Linux_x86_64/26.3/comm_libs/13.1/hpcx/hpcx-2.25.1/ucx/mt/lib/libucp.so.0)
+[1793742003.490817] [25a-hgpn005:3623849:0]     ucp_context.c:2168 UCX  DEBUG estimated number of endpoints is 4
+[1793742003.490819] [25a-hgpn005:3623849:0]     ucp_context.c:2175 UCX  DEBUG estimated number of endpoints per node is 4
+[1793742003.490820] [25a-hgpn005:3623849:0]     ucp_context.c:2181 UCX  DEBUG node local id is 2
+[1793742003.490823] [25a-hgpn005:3623849:0]     ucp_context.c:2191 UCX  DEBUG estimated bcopy bandwidth is 7340032000.000000
+[1793742003.490832] [25a-hgpn005:3623849:0]     ucp_context.c:2256 UCX  DEBUG allocation method[0] is md 'sysv'
+[1793742003.490834] [25a-hgpn005:3623849:0]     ucp_context.c:2256 UCX  DEBUG allocation method[1] is md 'posix'
+[1793742003.490840] [25a-hgpn005:3623849:0]     ucp_context.c:2268 UCX  DEBUG allocation method[2] is 'thp'
+[1793742003.490841] [25a-hgpn005:3623849:0]     ucp_context.c:2256 UCX  DEBUG allocation method[3] is md '*'
+[1793742003.490843] [25a-hgpn005:3623849:0]     ucp_context.c:2268 UCX  DEBUG allocation method[4] is 'mmap'
+[1793742003.490844] [25a-hgpn005:3623849:0]     ucp_context.c:2268 UCX  DEBUG allocation method[5] is 'heap'
+[1793742003.490856] [25a-hgpn005:3623849:0]          module.c:304  UCX  DEBUG loading modules for uct
+[1793742003.490858] [25a-hgpn005:3623849:0]          module.c:257  UCX  DEBUG loading module 'cuda' with mode 0x1
+[1793742005.105943] [25a-hgpn005:3623849:0]          module.c:192  UCX  DEBUG loaded /work/envstack/apps/nvhpc/26.3/Linux_x86_64/26.3/comm_libs/13.1/hpcx/hpcx-2.25.1/ucx/mt/lib/ucx/libuct_cuda.so.0.0.0 [0xbc0c60]
+[1793742005.105969] [25a-hgpn005:3623849:0]          module.c:201  UCX  DEBUG calling 'ucs_module_global_init' in '/work/envstack/apps/nvhpc/26.3/Linux_x86_64/26.3/comm_libs/13.1/hpcx/hpcx-2.25.1/ucx/mt/lib/ucx/libuct_cuda.so.0.0.0': [0x1536d4178810]
+[1793742005.105983] [25a-hgpn005:3623849:0]          module.c:304  UCX  DEBUG loading modules for uct_cuda
+[1793742005.106001] [25a-hgpn005:3623849:0]          module.c:257  UCX  DEBUG loading module 'gdrcopy' with mode 0x1
+[1793742005.112571] [25a-hgpn005:3623849:0]          module.c:192  UCX  DEBUG loaded /work/envstack/apps/nvhpc/26.3/Linux_x86_64/26.3/comm_libs/13.1/hpcx/hpcx-2.25.1/ucx/mt/lib/ucx/libuct_cuda_gdrcopy.so.0.0.0 [0xbee420]
+[1793742005.112576] [25a-hgpn005:3623849:0]          module.c:165  UCX  DEBUG ignoring 'ucs_module_global_init' (0x1536d4178810) from libuct_cuda.so.0 (0x1536d416e000), expected in libuct_cuda_gdrcopy.so.0 (1536d4053000)
+[1793742005.112579] [25a-hgpn005:3623849:0]          module.c:243  UCX  DEBUG module 'ib' is disabled by configuration
+[1793742005.112581] [25a-hgpn005:3623849:0]          module.c:243  UCX  DEBUG module 'rdmacm' is disabled by configuration
+[1793742005.112583] [25a-hgpn005:3623849:0]          module.c:257  UCX  DEBUG loading module 'cma' with mode 0x1
+[1793742005.113220] [25a-hgpn005:3623849:0]          module.c:192  UCX  DEBUG loaded /work/envstack/apps/nvhpc/26.3/Linux_x86_64/26.3/comm_libs/13.1/hpcx/hpcx-2.25.1/ucx/mt/lib/ucx/libuct_cma.so.0.0.0 [0xbbfc50]
+[1793742005.113223] [25a-hgpn005:3623849:0]          module.c:257  UCX  DEBUG loading module 'knem' with mode 0x1
+[1793742005.113427] [25a-hgpn005:3623849:0]          module.c:192  UCX  DEBUG loaded /work/envstack/apps/nvhpc/26.3/Linux_x86_64/26.3/comm_libs/13.1/hpcx/hpcx-2.25.1/ucx/mt/lib/ucx/libuct_knem.so.0.0.0 [0xbc0330]
+[1793742005.113430] [25a-hgpn005:3623849:0]          module.c:257  UCX  DEBUG loading module 'xpmem' with mode 0x1
+[1793742005.115543] [25a-hgpn005:3623849:0]          module.c:192  UCX  DEBUG loaded /work/envstack/apps/nvhpc/26.3/Linux_x86_64/26.3/comm_libs/13.1/hpcx/hpcx-2.25.1/ucx/mt/lib/ucx/libuct_xpmem.so.0.0.0 [0xbec3e0]
+[1793742005.115637] [25a-hgpn005:3623849:0]            topo.c:343  UCX  DEBUG added sys_dev 0 for bus id 5c:00.0
+[1793742005.115668] [25a-hgpn005:3623849:0]            topo.c:343  UCX  DEBUG added sys_dev 1 for bus id ba:00.0
+[1793742005.115701] [25a-hgpn005:3623849:0]            topo.c:343  UCX  DEBUG added sys_dev 2 for bus id ca:00.0
+[1793742005.115727] [25a-hgpn005:3623849:0]            topo.c:343  UCX  DEBUG added sys_dev 3 for bus id da:00.0
+[1793742005.115792] [25a-hgpn005:3623849:0]         knem_md.c:45   UCX  DEBUG could not open the KNEM device file at /dev/knem: No such file or directory. Disabling knem resource
+[1793742005.115944] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.118071] [25a-hgpn005:3623849:0]            topo.c:1294 UCX  DEBUG /sys/class/net/bond0.1031/lower_bond0/lower_enp39s0f0np0: PF sysfs path is '/sys/devices/pci0000:26/0000:26:01.0/0000:27:00.0'
+[1793742005.118109] [25a-hgpn005:3623849:0]            topo.c:343  UCX  DEBUG added sys_dev 4 for bus id 27:00.0
+[1793742005.118112] [25a-hgpn005:3623849:0]            topo.c:710  UCX  DEBUG bond0.1031: bdf_name 0000:27:00.0 sys_dev 4
+[1793742005.118456] [25a-hgpn005:3623849:0]            topo.c:1294 UCX  DEBUG /sys/class/net/eno1: PF sysfs path is '/sys/devices/pci0000:00/0000:00:10.0/0000:09:00.0'
+[1793742005.118474] [25a-hgpn005:3623849:0]            topo.c:343  UCX  DEBUG added sys_dev 5 for bus id 09:00.0
+[1793742005.118476] [25a-hgpn005:3623849:0]            topo.c:710  UCX  DEBUG eno1: bdf_name 0000:09:00.0 sys_dev 5
+[1793742005.121168] [25a-hgpn005:3623849:0]            topo.c:1294 UCX  DEBUG /sys/class/net/ibp155s0: PF sysfs path is '/sys/devices/pci0000:97/0000:97:01.0/0000:98:00.0/0000:99:01.0/0000:9b:00.0'
+[1793742005.121192] [25a-hgpn005:3623849:0]            topo.c:343  UCX  DEBUG added sys_dev 6 for bus id 9b:00.0
+[1793742005.121194] [25a-hgpn005:3623849:0]            topo.c:710  UCX  DEBUG ibp155s0: bdf_name 0000:9b:00.0 sys_dev 6
+[1793742005.121718] [25a-hgpn005:3623849:0]            topo.c:1294 UCX  DEBUG /sys/class/net/ibp187s0: PF sysfs path is '/sys/devices/pci0000:b7/0000:b7:01.0/0000:b8:00.0/0000:b9:01.0/0000:bb:00.0'
+[1793742005.121743] [25a-hgpn005:3623849:0]            topo.c:343  UCX  DEBUG added sys_dev 7 for bus id bb:00.0
+[1793742005.121745] [25a-hgpn005:3623849:0]            topo.c:710  UCX  DEBUG ibp187s0: bdf_name 0000:bb:00.0 sys_dev 7
+[1793742005.122267] [25a-hgpn005:3623849:0]            topo.c:1294 UCX  DEBUG /sys/class/net/ibp203s0: PF sysfs path is '/sys/devices/pci0000:c7/0000:c7:01.0/0000:c8:00.0/0000:c9:01.0/0000:cb:00.0'
+[1793742005.122310] [25a-hgpn005:3623849:0]            topo.c:343  UCX  DEBUG added sys_dev 8 for bus id cb:00.0
+[1793742005.122311] [25a-hgpn005:3623849:0]            topo.c:710  UCX  DEBUG ibp203s0: bdf_name 0000:cb:00.0 sys_dev 8
+[1793742005.122850] [25a-hgpn005:3623849:0]            topo.c:1294 UCX  DEBUG /sys/class/net/ibp219s0: PF sysfs path is '/sys/devices/pci0000:d7/0000:d7:01.0/0000:d8:00.0/0000:d9:01.0/0000:db:00.0'
+[1793742005.122875] [25a-hgpn005:3623849:0]            topo.c:343  UCX  DEBUG added sys_dev 9 for bus id db:00.0
+[1793742005.122877] [25a-hgpn005:3623849:0]            topo.c:710  UCX  DEBUG ibp219s0: bdf_name 0000:db:00.0 sys_dev 9
+[1793742005.123367] [25a-hgpn005:3623849:0]            topo.c:1294 UCX  DEBUG /sys/class/net/ibp25s0: PF sysfs path is '/sys/devices/pci0000:15/0000:15:01.0/0000:16:00.0/0000:17:01.0/0000:19:00.0'
+[1793742005.123394] [25a-hgpn005:3623849:0]            topo.c:343  UCX  DEBUG added sys_dev 10 for bus id 19:00.0
+[1793742005.123395] [25a-hgpn005:3623849:0]            topo.c:710  UCX  DEBUG ibp25s0: bdf_name 0000:19:00.0 sys_dev 10
+[1793742005.123887] [25a-hgpn005:3623849:0]            topo.c:1294 UCX  DEBUG /sys/class/net/ibp59s0: PF sysfs path is '/sys/devices/pci0000:37/0000:37:01.0/0000:38:00.0/0000:39:01.0/0000:3b:00.0'
+[1793742005.123905] [25a-hgpn005:3623849:0]            topo.c:343  UCX  DEBUG added sys_dev 11 for bus id 3b:00.0
+[1793742005.123906] [25a-hgpn005:3623849:0]            topo.c:710  UCX  DEBUG ibp59s0: bdf_name 0000:3b:00.0 sys_dev 11
+[1793742005.124428] [25a-hgpn005:3623849:0]            topo.c:1294 UCX  DEBUG /sys/class/net/ibp76s0: PF sysfs path is '/sys/devices/pci0000:48/0000:48:01.0/0000:49:00.0/0000:4a:01.0/0000:4c:00.0'
+[1793742005.124457] [25a-hgpn005:3623849:0]            topo.c:343  UCX  DEBUG added sys_dev 12 for bus id 4c:00.0
+[1793742005.124458] [25a-hgpn005:3623849:0]            topo.c:710  UCX  DEBUG ibp76s0: bdf_name 0000:4c:00.0 sys_dev 12
+[1793742005.125001] [25a-hgpn005:3623849:0]            topo.c:1294 UCX  DEBUG /sys/class/net/ibp93s0: PF sysfs path is '/sys/devices/pci0000:59/0000:59:01.0/0000:5a:00.0/0000:5b:01.0/0000:5d:00.0'
+[1793742005.125040] [25a-hgpn005:3623849:0]            topo.c:343  UCX  DEBUG added sys_dev 13 for bus id 5d:00.0
+[1793742005.125041] [25a-hgpn005:3623849:0]            topo.c:710  UCX  DEBUG ibp93s0: bdf_name 0000:5d:00.0 sys_dev 13
+[1793742005.125556] [25a-hgpn005:3623849:0]            topo.c:1290 UCX  DEBUG /sys/class/net/lo: sysfs path undetected
+[1793742005.125557] [25a-hgpn005:3623849:0]            topo.c:714  UCX  DEBUG lo: system device unknown
+[1793742005.127067] [25a-hgpn005:3623849:0]            topo.c:1294 UCX  DEBUG /sys/class/net/vlan1721/lower_bond0/lower_enp39s0f0np0: PF sysfs path is '/sys/devices/pci0000:26/0000:26:01.0/0000:27:00.0'
+[1793742005.127071] [25a-hgpn005:3623849:0]            topo.c:710  UCX  DEBUG vlan1721: bdf_name 0000:27:00.0 sys_dev 4
+[1793742005.127111] [25a-hgpn005:3623849:0]     ucp_context.c:1690 UCX  DEBUG closing md tcp because it has no selected transport resources
+[1793742005.127210] [25a-hgpn005:3623849:0]    cuda_copy_md.c:111  UCX  DEBUG dmabuf is supported on cuda device 0
+[1793742005.127275] [25a-hgpn005:3623849:0]    cuda_copy_md.c:320  UCX  DEBUG cuda_cuCtxSetFlags_func(CU_CTX_SYNC_MEMOPS) failed: invalid device context
+[1793742005.127295] [25a-hgpn005:3623849:0]      cuda_iface.c:52   UCX  DEBUG set cuda sys_device to `unknown` as no context is currently active
+[1793742005.127307] [25a-hgpn005:3623849:0]     cuda_ipc_md.c:506  UCX  DEBUG multi-node NVLINK support is disabled
+[1793742005.127323] [25a-hgpn005:3623849:0]      cuda_iface.c:52   UCX  DEBUG set cuda sys_device to `unknown` as no context is currently active
+[1793742005.127364] [25a-hgpn005:3623849:0]           mpool.c:138  UCX  DEBUG mpool rcache_mp: align 8, maxelems 4294967295, elemsize 144
+[1793742005.133723] [25a-hgpn005:3623849:0]           async.c:248  UCX  DEBUG added async handler 0xbf1a20 [id=46 ref 1] ucs_rcache_invalidate_handler() to hash
+[1793742005.133853] [25a-hgpn005:3623849:0]           async.c:522  UCX  DEBUG listening to async event fd 46 events 0x1 mode thread_spinlock
+[1793742005.133911] [25a-hgpn005:3623849:0]          module.c:304  UCX  DEBUG loading modules for ucm
+[1793742005.133913] [25a-hgpn005:3623849:0]          module.c:257  UCX  DEBUG loading module 'cuda' with mode 0x1001
+[1793742005.136136] [25a-hgpn005:3623849:0]          module.c:192  UCX  DEBUG loaded /work/envstack/apps/nvhpc/26.3/Linux_x86_64/26.3/comm_libs/13.1/hpcx/hpcx-2.25.1/ucx/mt/lib/ucx/libucm_cuda.so.0.0.0 [0xc09220]
+[1793742005.211374] [25a-hgpn005:3623849:0]      cuda_iface.c:52   UCX  DEBUG set cuda sys_device to `unknown` as no context is currently active
+[1793742005.211388] [25a-hgpn005:3623849:0]     ucp_context.c:1690 UCX  DEBUG closing md gdr_copy because it has no selected transport resources
+[1793742005.211411] [25a-hgpn005:3623849:0]           async.c:173  UCX  DEBUG removed async handler 0xbf1a20 [id=46 ref 1] ucs_rcache_invalidate_handler() from hash
+[1793742005.211413] [25a-hgpn005:3623849:0]           async.c:576  UCX  DEBUG removing async handler 0xbf1a20 [id=46 ref 1] ucs_rcache_invalidate_handler()
+[1793742005.211471] [25a-hgpn005:3623849:0]           async.c:188  UCX  DEBUG release async handler 0xbf1a20 [id=46 ref 0] ucs_rcache_invalidate_handler()
+[1793742005.211478] [25a-hgpn005:3623849:0]         pgtable.c:618  UCX  DEBUG purge empty page table
+[1793742005.211482] [25a-hgpn005:3623849:0]           mpool.c:194  UCX  DEBUG mpool rcache_mp destroyed
+[1793742005.211532] [25a-hgpn005:3623849:0]         knem_md.c:45   UCX  DEBUG could not open the KNEM device file at /dev/knem: No such file or directory. Disabling knem resource
+[1793742005.211537] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.211564] [25a-hgpn005:3623849:0]     ucp_context.c:1862 UCX  DEBUG register host memory on: self, cuda_cpy, xpmem
+[1793742005.211566] [25a-hgpn005:3623849:0]     ucp_context.c:1862 UCX  DEBUG register cuda memory on: cuda_cpy, cuda_ipc
+[1793742005.211568] [25a-hgpn005:3623849:0]     ucp_context.c:1862 UCX  DEBUG register cuda-managed memory on: cuda_cpy
+[1793742005.211570] [25a-hgpn005:3623849:0]     ucp_context.c:1850 UCX  DEBUG no memory domain supports registering rocm memory
+[1793742005.211571] [25a-hgpn005:3623849:0]     ucp_context.c:1850 UCX  DEBUG no memory domain supports registering rocm-managed memory
+[1793742005.211573] [25a-hgpn005:3623849:0]     ucp_context.c:1850 UCX  DEBUG no memory domain supports registering rdma memory
+[1793742005.211574] [25a-hgpn005:3623849:0]     ucp_context.c:1850 UCX  DEBUG no memory domain supports registering ze-host memory
+[1793742005.211575] [25a-hgpn005:3623849:0]     ucp_context.c:1850 UCX  DEBUG no memory domain supports registering ze-device memory
+[1793742005.211577] [25a-hgpn005:3623849:0]     ucp_context.c:1850 UCX  DEBUG no memory domain supports registering ze-managed memory
+[1793742005.211607] [25a-hgpn005:3623849:0]           mpool.c:138  UCX  DEBUG mpool rcache_mp: align 8, maxelems 4294967295, elemsize 144
+[1793742005.211614] [25a-hgpn005:3623849:0]           async.c:248  UCX  DEBUG added async handler 0xde9120 [id=45 ref 1] ucs_rcache_invalidate_handler() to hash
+[1793742005.211679] [25a-hgpn005:3623849:0]           async.c:522  UCX  DEBUG listening to async event fd 45 events 0x1 mode thread_spinlock
+[1793742005.211789] [25a-hgpn005:3623849:0]     ucp_context.c:2507 UCX  DEBUG created ucp context ucp_context_0 0xbbf5d0 [7 mds 7 tls] features 0x1 tl bitmap 0x7f 0x0
+[1793742005.230643] [25a-hgpn005:3623849:0]           mpool.c:138  UCX  DEBUG mpool self_msg_desc: align 64, maxelems 4294967295, elemsize 8200
+[1793742005.230652] [25a-hgpn005:3623849:0]            self.c:248  UCX  DEBUG created self iface id 0x7652ce10dfc4979c send_size 8192
+[1793742005.230698] [25a-hgpn005:3623849:0]      ucp_worker.c:1438 UCX  DEBUG created interface[0]=0xcfee20 using self/memory on worker 0xc55a70
+[1793742005.230784] [25a-hgpn005:3623849:0]         mm_sysv.c:97   UCX  DEBUG   mm failed to allocate 33023 bytes with hugetlb
+[1793742005.230824] [25a-hgpn005:3623849:0]           mpool.c:138  UCX  DEBUG mpool mm_recv_desc: align 64, maxelems 4294967295, elemsize 8368
+[1793742005.230845] [25a-hgpn005:3623849:0]         mm_sysv.c:97   UCX  DEBUG   mm failed to allocate 4292720 bytes with hugetlb
+[1793742005.230858] [25a-hgpn005:3623849:0]           mpool.c:282  UCX  DEBUG mpool mm_recv_desc: allocated chunk 0x1534afbe7018 of 4296680 bytes with 512 elements
+[1793742005.231930] [25a-hgpn005:3623849:0]        mm_iface.c:740  UCX  DEBUG created mm iface 0xde9160 FIFO id 0x5e08008 va 0x1536d4025000 size 36864 (128 x 256 elems)
+[1793742005.231959] [25a-hgpn005:3623849:0]      ucp_worker.c:1438 UCX  DEBUG created interface[1]=0xde9160 using sysv/memory on worker 0xc55a70
+[1793742005.232040] [25a-hgpn005:3623849:0]        mm_posix.c:608  UCX  DEBUG   allocated posix shared memory at 0x1536cf9c5000 length 36864
+[1793742005.232052] [25a-hgpn005:3623849:0]           mpool.c:138  UCX  DEBUG mpool mm_recv_desc: align 64, maxelems 4294967295, elemsize 8368
+[1793742005.233402] [25a-hgpn005:3623849:0]        mm_posix.c:382  UCX  DEBUG   shared memory mmap(addr=(nil), length=6291456, flags= HUGETLB, fd=52) failed: Invalid argument
+[1793742005.233412] [25a-hgpn005:3623849:0]        mm_posix.c:608  UCX  DEBUG   allocated posix shared memory at 0x1534af7ce000 length 4296704
+[1793742005.233418] [25a-hgpn005:3623849:0]           mpool.c:282  UCX  DEBUG mpool mm_recv_desc: allocated chunk 0x1534af7ce018 of 4296680 bytes with 512 elements
+[1793742005.233894] [25a-hgpn005:3623849:0]        mm_iface.c:740  UCX  DEBUG created mm iface 0xdd8cd0 FIFO id 0x4000000070501d85 va 0x1536cf9c5000 size 36864 (128 x 256 elems)
+[1793742005.233903] [25a-hgpn005:3623849:0]      ucp_worker.c:1438 UCX  DEBUG created interface[2]=0xdd8cd0 using posix/memory on worker 0xc55a70
+[1793742005.233933] [25a-hgpn005:3623849:0]      ucp_worker.c:1438 UCX  DEBUG created interface[3]=0xdd92c0 using cuda_copy/cuda on worker 0xc55a70
+[1793742005.296374] [25a-hgpn005:3623849:0]      ucp_worker.c:1438 UCX  DEBUG created interface[4]=0xdd9b40 using cuda_ipc/cuda on worker 0xc55a70
+[1793742005.296417] [25a-hgpn005:3623849:0]           mpool.c:138  UCX  DEBUG mpool uct_scopy_iface_tx_mp: align 64, maxelems 4294967295, elemsize 736
+[1793742005.296441] [25a-hgpn005:3623849:0]      ucp_worker.c:1438 UCX  DEBUG created interface[5]=0xcf9a50 using cma/memory on worker 0xc55a70
+[1793742005.296491] [25a-hgpn005:3623849:0]           mpool.c:138  UCX  DEBUG mpool mm_recv_desc: align 64, maxelems 4294967295, elemsize 8368
+[1793742005.296500] [25a-hgpn005:3623849:0]           mpool.c:282  UCX  DEBUG mpool mm_recv_desc: allocated chunk 0x1534af3b5018 of 4296680 bytes with 512 elements
+[1793742005.297167] [25a-hgpn005:3623849:0]        mm_iface.c:740  UCX  DEBUG created mm iface 0xddcf20 FIFO id 0x1536cc942000 va 0x1536cc942000 size 36864 (128 x 256 elems)
+[1793742005.297184] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.297187] [25a-hgpn005:3623849:0]      ucp_worker.c:1438 UCX  DEBUG created interface[6]=0xddcf20 using xpmem/memory on worker 0xc55a70
+[1793742005.297190] [25a-hgpn005:3623849:0]      ucp_worker.c:1152 UCX  DEBUG selected scalable tl bitmap: 0x7f 0x0 (7 tls)
+[1793742005.329532] [25a-hgpn005:3623849:0]           async.c:248  UCX  DEBUG added async handler 0xddab50 [id=50 ref 1] ucp_worker_iface_async_fd_event() to hash
+[1793742005.329549] [25a-hgpn005:3623849:0]           async.c:522  UCX  DEBUG listening to async event fd 50 events 0x0 mode thread_spinlock
+[1793742005.329572] [25a-hgpn005:3623849:0]           async.c:248  UCX  DEBUG added async handler 0xcfebd0 [id=51 ref 1] ucp_worker_iface_async_fd_event() to hash
+[1793742005.329577] [25a-hgpn005:3623849:0]           async.c:522  UCX  DEBUG listening to async event fd 51 events 0x0 mode thread_spinlock
+[1793742005.329600] [25a-hgpn005:3623849:0]           async.c:248  UCX  DEBUG added async handler 0xcfc300 [id=64 ref 1] ucp_worker_iface_async_fd_event() to hash
+[1793742005.329603] [25a-hgpn005:3623849:0]           async.c:522  UCX  DEBUG listening to async event fd 64 events 0x0 mode thread_spinlock
+[1793742005.329606] [25a-hgpn005:3623849:0]           async.c:248  UCX  DEBUG added async handler 0xcfb8e0 [id=65 ref 1] ucp_worker_iface_async_fd_event() to hash
+[1793742005.329610] [25a-hgpn005:3623849:0]           async.c:522  UCX  DEBUG listening to async event fd 65 events 0x0 mode thread_spinlock
+[1793742005.329611] [25a-hgpn005:3623849:0]           async.c:248  UCX  DEBUG added async handler 0xcfb170 [id=63 ref 1] ucp_worker_iface_async_fd_event() to hash
+[1793742005.329615] [25a-hgpn005:3623849:0]           async.c:522  UCX  DEBUG listening to async event fd 63 events 0x0 mode thread_spinlock
+[1793742005.329619] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.329621] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.329622] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.329623] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.329625] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.329626] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.329628] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.329629] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.329630] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.329632] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.329633] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.329635] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.329636] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.329657] [25a-hgpn005:3623849:0]      tcp_sockcm.c:228  UCX  DEBUG created tcp_sockcm 0xca4210
+[1793742005.329760] [25a-hgpn005:3623849:0]          ucp_ep.c:408  UCX  DEBUG created ep 0x1536cc8fd000 to <no debug data> mem_type_ep:cuda
+[1793742005.329859] [25a-hgpn005:3623849:0]      proto_rndv.c:518  UCX  DEBUG         no active message lane for tag/rndv
+[1793742005.329882] [25a-hgpn005:3623849:0]      proto_rndv.c:518  UCX  DEBUG             no active message lane for rndv/ats
+[1793742005.329884] [25a-hgpn005:3623849:0]      proto_rndv.c:518  UCX  DEBUG             no active message lane for rndv/rtr
+[1793742005.329890] [25a-hgpn005:3623849:0]      proto_rndv.c:518  UCX  DEBUG                 no active message lane for rndv/rtr
+[1793742005.329893] [25a-hgpn005:3623849:0]      proto_rndv.c:518  UCX  DEBUG                 no active message lane for rndv/rtr/mtype
+[1793742005.329902] [25a-hgpn005:3623849:0]      proto_rndv.c:518  UCX  DEBUG                     no active message lane for rndv/rtr
+[1793742005.329904] [25a-hgpn005:3623849:0]      proto_rndv.c:518  UCX  DEBUG                     no active message lane for rndv/rtr/mtype
+[1793742005.329922] [25a-hgpn005:3623849:0]      proto_rndv.c:518  UCX  DEBUG             no active message lane for rndv/rtr/mtype
+[1793742005.329928] [25a-hgpn005:3623849:0]      proto_rndv.c:518  UCX  DEBUG                 no active message lane for rndv/rtr
+[1793742005.329930] [25a-hgpn005:3623849:0]      proto_rndv.c:518  UCX  DEBUG                 no active message lane for rndv/rtr/mtype
+[1793742005.329936] [25a-hgpn005:3623849:0]      proto_rndv.c:518  UCX  DEBUG         no active message lane for rndv/rtr
+[1793742005.329938] [25a-hgpn005:3623849:0]      proto_rndv.c:518  UCX  DEBUG         no active message lane for rndv/rtr/mtype
+[1793742005.329955] [25a-hgpn005:3623849:0]          wireup.c:1280 UCX  DEBUG   ep 0x1536cc8fd000: am_lane <none> wireup_msg_lane <none> cm_lane <none> keepalive_lane <none> reachable_mds 0x8
+[1793742005.329960] [25a-hgpn005:3623849:0]          wireup.c:1290 UCX  DEBUG   ep 0x1536cc8fd000: lane[0]:  3:cuda_copy/cuda.0 md[3]        -> addr[0].md[3]/cuda_cpy/sysdev[255] seg 4294967295 rma_bw#0
+[1793742005.329962] [25a-hgpn005:3623849:0]          wireup.c:1294 UCX  DEBUG   ep 0x1536cc8fd000: err mode 0, flags 0x1
+[1793742005.329981] [25a-hgpn005:3623849:0]          ucp_ep.c:408  UCX  DEBUG created ep 0x1536cc8fd040 to <no debug data> mem_type_ep:cuda-managed
+[1793742005.329997] [25a-hgpn005:3623849:0]          wireup.c:1280 UCX  DEBUG   ep 0x1536cc8fd040: am_lane <none> wireup_msg_lane <none> cm_lane <none> keepalive_lane <none> reachable_mds 0x8
+[1793742005.329999] [25a-hgpn005:3623849:0]          wireup.c:1290 UCX  DEBUG   ep 0x1536cc8fd040: lane[0]:  3:cuda_copy/cuda.0 md[3]        -> addr[0].md[3]/cuda_cpy/sysdev[255] seg 4294967295 rma_bw#0
+[1793742005.330001] [25a-hgpn005:3623849:0]          wireup.c:1294 UCX  DEBUG   ep 0x1536cc8fd040: err mode 0, flags 0x1
+[1793742005.330006] [25a-hgpn005:3623849:0]           mpool.c:138  UCX  DEBUG mpool ucp_requests: align 64, maxelems 4294967295, elemsize 440
+[1793742005.330008] [25a-hgpn005:3623849:0]           mpool.c:138  UCX  DEBUG mpool ucp_rkeys: align 64, maxelems 4294967295, elemsize 104
+[1793742005.330009] [25a-hgpn005:3623849:0]           mpool.c:138  UCX  DEBUG mpool ucp_reg_bufs: align 64, maxelems 4294967295, elemsize 8216
+[1793742005.330012] [25a-hgpn005:3623849:0]           mpool.c:138  UCX  DEBUG mpool ucp_am_bufs: align 64, maxelems 4294967295, elemsize 153
+[1793742005.330014] [25a-hgpn005:3623849:0]           mpool.c:138  UCX  DEBUG mpool ucp_am_bufs: align 64, maxelems 4294967295, elemsize 1113
+[1793742005.330015] [25a-hgpn005:3623849:0]           mpool.c:138  UCX  DEBUG mpool ucp_am_bufs: align 64, maxelems 4294967295, elemsize 8345
+[1793742005.330017] [25a-hgpn005:3623849:0]       mpool_set.c:130  UCX  DEBUG mpool_set:ucp_am_bufs, sizes map 0x80000440, largest size 8256, mpools num 3
+[1793742005.330076] [25a-hgpn005:3623849:0]          parser.c:2370 UCX  INFO  UCX_* env variables: UCX_LOG_FILE=/work/u1131128/coding-adv1/results/t0/mpiinit_dbg2/ucxdbg.%p.log UCX_MODULES=^ib,rdmacm UCX_POSIX_USE_PROC_LINK=n UCX_CUDA_IPC_ENABLE_MNNVL=no UCX_TLS=self,sm,cuda_copy,cuda_ipc UCX_LOG_LEVEL=debug
+[1793742005.330190] [25a-hgpn005:3623849:0]        mm_xpmem.c:207  UCX  DEBUG xpmem registered global segment id 0x100374ba9
+[1793742005.331969] [25a-hgpn005:3623849:0]          ucp_ep.c:408  UCX  DEBUG created ep 0x1536cc8fd080 to <no debug data> from api call
+[1793742005.332031] [25a-hgpn005:3623849:0]      ucp_worker.c:1912 UCX  INFO    ucp_context_0 self cfg#1 tag(self/memory cma/memory)
+[1793742005.332107] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG               could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332125] [25a-hgpn005:3623849:0]    cuda_copy_md.c:383  UCX  DEBUG               cuCtxGetDevice(cu_device_p) failed: invalid device context
+[1793742005.332132] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG               cuda primary context is inactive on device 0
+[1793742005.332134] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG               cuda primary context is inactive on device 1
+[1793742005.332136] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG               cuda primary context is inactive on device 2
+[1793742005.332138] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG               cuda primary context is inactive on device 3
+[1793742005.332140] [25a-hgpn005:3623849:0]    cuda_copy_md.c:444  UCX  DEBUG               no active cuda primary context for memory allocation
+[1793742005.332143] [25a-hgpn005:3623849:0]         uct_mem.c:171  UCX  DEBUG               failed to allocate 1 bytes using md cuda_cpy for get_alloc_md_id: No such device
+[1793742005.332152] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG               could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332154] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG               could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332170] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG                   could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332181] [25a-hgpn005:3623849:0]    cuda_copy_md.c:383  UCX  DEBUG                   cuCtxGetDevice(cu_device_p) failed: invalid device context
+[1793742005.332183] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                   cuda primary context is inactive on device 0
+[1793742005.332184] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                   cuda primary context is inactive on device 1
+[1793742005.332186] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                   cuda primary context is inactive on device 2
+[1793742005.332187] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                   cuda primary context is inactive on device 3
+[1793742005.332188] [25a-hgpn005:3623849:0]    cuda_copy_md.c:444  UCX  DEBUG                   no active cuda primary context for memory allocation
+[1793742005.332190] [25a-hgpn005:3623849:0]         uct_mem.c:171  UCX  DEBUG                   failed to allocate 1 bytes using md cuda_cpy for get_alloc_md_id: No such device
+[1793742005.332192] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG                   could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332194] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG                   could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332208] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG                       could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332213] [25a-hgpn005:3623849:0]    cuda_copy_md.c:383  UCX  DEBUG                       cuCtxGetDevice(cu_device_p) failed: invalid device context
+[1793742005.332215] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                       cuda primary context is inactive on device 0
+[1793742005.332217] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                       cuda primary context is inactive on device 1
+[1793742005.332218] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                       cuda primary context is inactive on device 2
+[1793742005.332219] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                       cuda primary context is inactive on device 3
+[1793742005.332221] [25a-hgpn005:3623849:0]    cuda_copy_md.c:444  UCX  DEBUG                       no active cuda primary context for memory allocation
+[1793742005.332222] [25a-hgpn005:3623849:0]         uct_mem.c:171  UCX  DEBUG                       failed to allocate 1 bytes using md cuda_cpy for get_alloc_md_id: No such device
+[1793742005.332224] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG                       could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332226] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG                       could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332268] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG               could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332273] [25a-hgpn005:3623849:0]    cuda_copy_md.c:383  UCX  DEBUG               cuCtxGetDevice(cu_device_p) failed: invalid device context
+[1793742005.332275] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG               cuda primary context is inactive on device 0
+[1793742005.332277] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG               cuda primary context is inactive on device 1
+[1793742005.332281] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG               cuda primary context is inactive on device 2
+[1793742005.332283] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG               cuda primary context is inactive on device 3
+[1793742005.332284] [25a-hgpn005:3623849:0]    cuda_copy_md.c:444  UCX  DEBUG               no active cuda primary context for memory allocation
+[1793742005.332286] [25a-hgpn005:3623849:0]         uct_mem.c:171  UCX  DEBUG               failed to allocate 1 bytes using md cuda_cpy for get_alloc_md_id: No such device
+[1793742005.332287] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG               could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332289] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG               could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332295] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG                   could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332300] [25a-hgpn005:3623849:0]    cuda_copy_md.c:383  UCX  DEBUG                   cuCtxGetDevice(cu_device_p) failed: invalid device context
+[1793742005.332302] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                   cuda primary context is inactive on device 0
+[1793742005.332303] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                   cuda primary context is inactive on device 1
+[1793742005.332305] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                   cuda primary context is inactive on device 2
+[1793742005.332306] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                   cuda primary context is inactive on device 3
+[1793742005.332307] [25a-hgpn005:3623849:0]    cuda_copy_md.c:444  UCX  DEBUG                   no active cuda primary context for memory allocation
+[1793742005.332309] [25a-hgpn005:3623849:0]         uct_mem.c:171  UCX  DEBUG                   failed to allocate 1 bytes using md cuda_cpy for get_alloc_md_id: No such device
+[1793742005.332311] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG                   could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332312] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG                   could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332317] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG                   could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332322] [25a-hgpn005:3623849:0]    cuda_copy_md.c:383  UCX  DEBUG                   cuCtxGetDevice(cu_device_p) failed: invalid device context
+[1793742005.332324] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                   cuda primary context is inactive on device 0
+[1793742005.332325] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                   cuda primary context is inactive on device 1
+[1793742005.332327] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                   cuda primary context is inactive on device 2
+[1793742005.332328] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                   cuda primary context is inactive on device 3
+[1793742005.332329] [25a-hgpn005:3623849:0]    cuda_copy_md.c:444  UCX  DEBUG                   no active cuda primary context for memory allocation
+[1793742005.332331] [25a-hgpn005:3623849:0]         uct_mem.c:171  UCX  DEBUG                   failed to allocate 1 bytes using md cuda_cpy for get_alloc_md_id: No such device
+[1793742005.332332] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG                   could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332334] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG                   could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332495] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG               could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332500] [25a-hgpn005:3623849:0]    cuda_copy_md.c:383  UCX  DEBUG               cuCtxGetDevice(cu_device_p) failed: invalid device context
+[1793742005.332502] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG               cuda primary context is inactive on device 0
+[1793742005.332503] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG               cuda primary context is inactive on device 1
+[1793742005.332505] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG               cuda primary context is inactive on device 2
+[1793742005.332506] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG               cuda primary context is inactive on device 3
+[1793742005.332508] [25a-hgpn005:3623849:0]    cuda_copy_md.c:444  UCX  DEBUG               no active cuda primary context for memory allocation
+[1793742005.332509] [25a-hgpn005:3623849:0]         uct_mem.c:171  UCX  DEBUG               failed to allocate 1 bytes using md cuda_cpy for get_alloc_md_id: No such device
+[1793742005.332511] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG               could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332512] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG               could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332526] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG                   could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332531] [25a-hgpn005:3623849:0]    cuda_copy_md.c:383  UCX  DEBUG                   cuCtxGetDevice(cu_device_p) failed: invalid device context
+[1793742005.332532] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                   cuda primary context is inactive on device 0
+[1793742005.332534] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                   cuda primary context is inactive on device 1
+[1793742005.332535] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                   cuda primary context is inactive on device 2
+[1793742005.332537] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                   cuda primary context is inactive on device 3
+[1793742005.332538] [25a-hgpn005:3623849:0]    cuda_copy_md.c:444  UCX  DEBUG                   no active cuda primary context for memory allocation
+[1793742005.332539] [25a-hgpn005:3623849:0]         uct_mem.c:171  UCX  DEBUG                   failed to allocate 1 bytes using md cuda_cpy for get_alloc_md_id: No such device
+[1793742005.332541] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG                   could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332543] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG                   could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332573] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG               could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332578] [25a-hgpn005:3623849:0]    cuda_copy_md.c:383  UCX  DEBUG               cuCtxGetDevice(cu_device_p) failed: invalid device context
+[1793742005.332579] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG               cuda primary context is inactive on device 0
+[1793742005.332581] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG               cuda primary context is inactive on device 1
+[1793742005.332582] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG               cuda primary context is inactive on device 2
+[1793742005.332583] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG               cuda primary context is inactive on device 3
+[1793742005.332585] [25a-hgpn005:3623849:0]    cuda_copy_md.c:444  UCX  DEBUG               no active cuda primary context for memory allocation
+[1793742005.332590] [25a-hgpn005:3623849:0]         uct_mem.c:171  UCX  DEBUG               failed to allocate 1 bytes using md cuda_cpy for get_alloc_md_id: No such device
+[1793742005.332592] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG               could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332593] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG               could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332678] [25a-hgpn005:3623849:0]          wireup.c:1280 UCX  DEBUG   ep 0x1536cc8fd080: am_lane 0 wireup_msg_lane <none> cm_lane <none> keepalive_lane <none> reachable_mds 0x6f
+[1793742005.332682] [25a-hgpn005:3623849:0]          wireup.c:1290 UCX  DEBUG   ep 0x1536cc8fd080: lane[0]:  0:self/memory.0 md[0]           -> addr[0].md[0]/self/sysdev[255] seg 4294967295 am rkey_ptr
+[1793742005.332685] [25a-hgpn005:3623849:0]          wireup.c:1290 UCX  DEBUG   ep 0x1536cc8fd080: lane[1]:  5:cma/memory.0 md[5]            -> addr[5].md[5]/cma/sysdev[255] seg 4294967295 rma_bw#0
+[1793742005.332686] [25a-hgpn005:3623849:0]          wireup.c:1294 UCX  DEBUG   ep 0x1536cc8fd080: err mode 0, flags 0x1
+[1793742005.332736] [25a-hgpn005:3623849:0]          ucp_ep.c:408  UCX  DEBUG created ep 0x1536cc8fd0c0 to <no debug data> from api call
+[1793742005.332772] [25a-hgpn005:3623849:0]      ucp_worker.c:1912 UCX  INFO    ucp_context_0 intra-node cfg#2 tag(sysv/memory xpmem/memory cma/memory cuda_ipc/cuda)
+[1793742005.332804] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG               could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332809] [25a-hgpn005:3623849:0]    cuda_copy_md.c:383  UCX  DEBUG               cuCtxGetDevice(cu_device_p) failed: invalid device context
+[1793742005.332811] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG               cuda primary context is inactive on device 0
+[1793742005.332812] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG               cuda primary context is inactive on device 1
+[1793742005.332814] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG               cuda primary context is inactive on device 2
+[1793742005.332815] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG               cuda primary context is inactive on device 3
+[1793742005.332816] [25a-hgpn005:3623849:0]    cuda_copy_md.c:444  UCX  DEBUG               no active cuda primary context for memory allocation
+[1793742005.332818] [25a-hgpn005:3623849:0]         uct_mem.c:171  UCX  DEBUG               failed to allocate 1 bytes using md cuda_cpy for get_alloc_md_id: No such device
+[1793742005.332819] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG               could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332821] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG               could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332835] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG                   could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332840] [25a-hgpn005:3623849:0]    cuda_copy_md.c:383  UCX  DEBUG                   cuCtxGetDevice(cu_device_p) failed: invalid device context
+[1793742005.332841] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                   cuda primary context is inactive on device 0
+[1793742005.332843] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                   cuda primary context is inactive on device 1
+[1793742005.332844] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                   cuda primary context is inactive on device 2
+[1793742005.332846] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                   cuda primary context is inactive on device 3
+[1793742005.332851] [25a-hgpn005:3623849:0]    cuda_copy_md.c:444  UCX  DEBUG                   no active cuda primary context for memory allocation
+[1793742005.332852] [25a-hgpn005:3623849:0]         uct_mem.c:171  UCX  DEBUG                   failed to allocate 1 bytes using md cuda_cpy for get_alloc_md_id: No such device
+[1793742005.332854] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG                   could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332856] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG                   could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332868] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG                       could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332873] [25a-hgpn005:3623849:0]    cuda_copy_md.c:383  UCX  DEBUG                       cuCtxGetDevice(cu_device_p) failed: invalid device context
+[1793742005.332875] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                       cuda primary context is inactive on device 0
+[1793742005.332876] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                       cuda primary context is inactive on device 1
+[1793742005.332878] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                       cuda primary context is inactive on device 2
+[1793742005.332879] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                       cuda primary context is inactive on device 3
+[1793742005.332881] [25a-hgpn005:3623849:0]    cuda_copy_md.c:444  UCX  DEBUG                       no active cuda primary context for memory allocation
+[1793742005.332882] [25a-hgpn005:3623849:0]         uct_mem.c:171  UCX  DEBUG                       failed to allocate 1 bytes using md cuda_cpy for get_alloc_md_id: No such device
+[1793742005.332884] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG                       could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332886] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG                       could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332911] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG               could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332916] [25a-hgpn005:3623849:0]    cuda_copy_md.c:383  UCX  DEBUG               cuCtxGetDevice(cu_device_p) failed: invalid device context
+[1793742005.332918] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG               cuda primary context is inactive on device 0
+[1793742005.332919] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG               cuda primary context is inactive on device 1
+[1793742005.332921] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG               cuda primary context is inactive on device 2
+[1793742005.332922] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG               cuda primary context is inactive on device 3
+[1793742005.332923] [25a-hgpn005:3623849:0]    cuda_copy_md.c:444  UCX  DEBUG               no active cuda primary context for memory allocation
+[1793742005.332925] [25a-hgpn005:3623849:0]         uct_mem.c:171  UCX  DEBUG               failed to allocate 1 bytes using md cuda_cpy for get_alloc_md_id: No such device
+[1793742005.332926] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG               could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332928] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG               could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332934] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG                   could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332939] [25a-hgpn005:3623849:0]    cuda_copy_md.c:383  UCX  DEBUG                   cuCtxGetDevice(cu_device_p) failed: invalid device context
+[1793742005.332943] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                   cuda primary context is inactive on device 0
+[1793742005.332945] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                   cuda primary context is inactive on device 1
+[1793742005.332946] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                   cuda primary context is inactive on device 2
+[1793742005.332948] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                   cuda primary context is inactive on device 3
+[1793742005.332949] [25a-hgpn005:3623849:0]    cuda_copy_md.c:444  UCX  DEBUG                   no active cuda primary context for memory allocation
+[1793742005.332951] [25a-hgpn005:3623849:0]         uct_mem.c:171  UCX  DEBUG                   failed to allocate 1 bytes using md cuda_cpy for get_alloc_md_id: No such device
+[1793742005.332952] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG                   could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332954] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG                   could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332959] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG                   could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332964] [25a-hgpn005:3623849:0]    cuda_copy_md.c:383  UCX  DEBUG                   cuCtxGetDevice(cu_device_p) failed: invalid device context
+[1793742005.332965] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                   cuda primary context is inactive on device 0
+[1793742005.332967] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                   cuda primary context is inactive on device 1
+[1793742005.332968] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                   cuda primary context is inactive on device 2
+[1793742005.332969] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                   cuda primary context is inactive on device 3
+[1793742005.332971] [25a-hgpn005:3623849:0]    cuda_copy_md.c:444  UCX  DEBUG                   no active cuda primary context for memory allocation
+[1793742005.332972] [25a-hgpn005:3623849:0]         uct_mem.c:171  UCX  DEBUG                   failed to allocate 1 bytes using md cuda_cpy for get_alloc_md_id: No such device
+[1793742005.332974] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG                   could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332975] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG                   could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.332996] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG           xpmem version: 159748
+[1793742005.332998] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG           xpmem version: 159748
+[1793742005.333000] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG           xpmem version: 159748
+[1793742005.333001] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG           xpmem version: 159748
+[1793742005.333003] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG           xpmem version: 159748
+[1793742005.333005] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG           xpmem version: 159748
+[1793742005.333007] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG           xpmem version: 159748
+[1793742005.333008] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG           xpmem version: 159748
+[1793742005.333010] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG           xpmem version: 159748
+[1793742005.333012] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG           xpmem version: 159748
+[1793742005.333013] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG           xpmem version: 159748
+[1793742005.333021] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG           xpmem version: 159748
+[1793742005.333022] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG           xpmem version: 159748
+[1793742005.333156] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG               could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.333161] [25a-hgpn005:3623849:0]    cuda_copy_md.c:383  UCX  DEBUG               cuCtxGetDevice(cu_device_p) failed: invalid device context
+[1793742005.333162] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG               cuda primary context is inactive on device 0
+[1793742005.333164] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG               cuda primary context is inactive on device 1
+[1793742005.333165] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG               cuda primary context is inactive on device 2
+[1793742005.333167] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG               cuda primary context is inactive on device 3
+[1793742005.333168] [25a-hgpn005:3623849:0]    cuda_copy_md.c:444  UCX  DEBUG               no active cuda primary context for memory allocation
+[1793742005.333169] [25a-hgpn005:3623849:0]         uct_mem.c:171  UCX  DEBUG               failed to allocate 1 bytes using md cuda_cpy for get_alloc_md_id: No such device
+[1793742005.333171] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG               could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.333173] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG               could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.333193] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG                   could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.333197] [25a-hgpn005:3623849:0]    cuda_copy_md.c:383  UCX  DEBUG                   cuCtxGetDevice(cu_device_p) failed: invalid device context
+[1793742005.333199] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                   cuda primary context is inactive on device 0
+[1793742005.333200] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                   cuda primary context is inactive on device 1
+[1793742005.333202] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                   cuda primary context is inactive on device 2
+[1793742005.333203] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG                   cuda primary context is inactive on device 3
+[1793742005.333205] [25a-hgpn005:3623849:0]    cuda_copy_md.c:444  UCX  DEBUG                   no active cuda primary context for memory allocation
+[1793742005.333206] [25a-hgpn005:3623849:0]         uct_mem.c:171  UCX  DEBUG                   failed to allocate 1 bytes using md cuda_cpy for get_alloc_md_id: No such device
+[1793742005.333208] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG                   could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.333209] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG                   could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.333239] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG               could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.333244] [25a-hgpn005:3623849:0]    cuda_copy_md.c:383  UCX  DEBUG               cuCtxGetDevice(cu_device_p) failed: invalid device context
+[1793742005.333245] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG               cuda primary context is inactive on device 0
+[1793742005.333247] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG               cuda primary context is inactive on device 1
+[1793742005.333248] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG               cuda primary context is inactive on device 2
+[1793742005.333252] [25a-hgpn005:3623849:0]         cuda_md.c:149  UCX  DEBUG               cuda primary context is inactive on device 3
+[1793742005.333253] [25a-hgpn005:3623849:0]    cuda_copy_md.c:444  UCX  DEBUG               no active cuda primary context for memory allocation
+[1793742005.333255] [25a-hgpn005:3623849:0]         uct_mem.c:171  UCX  DEBUG               failed to allocate 1 bytes using md cuda_cpy for get_alloc_md_id: No such device
+[1793742005.333257] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG               could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.333258] [25a-hgpn005:3623849:0]         uct_mem.c:310  UCX  DEBUG               could not allocate get_alloc_md_id: cuda memory length=1 flags=0x368 num_methods=1
+[1793742005.333343] [25a-hgpn005:3623849:0]          wireup.c:1280 UCX  DEBUG   ep 0x1536cc8fd0c0: am_lane 0 wireup_msg_lane <none> cm_lane <none> keepalive_lane <none> reachable_mds 0x76
+[1793742005.333346] [25a-hgpn005:3623849:0]          wireup.c:1290 UCX  DEBUG   ep 0x1536cc8fd0c0: lane[0]:  1:sysv/memory.0 md[1]           -> addr[1].md[1]/sysv/sysdev[255] seg 4294967295 am
+[1793742005.333349] [25a-hgpn005:3623849:0]          wireup.c:1290 UCX  DEBUG   ep 0x1536cc8fd0c0: lane[1]:  6:xpmem/memory.0 md[6]          -> addr[6].md[6]/xpmem/sysdev[255] seg 4294967295 rkey_ptr
+[1793742005.333351] [25a-hgpn005:3623849:0]          wireup.c:1290 UCX  DEBUG   ep 0x1536cc8fd0c0: lane[2]:  5:cma/memory.0 md[5]            -> addr[5].md[5]/cma/sysdev[255] seg 4294967295 rma_bw#1
+[1793742005.333353] [25a-hgpn005:3623849:0]          wireup.c:1290 UCX  DEBUG   ep 0x1536cc8fd0c0: lane[3]:  4:cuda_ipc/cuda.0 md[4]         -> addr[4].md[4]/cuda_ipc/sysdev[255] seg 4294967295 rma_bw#0
+[1793742005.333355] [25a-hgpn005:3623849:0]          wireup.c:1294 UCX  DEBUG   ep 0x1536cc8fd0c0: err mode 0, flags 0x2
+[1793742005.333374] [25a-hgpn005:3623849:0]           mm_ep.c:60   UCX  DEBUG   mm_ep 0x1202910: attached remote segment id 0x5e08009 at 0x1536cfdf2000 cookie 0x3dd74937d3421b49
+[1793742005.333390] [25a-hgpn005:3623849:0]           mm_ep.c:194  UCX  DEBUG   created mm ep 0x1202910, connected to remote FIFO id 0x5e08009
+[1793742005.333402] [25a-hgpn005:3623849:0]           mpool.c:138  UCX  DEBUG   mpool rcache_mp: align 8, maxelems 4294967295, elemsize 144
+[1793742005.333525] [25a-hgpn005:3623849:0]           mm_ep.c:60   UCX  DEBUG   mm_ep 0x12029a0: attached remote segment id 0x1474dc0d5000 at 0x1536cfdc4000 cookie 0x11f8e10
+[1793742005.333538] [25a-hgpn005:3623849:0]           mm_ep.c:194  UCX  DEBUG   created mm ep 0x12029a0, connected to remote FIFO id 0x1474dc0d5000
+[1793742005.333564] [25a-hgpn005:3623849:0]          ucp_ep.c:408  UCX  DEBUG created ep 0x1536cc8fd100 to <no debug data> from api call
+[1793742005.333592] [25a-hgpn005:3623849:0]          wireup.c:1280 UCX  DEBUG   ep 0x1536cc8fd100: am_lane 0 wireup_msg_lane <none> cm_lane <none> keepalive_lane <none> reachable_mds 0x76
+[1793742005.333595] [25a-hgpn005:3623849:0]          wireup.c:1290 UCX  DEBUG   ep 0x1536cc8fd100: lane[0]:  1:sysv/memory.0 md[1]           -> addr[1].md[1]/sysv/sysdev[255] seg 4294967295 am
+[1793742005.333598] [25a-hgpn005:3623849:0]          wireup.c:1290 UCX  DEBUG   ep 0x1536cc8fd100: lane[1]:  6:xpmem/memory.0 md[6]          -> addr[6].md[6]/xpmem/sysdev[255] seg 4294967295 rkey_ptr
+[1793742005.333600] [25a-hgpn005:3623849:0]          wireup.c:1290 UCX  DEBUG   ep 0x1536cc8fd100: lane[2]:  5:cma/memory.0 md[5]            -> addr[5].md[5]/cma/sysdev[255] seg 4294967295 rma_bw#1
+[1793742005.333602] [25a-hgpn005:3623849:0]          wireup.c:1290 UCX  DEBUG   ep 0x1536cc8fd100: lane[3]:  4:cuda_ipc/cuda.0 md[4]         -> addr[4].md[4]/cuda_ipc/sysdev[255] seg 4294967295 rma_bw#0
+[1793742005.333604] [25a-hgpn005:3623849:0]          wireup.c:1294 UCX  DEBUG   ep 0x1536cc8fd100: err mode 0, flags 0x2
+[1793742005.333611] [25a-hgpn005:3623849:0]           mm_ep.c:60   UCX  DEBUG   mm_ep 0x1202a60: attached remote segment id 0x5e0800b at 0x1536cfdbb000 cookie 0x3dcb14bbdfd760e6
+[1793742005.333627] [25a-hgpn005:3623849:0]           mm_ep.c:194  UCX  DEBUG   created mm ep 0x1202a60, connected to remote FIFO id 0x5e0800b
+[1793742005.333631] [25a-hgpn005:3623849:0]           mpool.c:138  UCX  DEBUG   mpool rcache_mp: align 8, maxelems 4294967295, elemsize 144
+[1793742005.333735] [25a-hgpn005:3623849:0]           mm_ep.c:60   UCX  DEBUG   mm_ep 0x1202af0: attached remote segment id 0x153a5c026000 at 0x1536cfd8d000 cookie 0x11f9a90
+[1793742005.333749] [25a-hgpn005:3623849:0]           mm_ep.c:194  UCX  DEBUG   created mm ep 0x1202af0, connected to remote FIFO id 0x153a5c026000
+[1793742005.333767] [25a-hgpn005:3623849:0]          ucp_ep.c:408  UCX  DEBUG created ep 0x1536cc8fd140 to <no debug data> from api call
+[1793742005.333789] [25a-hgpn005:3623849:0]          wireup.c:1280 UCX  DEBUG   ep 0x1536cc8fd140: am_lane 0 wireup_msg_lane <none> cm_lane <none> keepalive_lane <none> reachable_mds 0x76
+[1793742005.333792] [25a-hgpn005:3623849:0]          wireup.c:1290 UCX  DEBUG   ep 0x1536cc8fd140: lane[0]:  1:sysv/memory.0 md[1]           -> addr[1].md[1]/sysv/sysdev[255] seg 4294967295 am
+[1793742005.333794] [25a-hgpn005:3623849:0]          wireup.c:1290 UCX  DEBUG   ep 0x1536cc8fd140: lane[1]:  6:xpmem/memory.0 md[6]          -> addr[6].md[6]/xpmem/sysdev[255] seg 4294967295 rkey_ptr
+[1793742005.333796] [25a-hgpn005:3623849:0]          wireup.c:1290 UCX  DEBUG   ep 0x1536cc8fd140: lane[2]:  5:cma/memory.0 md[5]            -> addr[5].md[5]/cma/sysdev[255] seg 4294967295 rma_bw#1
+[1793742005.333799] [25a-hgpn005:3623849:0]          wireup.c:1290 UCX  DEBUG   ep 0x1536cc8fd140: lane[3]:  4:cuda_ipc/cuda.0 md[4]         -> addr[4].md[4]/cuda_ipc/sysdev[255] seg 4294967295 rma_bw#0
+[1793742005.333800] [25a-hgpn005:3623849:0]          wireup.c:1294 UCX  DEBUG   ep 0x1536cc8fd140: err mode 0, flags 0x2
+[1793742005.333810] [25a-hgpn005:3623849:0]           mm_ep.c:60   UCX  DEBUG   mm_ep 0x1202c20: attached remote segment id 0x5e0800d at 0x1536cfd84000 cookie 0xffffffffffffffff
+[1793742005.333821] [25a-hgpn005:3623849:0]           mm_ep.c:194  UCX  DEBUG   created mm ep 0x1202c20, connected to remote FIFO id 0x5e0800d
+[1793742005.333826] [25a-hgpn005:3623849:0]           mpool.c:138  UCX  DEBUG   mpool rcache_mp: align 8, maxelems 4294967295, elemsize 144
+[1793742005.333927] [25a-hgpn005:3623849:0]           mm_ep.c:60   UCX  DEBUG   mm_ep 0x1202cb0: attached remote segment id 0x15042f9c5000 at 0x1536cfd56000 cookie 0xcbc2c0
+[1793742005.333937] [25a-hgpn005:3623849:0]           mm_ep.c:194  UCX  DEBUG   created mm ep 0x1202cb0, connected to remote FIFO id 0x15042f9c5000
+[1793742005.334274] [25a-hgpn005:3623849:0]           mpool.c:282  UCX  DEBUG mpool ucp_requests: allocated chunk 0xcc3cb4 of 57428 bytes with 128 elements
+[1793742005.335536] [25a-hgpn005:3623849:0]       wireup_ep.c:568  UCX  DEBUG ep 0x1536cc8fd0c0: wireup_ep 0xa66ce0 set next_ep 0x1202910
+[1793742005.335541] [25a-hgpn005:3623849:0]          wireup.c:2003 UCX  DEBUG ep 0x1536cc8fd0c0: send wireup request (flags=0x51)
+[1793742005.335560] [25a-hgpn005:3623849:0]           mm_ep.c:60   UCX  DEBUG mm_ep 0x1202910: attached remote segment id 0x5e0800c at 0x1534adf9a000 cookie (nil)
+[1793742005.335642] [25a-hgpn005:3623849:0]           mm_ep.c:60   UCX  DEBUG mm_ep 0x1202c20: attached remote segment id 0x5e0800f at 0x1534adb81000 cookie 0xffffffffffffffff
+[1793742005.335660] [25a-hgpn005:3623849:0]       wireup_ep.c:457  UCX  DEBUG ep 0x1536cc8fd0c0: destroy wireup ep 0xa66ce0
+[1793742005.335710] [25a-hgpn005:3623849:0]           mpool.c:282  UCX  DEBUG   mpool ucp_rkeys: allocated chunk 0xc84a70 of 16472 bytes with 128 elements
+[1793742005.363867] [25a-hgpn005:3623849:0]          ucp_ep.c:1758 UCX  DEBUG ep 0x1536cc8fd080 flags 0x91 cfg_index 1: close_nbx(flags=0x0)
+[1793742005.363875] [25a-hgpn005:3623849:0]           flush.c:455  UCX  DEBUG close ep 0x1536cc8fd080
+[1793742005.363890] [25a-hgpn005:3623849:0]          ucp_ep.c:1291 UCX  DEBUG ep 0x1536cc8fd080: destroy
+[1793742005.363893] [25a-hgpn005:3623849:0]          ucp_ep.c:1609 UCX  DEBUG ep 0x1536cc8fd080: cleanup lanes
+[1793742005.363908] [25a-hgpn005:3623849:0]          ucp_ep.c:1620 UCX  DEBUG ep 0x1536cc8fd080: pending & destroy uct_ep[0]=0xbce310
+[1793742005.363918] [25a-hgpn005:3623849:0]          ucp_ep.c:1620 UCX  DEBUG ep 0x1536cc8fd080: pending & destroy uct_ep[1]=0xbcf160
+[1793742005.363932] [25a-hgpn005:3623849:0]          ucp_ep.c:1758 UCX  DEBUG ep 0x1536cc8fd0c0 flags 0x97 cfg_index 2: close_nbx(flags=0x0)
+[1793742005.363933] [25a-hgpn005:3623849:0]           flush.c:455  UCX  DEBUG close ep 0x1536cc8fd0c0
+[1793742005.363936] [25a-hgpn005:3623849:0]          ucp_ep.c:1758 UCX  DEBUG ep 0x1536cc8fd100 flags 0x51 cfg_index 2: close_nbx(flags=0x0)
+[1793742005.363937] [25a-hgpn005:3623849:0]           flush.c:455  UCX  DEBUG close ep 0x1536cc8fd100
+[1793742005.363940] [25a-hgpn005:3623849:0]          ucp_ep.c:1291 UCX  DEBUG ep 0x1536cc8fd100: destroy
+[1793742005.363941] [25a-hgpn005:3623849:0]          ucp_ep.c:1609 UCX  DEBUG ep 0x1536cc8fd100: cleanup lanes
+[1793742005.363943] [25a-hgpn005:3623849:0]          ucp_ep.c:1620 UCX  DEBUG ep 0x1536cc8fd100: pending & destroy uct_ep[0]=0x1202a60
+[1793742005.363970] [25a-hgpn005:3623849:0]          ucp_ep.c:1620 UCX  DEBUG ep 0x1536cc8fd100: pending & destroy uct_ep[1]=0x1202af0
+[1793742005.364045] [25a-hgpn005:3623849:0]           mpool.c:194  UCX  DEBUG mpool rcache_mp destroyed
+[1793742005.364054] [25a-hgpn005:3623849:0]          ucp_ep.c:1620 UCX  DEBUG ep 0x1536cc8fd100: pending & destroy uct_ep[2]=0xdf2090
+[1793742005.364056] [25a-hgpn005:3623849:0]          ucp_ep.c:1620 UCX  DEBUG ep 0x1536cc8fd100: pending & destroy uct_ep[3]=0x1210190
+[1793742005.364061] [25a-hgpn005:3623849:0]          ucp_ep.c:1758 UCX  DEBUG ep 0x1536cc8fd140 flags 0x93 cfg_index 2: close_nbx(flags=0x0)
+[1793742005.364063] [25a-hgpn005:3623849:0]           flush.c:455  UCX  DEBUG close ep 0x1536cc8fd140
+[1793742005.364143] [25a-hgpn005:3623849:0]      ucp_worker.c:2923 UCX  DEBUG destroy worker 0xc55a70
+[1793742005.364145] [25a-hgpn005:3623849:0]      ucp_worker.c:2909 UCX  DEBUG worker 0xc55a70: destroy all endpoints
+[1793742005.364148] [25a-hgpn005:3623849:0]          ucp_ep.c:1284 UCX  DEBUG ep 0x1536cc8fd0c0: purge uct_ep[0]=0x1202910
+[1793742005.364150] [25a-hgpn005:3623849:0]          ucp_ep.c:1284 UCX  DEBUG ep 0x1536cc8fd0c0: purge uct_ep[1]=0x12029a0
+[1793742005.364151] [25a-hgpn005:3623849:0]          ucp_ep.c:1284 UCX  DEBUG ep 0x1536cc8fd0c0: purge uct_ep[2]=0xdf18a0
+[1793742005.364153] [25a-hgpn005:3623849:0]          ucp_ep.c:1284 UCX  DEBUG ep 0x1536cc8fd0c0: purge uct_ep[3]=0xd03d50
+[1793742005.364154] [25a-hgpn005:3623849:0]          ucp_ep.c:1291 UCX  DEBUG ep 0x1536cc8fd0c0: destroy
+[1793742005.364155] [25a-hgpn005:3623849:0]          ucp_ep.c:1609 UCX  DEBUG ep 0x1536cc8fd0c0: cleanup lanes
+[1793742005.364157] [25a-hgpn005:3623849:0]          ucp_ep.c:1620 UCX  DEBUG ep 0x1536cc8fd0c0: pending & destroy uct_ep[0]=0x1202910
+[1793742005.364172] [25a-hgpn005:3623849:0]          ucp_ep.c:1620 UCX  DEBUG ep 0x1536cc8fd0c0: pending & destroy uct_ep[1]=0x12029a0
+[1793742005.364233] [25a-hgpn005:3623849:0]           mpool.c:194  UCX  DEBUG mpool rcache_mp destroyed
+[1793742005.364236] [25a-hgpn005:3623849:0]          ucp_ep.c:1620 UCX  DEBUG ep 0x1536cc8fd0c0: pending & destroy uct_ep[2]=0xdf18a0
+[1793742005.364238] [25a-hgpn005:3623849:0]          ucp_ep.c:1620 UCX  DEBUG ep 0x1536cc8fd0c0: pending & destroy uct_ep[3]=0xd03d50
+[1793742005.364240] [25a-hgpn005:3623849:0]          ucp_ep.c:1284 UCX  DEBUG ep 0x1536cc8fd140: purge uct_ep[0]=0x1202c20
+[1793742005.364241] [25a-hgpn005:3623849:0]          ucp_ep.c:1284 UCX  DEBUG ep 0x1536cc8fd140: purge uct_ep[1]=0x1202cb0
+[1793742005.364243] [25a-hgpn005:3623849:0]          ucp_ep.c:1284 UCX  DEBUG ep 0x1536cc8fd140: purge uct_ep[2]=0xdf2ab0
+[1793742005.364244] [25a-hgpn005:3623849:0]          ucp_ep.c:1284 UCX  DEBUG ep 0x1536cc8fd140: purge uct_ep[3]=0xa91de0
+[1793742005.364246] [25a-hgpn005:3623849:0]          ucp_ep.c:1291 UCX  DEBUG ep 0x1536cc8fd140: destroy
+[1793742005.364247] [25a-hgpn005:3623849:0]          ucp_ep.c:1609 UCX  DEBUG ep 0x1536cc8fd140: cleanup lanes
+[1793742005.364251] [25a-hgpn005:3623849:0]          ucp_ep.c:1620 UCX  DEBUG ep 0x1536cc8fd140: pending & destroy uct_ep[0]=0x1202c20
+[1793742005.364265] [25a-hgpn005:3623849:0]          ucp_ep.c:1620 UCX  DEBUG ep 0x1536cc8fd140: pending & destroy uct_ep[1]=0x1202cb0
+[1793742005.364397] [25a-hgpn005:3623849:0]           mpool.c:194  UCX  DEBUG mpool rcache_mp destroyed
+[1793742005.364400] [25a-hgpn005:3623849:0]          ucp_ep.c:1620 UCX  DEBUG ep 0x1536cc8fd140: pending & destroy uct_ep[2]=0xdf2ab0
+[1793742005.364402] [25a-hgpn005:3623849:0]          ucp_ep.c:1620 UCX  DEBUG ep 0x1536cc8fd140: pending & destroy uct_ep[3]=0xa91de0
+[1793742005.364409] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.364411] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.364412] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.364414] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.364415] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.364417] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.364418] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.364419] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.364421] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.364422] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.364424] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.364425] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.364427] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.364429] [25a-hgpn005:3623849:0]      ucp_worker.c:2909 UCX  DEBUG worker 0xc55a70: destroy internal endpoints
+[1793742005.364431] [25a-hgpn005:3623849:0]          ucp_ep.c:1284 UCX  DEBUG ep 0x1536cc8fd000: purge uct_ep[0]=0xbf1a00
+[1793742005.364432] [25a-hgpn005:3623849:0]          ucp_ep.c:1291 UCX  DEBUG ep 0x1536cc8fd000: destroy
+[1793742005.364434] [25a-hgpn005:3623849:0]          ucp_ep.c:1609 UCX  DEBUG ep 0x1536cc8fd000: cleanup lanes
+[1793742005.364435] [25a-hgpn005:3623849:0]          ucp_ep.c:1620 UCX  DEBUG ep 0x1536cc8fd000: pending & destroy uct_ep[0]=0xbf1a00
+[1793742005.364437] [25a-hgpn005:3623849:0]          ucp_ep.c:1284 UCX  DEBUG ep 0x1536cc8fd040: purge uct_ep[0]=0xdf7ab0
+[1793742005.364439] [25a-hgpn005:3623849:0]          ucp_ep.c:1291 UCX  DEBUG ep 0x1536cc8fd040: destroy
+[1793742005.364440] [25a-hgpn005:3623849:0]          ucp_ep.c:1609 UCX  DEBUG ep 0x1536cc8fd040: cleanup lanes
+[1793742005.364441] [25a-hgpn005:3623849:0]          ucp_ep.c:1620 UCX  DEBUG ep 0x1536cc8fd040: pending & destroy uct_ep[0]=0xdf7ab0
+[1793742005.364444] [25a-hgpn005:3623849:0]      ucp_worker.c:244  UCX  DEBUG worker 0xc55a70: remove active message handlers
+[1793742005.364450] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.364451] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.364453] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.364454] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.364456] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.364457] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.364459] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.364460] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.364461] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.364465] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.364467] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.364468] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.364469] [25a-hgpn005:3623849:0]        mm_xpmem.c:91   UCX  DEBUG xpmem version: 159748
+[1793742005.364477] [25a-hgpn005:3623849:0]           mpool.c:194  UCX  DEBUG mpool ucp_reg_bufs destroyed
+[1793742005.364479] [25a-hgpn005:3623849:0]           mpool.c:194  UCX  DEBUG mpool ucp_am_bufs destroyed
+[1793742005.364481] [25a-hgpn005:3623849:0]           mpool.c:194  UCX  DEBUG mpool ucp_am_bufs destroyed
+[1793742005.364482] [25a-hgpn005:3623849:0]           mpool.c:194  UCX  DEBUG mpool ucp_am_bufs destroyed
+[1793742005.364487] [25a-hgpn005:3623849:0]           mpool.c:194  UCX  DEBUG mpool ucp_rkeys destroyed
+[1793742005.364495] [25a-hgpn005:3623849:0]           mpool.c:194  UCX  DEBUG mpool ucp_requests destroyed
+[1793742005.364502] [25a-hgpn005:3623849:0]           mpool.c:194  UCX  DEBUG mpool self_msg_desc destroyed
+[1793742005.364507] [25a-hgpn005:3623849:0]           async.c:173  UCX  DEBUG removed async handler 0xddab50 [id=50 ref 1] ucp_worker_iface_async_fd_event() from hash
+[1793742005.364509] [25a-hgpn005:3623849:0]           async.c:576  UCX  DEBUG removing async handler 0xddab50 [id=50 ref 1] ucp_worker_iface_async_fd_event()
+[1793742005.364517] [25a-hgpn005:3623849:0]           async.c:188  UCX  DEBUG release async handler 0xddab50 [id=50 ref 0] ucp_worker_iface_async_fd_event()
+[1793742005.364790] [25a-hgpn005:3623849:0]           mpool.c:194  UCX  DEBUG mpool mm_recv_desc destroyed
+[1793742005.364816] [25a-hgpn005:3623849:0]           async.c:173  UCX  DEBUG removed async handler 0xcfebd0 [id=51 ref 1] ucp_worker_iface_async_fd_event() from hash
+[1793742005.364817] [25a-hgpn005:3623849:0]           async.c:576  UCX  DEBUG removing async handler 0xcfebd0 [id=51 ref 1] ucp_worker_iface_async_fd_event()
+[1793742005.364821] [25a-hgpn005:3623849:0]           async.c:188  UCX  DEBUG release async handler 0xcfebd0 [id=51 ref 0] ucp_worker_iface_async_fd_event()
+[1793742005.365217] [25a-hgpn005:3623849:0]           mpool.c:194  UCX  DEBUG mpool mm_recv_desc destroyed
+[1793742005.365234] [25a-hgpn005:3623849:0]           async.c:173  UCX  DEBUG removed async handler 0xcfc300 [id=64 ref 1] ucp_worker_iface_async_fd_event() from hash
+[1793742005.365235] [25a-hgpn005:3623849:0]           async.c:576  UCX  DEBUG removing async handler 0xcfc300 [id=64 ref 1] ucp_worker_iface_async_fd_event()
+[1793742005.365239] [25a-hgpn005:3623849:0]           async.c:188  UCX  DEBUG release async handler 0xcfc300 [id=64 ref 0] ucp_worker_iface_async_fd_event()
+[1793742005.365248] [25a-hgpn005:3623849:0]           async.c:173  UCX  DEBUG removed async handler 0xcfb8e0 [id=65 ref 1] ucp_worker_iface_async_fd_event() from hash
+[1793742005.365249] [25a-hgpn005:3623849:0]           async.c:576  UCX  DEBUG removing async handler 0xcfb8e0 [id=65 ref 1] ucp_worker_iface_async_fd_event()
+[1793742005.365252] [25a-hgpn005:3623849:0]           async.c:188  UCX  DEBUG release async handler 0xcfb8e0 [id=65 ref 0] ucp_worker_iface_async_fd_event()
+[1793742005.365258] [25a-hgpn005:3623849:0]           mpool.c:194  UCX  DEBUG mpool uct_scopy_iface_tx_mp destroyed
+[1793742005.365260] [25a-hgpn005:3623849:0]           async.c:173  UCX  DEBUG removed async handler 0xcfb170 [id=63 ref 1] ucp_worker_iface_async_fd_event() from hash
+[1793742005.365262] [25a-hgpn005:3623849:0]           async.c:576  UCX  DEBUG removing async handler 0xcfb170 [id=63 ref 1] ucp_worker_iface_async_fd_event()
+[1793742005.365264] [25a-hgpn005:3623849:0]           async.c:188  UCX  DEBUG release async handler 0xcfb170 [id=63 ref 0] ucp_worker_iface_async_fd_event()
+[1793742005.365381] [25a-hgpn005:3623849:0]           mpool.c:194  UCX  DEBUG mpool mm_recv_desc destroyed
+[1793742005.365616] [25a-hgpn005:3623849:0]           async.c:173  UCX  DEBUG removed async handler 0xde9120 [id=45 ref 1] ucs_rcache_invalidate_handler() from hash
+[1793742005.365622] [25a-hgpn005:3623849:0]           async.c:576  UCX  DEBUG removing async handler 0xde9120 [id=45 ref 1] ucs_rcache_invalidate_handler()
+[1793742005.365671] [25a-hgpn005:3623849:0]           async.c:188  UCX  DEBUG release async handler 0xde9120 [id=45 ref 0] ucs_rcache_invalidate_handler()
+[1793742005.365716] [25a-hgpn005:3623849:0]           mpool.c:194  UCX  DEBUG mpool rcache_mp destroyed
