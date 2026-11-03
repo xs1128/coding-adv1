@@ -11,10 +11,11 @@ Private notes: `JOURNEY.md` (gitignored).
   checkout with `git am --keep-cr patches/opt/*.patch` to get our version. Rejected or pending experiments are in `patches/exp/`.
 - On nano4, `$ROOT/mfc` is the clone where builds happen. Each stage has its own git worktree next to it:
   - `mfc` = plain v5.7.0, `mfc-p4` = the 10-31 report state.
-  - `mfc-p20` = **canonical** (v5.7.0 + 0001–0024, full test suite clean apart from the 23 known failures).
-    `mfc-iomem` has the same source and is the A/B baseline.
-  - `mfc-p2fa` (branch `exp-p2fasync`), `mfc-bcfast` (`exp-bcfast`) and `mfc-cbcdead` (`exp-cbcdead`) = the pending
-    patches 0025, 0025–0026 and 0025–0027 on top of P20. `mfc-c2pslab` (`exp-c2pslab`, on cbcdead) was not adopted.
+  - `mfc-bcskip` (branch `exp-bcskip`) = **canonical P21** (v5.7.0 + 0001–0030, full test suite clean apart from the
+    23 known failures, ladder row 67). `mfc-p20` = the previous version P20 (0001–0024); `mfc-iomem` has P20's source
+    and is the A/B baseline.
+  - `mfc-p2fa` (branch `exp-p2fasync`), `mfc-bcfast` (`exp-bcfast`), `mfc-cbcdead` (`exp-cbcdead`), `mfc-cbcq`,
+    `mfc-cbcprio` = P20 + 0025, + 0025–0026, + 0025–0027, + 0025–0028, + 0025–0029 (the steps to P21). `mfc-c2pslab` (`exp-c2pslab`, on cbcdead) was not adopted.
   - Older stages (`mfc-p12` … `mfc-p18`, `mfc-rkb2`, …) are kept only so old results can be rebuilt.
 
 ## SC26 rules we follow

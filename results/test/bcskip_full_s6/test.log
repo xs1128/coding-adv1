@@ -1,0 +1,181 @@
+mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn011 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 2
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | 
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+fresh T=300 rho=0.0844 | burned T=2187 rho=0.0127 | driver P=6.67e+04
+ambient N2 rho=1.1380 a1=353 | bubble rho=0.4879 (ratio 0.43) | shock M=2.5 u2=618 T2/T1=2.14
+ Build | syscheck and pre_process
+
+
+ Build | syscheck and simulation
+
+
+ Build | syscheck and pre_process | Chemistry: h2o2.yaml
+
+
+ Build | syscheck and simulation | Chemistry: h2o2.yaml
+
+
+
+ Test pre_process and simulation | Only 17E2C6D1, 2097140E, 43CADBB8, 6BB67897, 5D536A45, DA44D68D, B76C4F04, 4E7B3DE0, 481CA4B4, 6736AFD0, D41FFB94, CF11AA56, 5D405BF9, 026AA23F, 36DF737F, F5705D1B, 9AEC024A, 0648E422, 19981E38, AB56B056, E6F54696, CC89283B, C531DC93, 10CCE589, A96DA754, 11DD3A5C, DC6D7467, 2274CB4E, D58700BB, 7F964063, 70832086, A7E7A245, B50DE910, C7598989, 1967AE06, 7CC8F995, CF4FE4C9, 4D95A70E, 0BAA2F42, 3E400FBF, E47F81A2, E5B66084, EF3E3FF1, AB5A57AE, BE796E10, 5CAA4E68, C2D278B4, F05E1CEF, 8370A3D9, D501F25E, EE58C595, 24119641, 5600D63B, C93CB5DF, B5F0C655, 57FE221F, 641A6440, 35635326, 54CE477E, 87C3F801, 6076815B, EC8F87D9, 7FA04E95, 5505A65C, BA473AFF, 9843489C, C7927D03, D827EA4B, 72A40EA6, 99147C82, BE3CF022, 3F6DA12C, F0402105, 7BCDC8E7, 23573861, 0083C150, E7732AC5, 70EC99CE, 91938DCD, 4A759316, 1DBC8382, 02B08B80, BCB15E8E, 02D1E522, 7C11F0ED, 265366F3, A48CA601, B85C5AB6, 18A71AB2, and B97D4966 (90 tests)
+  
+     Progress      Test Name                                        Time(s)   UUID
+  
+     (  1/ 90)    2D -> Axisymmetric -> Hypoelasticity -> HLLD ->...   14.55    17E2C6D1
+     (  2/ 90)    2D -> Axisymmetric -> Hypoelasticity -> HLLC ->...   14.56    2097140E
+     (  3/ 90)    2D -> Axisymmetric -> Hypoelasticity -> HLLC ->...   13.91    43CADBB8
+     (  4/ 90)    2D -> Axisymmetric -> Hypoelasticity -> HLLC ->...   13.87    6BB67897
+     (  5/ 90)    2D -> Axisymmetric -> Hypoelasticity -> HLLC ->...   14.04    5D536A45
+     (  6/ 90)    2D -> Axisymmetric -> Hypoelasticity -> HLL -> ...   13.99    DA44D68D
+     (  7/ 90)    2D -> Axisymmetric -> Hypoelasticity -> HLL -> ...   13.92    B76C4F04
+     (  8/ 90)    2D -> Axisymmetric -> Hypoelasticity -> HLL -> ...   13.88    4E7B3DE0
+     (  9/ 90)    3D -> Hypoelasticity -> HLLD -> alt_soundspeed=T     18.32    6736AFD0
+     ( 10/ 90)    3D -> Hypoelasticity -> HLLD -> alt_soundspeed=F     18.38    481CA4B4
+     ( 11/ 90)    3D -> Hypoelasticity -> HLLD -> ADC -> alt_soun...   18.56    CF11AA56
+     ( 12/ 90)    3D -> Hypoelasticity -> HLLD -> ADC -> alt_soun...   18.63    D41FFB94
+     ( 13/ 90)    3D -> Hypoelasticity -> HLLC -> alt_soundspeed=T     18.35    026AA23F
+     ( 14/ 90)    3D -> Hypoelasticity -> HLLC -> alt_soundspeed=F     18.42    5D405BF9
+     ( 15/ 90)    3D -> Hypoelasticity -> HLLC -> ADC -> alt_soun...   18.37    36DF737F
+     ( 16/ 90)    3D -> Hypoelasticity -> HLLC -> ADC -> alt_soun...   18.34    F5705D1B
+     ( 17/ 90)    3D -> Hypoelasticity -> HLL -> Interface RHS ->...   18.38    9AEC024A
+     ( 18/ 90)    3D -> Hypoelasticity -> HLL -> Interface RHS ->...   18.34    0648E422
+     ( 19/ 90)    3D -> Hypoelasticity -> HLL -> u-interface -> I...   18.54    AB56B056
+     ( 20/ 90)    3D -> Hypoelasticity -> HLL -> u-interface -> I...   18.60    19981E38
+     ( 21/ 90)    2D -> Hypoelasticity -> 3 Fluid(s) -> HLLC -> a...   13.86    CC89283B
+     ( 22/ 90)    2D -> Hypoelasticity -> 3 Fluid(s) -> HLL -> u-...   13.92    E6F54696
+     ( 23/ 90)    2D -> Hypoelasticity -> HLLD -> Shear guard -> ...   13.79    10CCE589
+     ( 24/ 90)    2D -> Hypoelasticity -> HLLD -> Fan-order fallback   13.84    C531DC93
+     ( 25/ 90)    2D -> Axisymmetric -> Hypoelasticity -> HLLD ->...   13.75    11DD3A5C
+     ( 26/ 90)    2D -> Hypoelasticity -> HLLD -> Shear guard -> ...   13.81    A96DA754
+     ( 27/ 90)    2D -> Axisymmetric -> Hypoelasticity -> HLLD ->...   13.66    DC6D7467
+     ( 28/ 90)    2D -> Hypoelasticity -> HLLD -> CBC uniform pre...   15.09    2274CB4E
+     ( 29/ 90)    2D -> Hypoelasticity -> HLLD -> WENO5 RK3            15.62    D58700BB
+     ( 30/ 90)    2D -> Axisymmetric -> Hypoelasticity -> HLLD ->...   14.78    7F964063
+     ( 31/ 90)    1D -> Example -> brio_wu                             13.77    70832086
+     ( 32/ 90)    2D -> Example -> mibm_particle_cloud                 13.79    A7E7A245
+     ( 33/ 90)    1D -> Example -> shuosher_wenojs5                    13.86    B50DE910
+     ( 34/ 90)    1D -> Example -> acoustic_sine_frequency             13.16    C7598989
+     ( 35/ 90)    2D -> Example -> patch_modal_shape                   13.95    1967AE06
+     ( 36/ 90)    2D -> Example -> ibm                                 14.19    7CC8F995
+     ( 37/ 90)    1D -> Example -> hypo_2materials                     14.39    4D95A70E
+     ( 38/ 90)    2D -> Example -> shock_flame                         14.66    CF4FE4C9
+     ( 39/ 90)    2D -> Example -> cont_damage                         14.48    0BAA2F42
+     ( 40/ 90)    2D -> Example -> axisym_shockwatercavity             14.44    3E400FBF
+     ( 41/ 90)    1D -> Example -> kapilashocktube                     13.82    E47F81A2
+     ( 42/ 90)    2D -> Example -> ibm_burning_grain                   14.38    E5B66084
+     ( 43/ 90)    1D -> Example -> titarevtorro                        14.02    EF3E3FF1
+     ( 44/ 90)    2D -> Example -> shock_cloud_rmhd                    13.43    AB5A57AE
+     ( 45/ 90)    2D -> Example -> shockdroplet_muscl                  14.25    BE796E10
+     ( 46/ 90)    1D -> Example -> exp_bubscreen                       14.21    5CAA4E68
+     ( 47/ 90)    2D -> Example -> acoustic_support5                   14.27    C2D278B4
+     ( 48/ 90)    0D -> Example -> bubblecollapse_adap                 14.23    F05E1CEF
+     ( 49/ 90)    2D -> Example -> acoustic_pulse                      14.40    8370A3D9
+     ( 50/ 90)    3D -> Example -> acoustic_support3                   14.78    D501F25E
+     ( 51/ 90)    1D -> Example -> acoustic_gauss_sigmatime            13.87    EE58C595
+     ( 52/ 90)    2D -> Example -> riemann_test_muscl                  13.45    24119641
+     ( 53/ 90)    1D -> Example -> exp_tube_phasechange                13.80    C93CB5DF
+     ( 54/ 90)    2D -> Example -> ibm_ellipse                         14.26    5600D63B
+     ( 55/ 90)    2D -> Example -> lungwave                            14.67    57FE221F
+     ( 56/ 90)    3D -> Example -> shockdroplet                        15.72    B5F0C655
+     ( 57/ 90)    1D -> Example -> dai_woodward                        14.57    641A6440
+     ( 58/ 90)    3D -> Example -> rayleigh_taylor_muscl               14.84    35635326
+     ( 59/ 90)    2D -> Example -> icpp_stl_circle                     13.49    54CE477E
+     ( 60/ 90)    2D -> Example -> tumbling_rectangle                  12.99    87C3F801
+     ( 61/ 90)    2D -> Example -> orszag_tang_hyper_cleaning          13.55    EC8F87D9
+     ( 62/ 90)    3D -> Example -> rotating_sphere                     16.06    6076815B
+     ( 63/ 90)    2D -> Example -> mibm_shock_cylinder                 13.21    7FA04E95
+     ( 64/ 90)    2D -> Example -> 5wave_quasi1D                       12.18    5505A65C
+  
+     ✗ FAILED: 1D -> Example -> vacuum_restart
+       UUID: BA473AFF
+       Attempts: 1
+       Error: Test tests/BA473AFF: 1D -> Example -> vacuum_restart: Variable n°99 (1-indexed) in D/cons.3.00.000050.dat is not within tolerance:
+  - Candidate:   -94655.54501070228
+  - Golden:      -94812.67840696829
+  - Error:       abs: 1.57E+02, rel: 1.66E-03
+  - Tolerance:   abs: 1.00E-03, rel: 1.00E-03
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.7.00.000050.dat
+ - Variable n°100
+ - Candidate: 732540999.5158952
+ - Golden: 736885081.6279409
+ - Absolute Error: 4.34E+06
+ - Relative Error: 5.90E-03
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.8.00.000050.dat
+ - Variable n°100
+ - Candidate: 0.01198829016922
+ - Golden: 541003.1978254081
+ - Relative Error: 1.00E+00
+ - Absolute Error: 5.41E+05
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+     ( 65/ 90)    1D -> Example -> shuosher_wenoz5                     12.38    9843489C
+     ( 66/ 90)    3D -> Example -> acoustic_support11                  14.89    D827EA4B
+     ( 67/ 90)    2D -> Example -> jet                                 26.39    C7927D03
+     ( 68/ 90)    3D -> Example -> acoustic_support7                   13.63    72A40EA6
+     ( 69/ 90)    2D -> Example -> ibm_stl_test                        12.90    99147C82
+     ( 70/ 90)    1D -> Example -> acoustic_gauss_sigmadist            12.41    BE3CF022
+     ( 71/ 90)    2D -> Example -> reactive_shock_bubble               12.57    3F6DA12C
+     ( 72/ 90)    2D -> Example -> orszag_tang                         12.22    F0402105
+     ( 73/ 90)    1D -> Example -> shuosher_teno5                      12.96    7BCDC8E7
+     ( 74/ 90)    3D -> Example -> shockdroplet_muscl                  13.90    23573861
+     ( 75/ 90)    1D -> Example -> acoustic_dipole                     12.72    0083C150
+     ( 76/ 90)    1D -> Example -> brio_wu_hlld                        13.03    E7732AC5
+     ( 77/ 90)    1D -> Example -> impact                              13.10    91938DCD
+     ( 78/ 90)    1D -> Example -> mhd_smooth_alfven_wave              12.68    4A759316
+     ( 79/ 90)    1D -> Example -> shuosher_old                        12.70    1DBC8382
+     ( 80/ 90)    2D -> Example -> viscous_shock_tube                  42.93    70EC99CE
+     ( 81/ 90)    2D -> Example -> acoustic_support9                   13.77    02B08B80
+     ( 82/ 90)    2D -> Example -> riemann_test                        12.32    BCB15E8E
+     ( 83/ 90)    1D -> Example -> laxshocktube                        14.68    02D1E522
+     ( 84/ 90)    3D -> Example -> icpp_stl_cube                       14.93    7C11F0ED
+     ( 85/ 90)    2D -> Example -> lid_driven_cavity                   14.57    265366F3
+     ( 86/ 90)    2D -> Example -> mhd_magnetic_vortex                 14.16    A48CA601
+     ( 87/ 90)    2D -> Example -> acoustic_support10_axisym           15.08    B85C5AB6
+     ( 88/ 90)    3D -> Example -> IGR_jet                             15.62    18A71AB2
+     Still running (>2min) B97D4966  2D -> Example -> phasechange_bubble
+     ( 89/ 90)    2D -> Example -> phasechange_bubble                 167.44    B97D4966
+
+  
+
+╭──────────────────────────────── Test Summary ────────────────────────────────╮
+│                                                                              │
+│  ✗ 1 TEST FAILED                                                             │
+│                                                                              │
+│      89 passed                                                               │
+│       1 failed                                                               │
+│     670 skipped                                                              │
+│    ────────────                                                              │
+│     760 total                                                                │
+│                                                                              │
+│    Time: 14m 4.1s                                                            │
+│                                                                              │
+│    Failed Tests:                                                             │
+│      • 1D -> Example -> vacuum_restart                                       │
+│        UUID: BA473AFF                                                        │
+│        (tolerance mismatch)                                                  │
+│                                                                              │
+│    Next Steps:                                                               │
+│      • Run with --generate to update golden files (if changes are            │
+│  intentional)                                                                │
+│      • Check individual test output in tests/<UUID>/                         │
+│      • Run specific test: ./mfc.sh test --only <UUID>                        │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+
+mfc: ERROR > main.py finished with a 1 exit code.
+mfc: (venv) Exiting the Python virtual environment.

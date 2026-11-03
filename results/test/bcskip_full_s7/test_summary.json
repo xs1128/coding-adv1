@@ -1,0 +1,15 @@
+{
+ "rc": 5,
+ "seconds": 796,
+ "passed": 78,
+ "failed": 5,
+ "skipped": 677,
+ "failed_uuids": [
+  "9A00542C",
+  "2BA0324F",
+  "9E2CA336",
+  "E8C7E354",
+  "5F3BB2E0"
+ ],
+ "status": "COMPLETE"
+}

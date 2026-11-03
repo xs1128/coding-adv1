@@ -1,0 +1,588 @@
+mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn011 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 2
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | 
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+oxidizer: T=1200.0 K rho=0.3855 c=630.7 m/s
+Stoichiometric mixture fraction: Z_st = 0.029
+Convective Mach: Ma = 0.1530510393535898
+Reynolds number: Re = 3524.088030224578
+ Build | syscheck and pre_process
+
+
+ Build | syscheck and simulation
+
+
+ Build | syscheck and pre_process | Chemistry: h2o2.yaml
+
+
+ Build | syscheck and simulation | Chemistry: h2o2.yaml
+
+
+ Build | syscheck and pre_process | Chemistry: /work/u1131128/coding-adv1/mfc-bcskip/examples/3D_reacting_mixing_layer/sandiego.yaml
+
+
+ Build | syscheck and simulation | Chemistry: /work/u1131128/coding-adv1/mfc-bcskip/examples/3D_reacting_mixing_layer/sandiego.yaml
+
+
+
+ Test pre_process and simulation | Only C1134EF2, C9E0B721, 6D1C9C2D, 9A00542C, E49EF7B6, C071BA12, A078904B, 3F864CFF, D9E1BECF, AA49A8BC, 64F05A05, 87FBC893, 43B5FEBD, FBB296DA, 5304E59F, 8FD91C41, BCA926AC, DA8FCD2D, F33CC4CA, D644524E, 78A3B0C4, 1BA21D14, 2BA0324F, AE9A7D73, 6247B427, F200F862, 9E2CA336, 2E1EEFBE, 203572A8, 10DE58AA, 986BC1A2, F926448C, DC391F9B, 00C20EE8, 82152069, 0B07F3A1, 82A64F89, E8C7E354, F057F8E6, 9C9B2CBC, 8DA238FF, 1D88CFE0, 0A62F0A6, 304DAF95, A582B270, 127A967A, C0127FD0, 24FD489A, 5B195322, B2EC143C, 7A9F4EF4, 5DCF300C, 1550B67E, E8372F50, 5D59DDF0, 4D7D85B4, 2BDE2018, 6B3AE48F, F8ADA51B, 7BBCE9E9, 259B2428, C4EB58A8, 3C77E5DD, 56F8C4BC, 8E56ACC1, 4587725A, 41AD0140, F08B0D0E, 5F3BB2E0, 135ED2EF, E639CA3A, 86893F55, CB0DC420, B317404C, 05D092C5, 59C3F366, 75D7CC39, 0090B316, 0DDE8A87, 1A379909, C3A4DBAE, B49877F3, and 7A1719C6 (83 tests)
+  
+     Progress      Test Name                                        Time(s)   UUID
+  
+     (  1/ 83)    2D -> Example -> GreshoVortex                        14.10    C9E0B721
+     (  2/ 83)    1D -> Example -> shuosher_wenom5                     14.11    C1134EF2
+     (  3/ 83)    3D -> Example -> ibm_stl_test                        15.30    6D1C9C2D
+  
+     ✗ FAILED: 2D -> Example -> isentropicvortex
+       UUID: 9A00542C
+       Attempts: 1
+       Error: Test tests/9A00542C: 2D -> Example -> isentropicvortex: Variable n°1 (1-indexed) in D/cons.6.00.000001.dat is not within tolerance:
+  - Candidate:   2.95804267276988
+  - Golden:      2.5
+  - Error:       abs: 4.58E-01, rel: 1.83E-01
+  - Tolerance:   abs: 1.00E-03, rel: 1.00E-03
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.6.00.000001.dat
+ - Variable n°676
+ - Candidate: -2.9580397961802
+ - Golden: 2.5
+ - Absolute Error: 5.46E+00
+ - Relative Error: 2.18E+00
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.6.00.000001.dat
+ - Variable n°378
+ - Candidate: 2.95820872037717
+ - Golden: 0.81896054306376
+ - Relative Error: 2.61E+00
+ - Absolute Error: 2.14E+00
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+     (  4/ 83)    3D -> Example -> IGR_TaylorGreenVortex               16.99    E49EF7B6
+     (  5/ 83)    3D -> Example -> TaylorGreenVortex                   16.60    C071BA12
+     (  6/ 83)    2D -> Example -> patch_modal_shape_exp               14.13    3F864CFF
+     (  7/ 83)    1D -> Example -> brio_wu_rmhd                        12.38    D9E1BECF
+     (  8/ 83)    3D -> Example -> mibm_sphere_head_on_collision       14.11    AA49A8BC
+     (  9/ 83)    2D -> Example -> kelvin_helmholtz                    40.88    A078904B
+     ( 10/ 83)    1D -> Example -> reactive_burn                       14.93    64F05A05
+     ( 11/ 83)    3D -> Example -> patch_spherical_harmonic            15.57    87FBC893
+     ( 12/ 83)    1D -> Example -> bubblescreen                        13.66    FBB296DA
+     ( 13/ 83)    3D -> Example -> IGR_jet_1fluid                      14.36    43B5FEBD
+     ( 14/ 83)    2D -> Example -> zero_circ_vortex                    14.10    8FD91C41
+     ( 15/ 83)    2D -> Example -> poiseuille_thickening_nn            26.09    5304E59F
+     ( 16/ 83)    1D -> Example -> sodshocktube                        12.10    BCA926AC
+     ( 17/ 83)    1D -> Example -> sodshocktube_muscl                  13.50    F33CC4CA
+     ( 18/ 83)    3D -> Example -> rayleigh_taylor                     15.46    D644524E
+     ( 19/ 83)    2D -> Example -> ibm_viscous_drag_over_cylinder      31.22    DA8FCD2D
+     ( 20/ 83)    1D -> Example -> acoustic_sine_wavelength            12.55    78A3B0C4
+     ( 21/ 83)    2D -> Example -> lungwave_horizontal                 12.08    1BA21D14
+     ( 22/ 83)    1D -> Example -> poly_bubscreen                      12.14    AE9A7D73
+  
+     ✗ FAILED: 2D -> Example -> rayleigh_taylor
+       UUID: 2BA0324F
+       Attempts: 1
+       Error: Test tests/2BA0324F: 2D -> Example -> rayleigh_taylor: Variable n°15 (1-indexed) in D/cons.6.00.000050.dat is not within tolerance:
+  - Candidate:   0.00536207306526
+  - Golden:      7.789732e-08
+  - Error:       abs: 5.36E-03, rel: 6.88E+04
+  - Tolerance:   abs: 1.00E-03, rel: 1.00E-03
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.9.00.000050.dat
+ - Variable n°313
+ - Candidate: 2.49999920522844
+ - Golden: 250053.35569953843
+ - Absolute Error: 2.50E+05
+ - Relative Error: 1.00E+00
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.6.00.000050.dat
+ - Variable n°15
+ - Candidate: 0.00536207306526
+ - Golden: 7.789732e-08
+ - Relative Error: 6.88E+04
+ - Absolute Error: 5.36E-03
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+     ( 23/ 83)    1D -> Example -> shuosher_teno7                      14.06    6247B427
+     ( 24/ 83)    2D -> Example -> ibm_flameholder                     14.68    F200F862
+     ( 25/ 83)    1D -> Example -> dai_woodward_hlld                   13.40    2E1EEFBE
+   mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn011 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 1
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | --targets pre_process and simulation
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Acquiring /work/u1131128/coding-adv1/mfc-bcskip/tests/9E2CA336/case.py...
+ Acquiring /work/u1131128/coding-adv1/mfc-bcskip/tests/9E2CA336/case.py...
+ Build | syscheck, syscheck, pre_process, and simulation
+
+
+ Run
+   Using queue system Interactive.
+   Using baked-in template for default.
+   Generating input files for syscheck...
+     Generating syscheck.inp:
+       INFO: Forwarded 0/127 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
+   Generating input files for pre_process...
+     Generating pre_process.inp:
+       INFO: Forwarded 88/127 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
+   Generating input files for simulation...
+     Generating simulation.inp:
+       INFO: Forwarded 71/127 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
++-----------------------------------------------------------------------------------------------------------+ 
+| MFC case # MFC @ /work/u1131128/coding-adv1/mfc-bcskip/tests/9E2CA336/case.py:                            |
++-----------------------------------------------------------------------------------------------------------+ 
+| * Start-time     12:00:58                            * Start-date     12:00:58                            |
+| * Partition      N/A                                 * Walltime       01:00:00                            |
+| * Account        N/A                                 * Nodes          1                                   |
+| * Job Name       MFC                                 * Engine         interactive                         |
+| * QoS            N/A                                 * Binary         mpirun                              |
+| * Queue System   Interactive                         * Email          N/A                                 |
++-----------------------------------------------------------------------------------------------------------+ 
+
+mfc: WARNING > This is the default template.
+mfc: WARNING > It is not intended to support all systems and execution engines.
+mfc: WARNING > Consider using a different template via the --computer option if you encounter problems.
+mfc: OK > :) Selected MPI launcher mpirun. Use --binary to override.
+mfc: OK > :) Running syscheck:
+
++ mpirun -np 1 /work/u1131128/coding-adv1/mfc-bcskip/build/install/gpu-acc-869e78ff84/bin/syscheck
+ [TEST] MPI: call mpi_init(ierr)
+ [TEST] MPI: call mpi_comm_rank(MPI_COMM_WORLD, rank, ierr)
+ [TEST] MPI: call mpi_barrier(MPI_COMM_WORLD, ierr)
+ [TEST] MPI: call assert(rank >= 0)
+ [TEST] MPI: call mpi_comm_size(MPI_COMM_WORLD, nRanks, ierr)
+ [TEST] MPI: call assert(nRanks > 0 .and. rank < nRanks)
+ [TEST] ACC: devtype = acc_get_device_type()
+ [TEST] ACC: num_devices = acc_get_num_devices(devtype)
+ [TEST] ACC: call assert(num_devices > 0)
+ [TEST] ACC: call acc_set_device_num(mod(rank, num_devices), devtype)
+ [TEST] ACC: allocate(arr(1:N))
+ [TEST] ACC: !$acc enter data create(arr(1:N))
+ [TEST] ACC: !$acc parallel loop
+ [TEST] ACC: !$acc update host(arr(1:N))
+ [TEST] ACC: call assert(nint(sum(arr)) == N*(N + 1)/2)
+ [TEST] ACC: !$acc exit data delete(arr)
+ [SKIP] OMP: num_devices = omp_get_num_devices()
+ [SKIP] OMP: call assert(num_devices > 0)
+ [SKIP] OMP: call omp_set_default_device(mod(rank, num_devices))
+ [SKIP] OMP: allocate(arr(1:N))
+ [SKIP] OMP: !$omp target enter data map(alloc: arr(1:N))
+ [SKIP] OMP: !$omp target teams distribute parallel do
+ [SKIP] OMP: !$omp target update from(arr(1:N))
+ [SKIP] OMP: call assert(nint(sum(arr)) == N*(N + 1)/2)
+ [SKIP] OMP: !$omp target exit data map(delete: arr(1:N))
+ [TEST] MPI: call mpi_barrier(MPI_COMM_WORLD, ierr)
+ [TEST] MPI: call mpi_finalize(ierr)
+ 
+ Syscheck: PASSED.
+
+mfc: OK > :) Running pre_process:
+
++ mpirun -np 1 /work/u1131128/coding-adv1/mfc-bcskip/build/install/gpu-acc-7d1e32e277/bin/pre_process
+ Pre-processing a 25x25x25 case on 1 rank(s)
+ Processing patch            1
+ Processing patch            2
+ Elapsed Time   0.1629581451416016     
+
+mfc: OK > :) Running simulation:
+
++ mpirun -np 1 /work/u1131128/coding-adv1/mfc-bcskip/build/install/gpu-acc-c819d00b45/bin/simulation
+ Simulating a regular 25x25x25 case on 1 rank(s) with OpenACC offloading.
+ [  0%] step 1 of 51 (t_step 0) t/step  0.00E+00s (avg  0.00E+00s) ETA 0:00:00
+ [  2%] step 2 of 51 (t_step 1) t/step  1.13E-01s (avg  0.00E+00s) ETA 0:00:00
+ [  4%] step 3 of 51 (t_step 2) t/step  7.90E-02s (avg  0.00E+00s) ETA 0:00:00
+ [  6%] step 4 of 51 (t_step 3) t/step  7.65E-02s (avg  7.65E-02s) ETA 0:00:03
+ [  8%] step 5 of 51 (t_step 4) t/step  5.04E-02s (avg  6.34E-02s) ETA 0:00:02
+ [ 10%] step 6 of 51 (t_step 5) t/step  3.13E-02s (avg  5.27E-02s) ETA 0:00:02
+ [ 12%] step 7 of 51 (t_step 6) t/step  3.29E-02s (avg  4.78E-02s) ETA 0:00:02
+ [ 14%] step 8 of 51 (t_step 7) t/step  3.60E-02s (avg  4.54E-02s) ETA 0:00:01
+ [ 16%] step 9 of 51 (t_step 8) t/step  3.24E-02s (avg  4.32E-02s) ETA 0:00:01
+ [ 18%] step 10 of 51 (t_step 9) t/step  3.40E-02s (avg  4.19E-02s) ETA 0:00:01
+ [ 20%] step 11 of 51 (t_step 10) t/step  3.48E-02s (avg  4.10E-02s) ETA 0:00:01
+ [ 22%] step 12 of 51 (t_step 11) t/step  3.93E-02s (avg  4.08E-02s) ETA 0:00:01
+ [ 24%] step 13 of 51 (t_step 12) t/step  3.40E-02s (avg  4.02E-02s) ETA 0:00:01
+ [ 26%] step 14 of 51 (t_step 13) t/step  3.66E-02s (avg  3.98E-02s) ETA 0:00:01
+ [ 28%] step 15 of 51 (t_step 14) t/step  3.20E-02s (avg  3.92E-02s) ETA 0:00:01
+ [ 30%] step 16 of 51 (t_step 15) t/step  3.31E-02s (avg  3.87E-02s) ETA 0:00:01
+ [ 32%] step 17 of 51 (t_step 16) t/step  3.23E-02s (avg  3.82E-02s) ETA 0:00:01
+ [ 34%] step 18 of 51 (t_step 17) t/step  3.56E-02s (avg  3.81E-02s) ETA 0:00:01
+ [ 36%] step 19 of 51 (t_step 18) t/step  3.38E-02s (avg  3.78E-02s) ETA 0:00:01
+ [ 38%] step 20 of 51 (t_step 19) t/step  3.36E-02s (avg  3.76E-02s) ETA 0:00:01
+ [ 40%] step 21 of 51 (t_step 20) t/step  3.14E-02s (avg  3.72E-02s) ETA 0:00:01
+ [ 42%] step 22 of 51 (t_step 21) t/step  3.28E-02s (avg  3.70E-02s) ETA 0:00:01
+ [ 44%] step 23 of 51 (t_step 22) t/step  3.29E-02s (avg  3.68E-02s) ETA 0:00:01
+ [ 46%] step 24 of 51 (t_step 23) t/step  3.21E-02s (avg  3.66E-02s) ETA 0:00:00
+ [ 48%] step 25 of 51 (t_step 24) t/step  3.49E-02s (avg  3.65E-02s) ETA 0:00:00
+ [ 50%] step 26 of 51 (t_step 25) t/step  3.28E-02s (avg  3.63E-02s) ETA 0:00:00
+ [ 51%] step 27 of 51 (t_step 26) t/step  3.78E-02s (avg  3.64E-02s) ETA 0:00:00
+ [ 53%] step 28 of 51 (t_step 27) t/step  3.39E-02s (avg  3.63E-02s) ETA 0:00:00
+ [ 55%] step 29 of 51 (t_step 28) t/step  3.16E-02s (avg  3.61E-02s) ETA 0:00:00
+ [ 57%] step 30 of 51 (t_step 29) t/step  3.23E-02s (avg  3.60E-02s) ETA 0:00:00
+ [ 59%] step 31 of 51 (t_step 30) t/step  3.52E-02s (avg  3.59E-02s) ETA 0:00:00
+ [ 61%] step 32 of 51 (t_step 31) t/step  3.34E-02s (avg  3.58E-02s) ETA 0:00:00
+ [ 63%] step 33 of 51 (t_step 32) t/step  3.60E-02s (avg  3.58E-02s) ETA 0:00:00
+ [ 65%] step 34 of 51 (t_step 33) t/step  3.51E-02s (avg  3.58E-02s) ETA 0:00:00
+ [ 67%] step 35 of 51 (t_step 34) t/step  3.36E-02s (avg  3.58E-02s) ETA 0:00:00
+ [ 69%] step 36 of 51 (t_step 35) t/step  3.62E-02s (avg  3.58E-02s) ETA 0:00:00
+ [ 71%] step 37 of 51 (t_step 36) t/step  3.46E-02s (avg  3.57E-02s) ETA 0:00:00
+ [ 73%] step 38 of 51 (t_step 37) t/step  3.23E-02s (avg  3.56E-02s) ETA 0:00:00
+ [ 75%] step 39 of 51 (t_step 38) t/step  3.28E-02s (avg  3.56E-02s) ETA 0:00:00
+ [ 77%] step 40 of 51 (t_step 39) t/step  3.46E-02s (avg  3.55E-02s) ETA 0:00:00
+ [ 79%] step 41 of 51 (t_step 40) t/step  3.98E-02s (avg  3.56E-02s) ETA 0:00:00
+ [ 81%] step 42 of 51 (t_step 41) t/step  3.38E-02s (avg  3.56E-02s) ETA 0:00:00
+ [ 83%] step 43 of 51 (t_step 42) t/step  3.48E-02s (avg  3.56E-02s) ETA 0:00:00
+ [ 85%] step 44 of 51 (t_step 43) t/step  3.60E-02s (avg  3.56E-02s) ETA 0:00:00
+ [ 87%] step 45 of 51 (t_step 44) t/step  3.31E-02s (avg  3.55E-02s) ETA 0:00:00
+ [ 89%] step 46 of 51 (t_step 45) t/step  3.34E-02s (avg  3.55E-02s) ETA 0:00:00
+ [ 91%] step 47 of 51 (t_step 46) t/step  3.42E-02s (avg  3.54E-02s) ETA 0:00:00
+ [ 93%] step 48 of 51 (t_step 47) t/step  3.32E-02s (avg  3.54E-02s) ETA 0:00:00
+ [ 95%] step 49 of 51 (t_step 48) t/step  3.48E-02s (avg  3.54E-02s) ETA 0:00:00
+ [ 97%] step 50 of 51 (t_step 49) t/step  3.33E-02s (avg  3.53E-02s) ETA 0:00:00
+ NaN(s) in timestep output.                        5                        5 
+                        0                        9            0           50 
+           25           25           25
+ NaN(s) in timestep output.
+--------------------------------------------------------------------------
+MPI_ABORT was invoked on rank 0 in communicator MPI_COMM_WORLD
+with errorcode 1.
+
+NOTE: invoking MPI_ABORT causes Open MPI to kill all MPI processes.
+You may or may not see output from other processes, depending on
+exactly when Open MPI kills them.
+--------------------------------------------------------------------------
+
+mfc: ERROR > :( /work/u1131128/coding-adv1/mfc-bcskip/build/install/gpu-acc-c819d00b45/bin/simulation failed with exit code 1.
+
+ 
+
+Error: Submitting batch file for Interactive failed. It can be found here: /work/u1131128/coding-adv1/mfc-bcskip/tests/9E2CA336/MFC.sh. Please check the file for errors.
+
+Terminated
+
+mfc: ERROR > main.py finished with a 143 exit code.
+mfc: (venv) Exiting the Python virtual environment.
+
+  
+     ✗ FAILED: 3D -> Example -> recovering_sphere
+       UUID: 9E2CA336
+       Attempts: 1
+       Error: Test tests/9E2CA336: 3D -> Example -> recovering_sphere: Failed to execute MFC.
+       Hint: Check build logs and case parameters
+  
+     ( 26/ 83)    2D -> Example -> whale_bubble_annulus                13.17    203572A8
+     ( 27/ 83)    2D -> Example -> advection_muscl                     12.28    10DE58AA
+     ( 28/ 83)    2D -> Example -> IGR_2fluid                          14.30    F926448C
+     ( 29/ 83)    2D -> Example -> acoustic_support2                   12.78    DC391F9B
+     ( 30/ 83)    2D -> Example -> richtmyer_meshkov                   35.78    986BC1A2
+     ( 31/ 83)    2D -> Example -> lid_driven_cavity_nn                12.93    00C20EE8
+     ( 32/ 83)    2D -> Example -> shockdroplet                        12.44    82152069
+     ( 33/ 83)    2D -> Example -> ibm_airfoil                         12.93    0B07F3A1
+     ( 34/ 83)    2D -> Example -> shocktube_phasechange               12.89    82A64F89
+  
+     ✗ FAILED: 1D -> Example -> vacuum
+       UUID: E8C7E354
+       Attempts: 1
+       Error: Test tests/E8C7E354: 1D -> Example -> vacuum: Variable n°99 (1-indexed) in D/cons.3.00.000050.dat is not within tolerance:
+  - Candidate:   -94655.54501070228
+  - Golden:      -94812.67840696829
+  - Error:       abs: 1.57E+02, rel: 1.66E-03
+  - Tolerance:   abs: 1.00E-03, rel: 1.00E-03
+
+Diagnostics - Maximum absolute error among FAILING variables:
+ - File: D/cons.7.00.000050.dat
+ - Variable n°100
+ - Candidate: 732540999.5158952
+ - Golden: 736885081.6279409
+ - Absolute Error: 4.34E+06
+ - Relative Error: 5.90E-03
+
+Diagnostics - Maximum relative error among FAILING variables:
+ - File: D/cons.8.00.000050.dat
+ - Variable n°100
+ - Candidate: 0.01198829016922
+ - Golden: 541003.1978254081
+ - Relative Error: 1.00E+00
+ - Absolute Error: 5.41E+05
+
+       Hint: Consider --generate to update golden files or check tolerances
+  
+     ( 35/ 83)    2D -> Example -> mhd_rotor                           13.07    F057F8E6
+     ( 36/ 83)    2D -> Example -> axisym_hypoelasticity               14.28    9C9B2CBC
+     ( 37/ 83)    3D -> Example -> brio_wu                             14.67    8DA238FF
+     ( 38/ 83)    2D -> Example -> shearlayer                          13.17    1D88CFE0
+     ( 39/ 83)    nD -> Example -> perfect_reactor                     12.92    0A62F0A6
+     ( 40/ 83)    2D -> Example -> TaylorGreenVortex                   13.46    304DAF95
+     ( 41/ 83)    2D -> Example -> mibm_cylinder_in_cross_flow         16.82    127A967A
+     ( 42/ 83)    2D -> Example -> acoustic_support6_axisym            13.17    C0127FD0
+     ( 43/ 83)    2D -> Example -> shockbubble                         12.86    24FD489A
+     ( 44/ 83)    2D -> Example -> herschel_bulkley_poiseuille_nn      55.80    A582B270
+     ( 45/ 83)    3D -> Example -> lagrange_shbubcollapse              15.42    5B195322
+     ( 46/ 83)    2D -> Example -> axisym_shockbubble                  12.57    7A9F4EF4
+     ( 47/ 83)    2D -> Example -> IGR_triple_point                    27.60    B2EC143C
+     ( 48/ 83)    1D -> Chemistry -> Perfect Reactor                   13.37    5DCF300C
+     ( 49/ 83)    2D -> Chemistry -> Perfect Reactor                   13.88    1550B67E
+     ( 50/ 83)    3D -> Chemistry -> Perfect Reactor                   16.15    E8372F50
+     ( 51/ 83)    1D -> Chemistry -> Perfect Reactor -> Sub-stepp...   13.30    5D59DDF0
+     ( 52/ 83)    1D -> Chemistry -> Inert Shocktube -> Riemann S...   13.26    4D7D85B4
+     ( 53/ 83)    1D -> Chemistry -> Inert Shocktube -> Riemann S...   12.88    2BDE2018
+     ( 54/ 83)    1D -> Chemistry -> Inert Shocktube -> Riemann S...   13.06    6B3AE48F
+     ( 55/ 83)    1D -> Chemistry -> Inert Shocktube -> Riemann S...   13.04    F8ADA51B
+     ( 56/ 83)    1D -> Chemistry -> Inert Shocktube -> Reacting ...   13.13    7BBCE9E9
+     ( 57/ 83)    1D -> Chemistry -> Inert Shocktube -> Reacting ...   13.24    259B2428
+     ( 58/ 83)    2D -> Chemistry -> Reacting Mixing Layer             13.26    C4EB58A8
+     ( 59/ 83)    3D -> Chemistry -> Reacting Mixing Layer             18.48    3C77E5DD
+     ( 60/ 83)    2D -> Chemistry -> Spatial Reacting Mixing Layer     13.51    56F8C4BC
+     ( 61/ 83)    1D -> Chemistry -> Dual Isothermal Wall Gradient     14.47    8E56ACC1
+     ( 62/ 83)    2D -> Chemistry -> Isothermal Wall                   13.02    4587725A
+     ( 63/ 83)    1D -> Chemistry -> MultiComponent Diffusion          13.23    41AD0140
+     ( 64/ 83)    1D -> Reactive Burn -> Condensed Programmed Det...   12.85    F08B0D0E
+   mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn011 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 1
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | --targets pre_process and simulation
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Acquiring /work/u1131128/coding-adv1/mfc-bcskip/tests/5F3BB2E0/case.py...
+ Acquiring /work/u1131128/coding-adv1/mfc-bcskip/tests/5F3BB2E0/case.py...
+ Build | syscheck, syscheck, pre_process, and simulation
+
+
+ Run
+   Using queue system Interactive.
+   Using baked-in template for default.
+   Generating input files for syscheck...
+     Generating syscheck.inp:
+       INFO: Forwarded 0/98 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
+   Generating input files for pre_process...
+     Generating pre_process.inp:
+       INFO: Forwarded 63/98 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
+   Generating input files for simulation...
+     Generating simulation.inp:
+       INFO: Forwarded 69/98 parameters.
+    
+     Generating case.fpp.
+       Writing a (new) custom case.fpp file.
++-----------------------------------------------------------------------------------------------------------+ 
+| MFC case # MFC @ /work/u1131128/coding-adv1/mfc-bcskip/tests/5F3BB2E0/case.py:                            |
++-----------------------------------------------------------------------------------------------------------+ 
+| * Start-time     12:06:25                            * Start-date     12:06:25                            |
+| * Partition      N/A                                 * Walltime       01:00:00                            |
+| * Account        N/A                                 * Nodes          1                                   |
+| * Job Name       MFC                                 * Engine         interactive                         |
+| * QoS            N/A                                 * Binary         mpirun                              |
+| * Queue System   Interactive                         * Email          N/A                                 |
++-----------------------------------------------------------------------------------------------------------+ 
+
+mfc: WARNING > This is the default template.
+mfc: WARNING > It is not intended to support all systems and execution engines.
+mfc: WARNING > Consider using a different template via the --computer option if you encounter problems.
+mfc: OK > :) Selected MPI launcher mpirun. Use --binary to override.
+mfc: OK > :) Running syscheck:
+
++ mpirun -np 1 /work/u1131128/coding-adv1/mfc-bcskip/build/install/gpu-acc-869e78ff84/bin/syscheck
+ [TEST] MPI: call mpi_init(ierr)
+ [TEST] MPI: call mpi_comm_rank(MPI_COMM_WORLD, rank, ierr)
+ [TEST] MPI: call mpi_barrier(MPI_COMM_WORLD, ierr)
+ [TEST] MPI: call assert(rank >= 0)
+ [TEST] MPI: call mpi_comm_size(MPI_COMM_WORLD, nRanks, ierr)
+ [TEST] MPI: call assert(nRanks > 0 .and. rank < nRanks)
+ [TEST] ACC: devtype = acc_get_device_type()
+ [TEST] ACC: num_devices = acc_get_num_devices(devtype)
+ [TEST] ACC: call assert(num_devices > 0)
+ [TEST] ACC: call acc_set_device_num(mod(rank, num_devices), devtype)
+ [TEST] ACC: allocate(arr(1:N))
+ [TEST] ACC: !$acc enter data create(arr(1:N))
+ [TEST] ACC: !$acc parallel loop
+ [TEST] ACC: !$acc update host(arr(1:N))
+ [TEST] ACC: call assert(nint(sum(arr)) == N*(N + 1)/2)
+ [TEST] ACC: !$acc exit data delete(arr)
+ [SKIP] OMP: num_devices = omp_get_num_devices()
+ [SKIP] OMP: call assert(num_devices > 0)
+ [SKIP] OMP: call omp_set_default_device(mod(rank, num_devices))
+ [SKIP] OMP: allocate(arr(1:N))
+ [SKIP] OMP: !$omp target enter data map(alloc: arr(1:N))
+ [SKIP] OMP: !$omp target teams distribute parallel do
+ [SKIP] OMP: !$omp target update from(arr(1:N))
+ [SKIP] OMP: call assert(nint(sum(arr)) == N*(N + 1)/2)
+ [SKIP] OMP: !$omp target exit data map(delete: arr(1:N))
+ [TEST] MPI: call mpi_barrier(MPI_COMM_WORLD, ierr)
+ [TEST] MPI: call mpi_finalize(ierr)
+ 
+ Syscheck: PASSED.
+
+mfc: OK > :) Running pre_process:
+
++ mpirun -np 1 /work/u1131128/coding-adv1/mfc-bcskip/build/install/gpu-acc-7d1e32e277/bin/pre_process
+ Pre-processing a 99x0x0 case on 1 rank(s)
+ Processing patch            1
+ Elapsed Time   3.3863067626953125E-002
+
+mfc: OK > :) Running simulation:
+
++ mpirun -np 1 /work/u1131128/coding-adv1/mfc-bcskip/build/install/gpu-acc-c819d00b45/bin/simulation
+ Simulating a regular 99x0x0 case on 1 rank(s) with OpenACC offloading.
+ [  0%] step 1 of 41 (t_step 0) t/step  0.00E+00s (avg  0.00E+00s) ETA 0:00:00
+ [  3%] step 2 of 41 (t_step 1) t/step  5.12E-02s (avg  0.00E+00s) ETA 0:00:00
+ [  5%] step 3 of 41 (t_step 2) t/step  2.30E-03s (avg  0.00E+00s) ETA 0:00:00
+ [  8%] step 4 of 41 (t_step 3) t/step  2.24E-03s (avg  2.24E-03s) ETA 0:00:00
+ [ 10%] step 5 of 41 (t_step 4) t/step  2.27E-03s (avg  2.25E-03s) ETA 0:00:00
+ [ 13%] step 6 of 41 (t_step 5) t/step  2.27E-03s (avg  2.26E-03s) ETA 0:00:00
+ [ 15%] step 7 of 41 (t_step 6) t/step  2.28E-03s (avg  2.26E-03s) ETA 0:00:00
+ [ 18%] step 8 of 41 (t_step 7) t/step  2.27E-03s (avg  2.26E-03s) ETA 0:00:00
+ [ 20%] step 9 of 41 (t_step 8) t/step  2.29E-03s (avg  2.27E-03s) ETA 0:00:00
+ [ 22%] step 10 of 41 (t_step 9) t/step  2.29E-03s (avg  2.27E-03s) ETA 0:00:00
+ [ 25%] step 11 of 41 (t_step 10) t/step  2.23E-03s (avg  2.27E-03s) ETA 0:00:00
+ [ 27%] step 12 of 41 (t_step 11) t/step  2.29E-03s (avg  2.27E-03s) ETA 0:00:00
+ [ 30%] step 13 of 41 (t_step 12) t/step  2.25E-03s (avg  2.27E-03s) ETA 0:00:00
+ [ 32%] step 14 of 41 (t_step 13) t/step  2.27E-03s (avg  2.27E-03s) ETA 0:00:00
+ [ 35%] step 15 of 41 (t_step 14) t/step  2.26E-03s (avg  2.27E-03s) ETA 0:00:00
+ [ 37%] step 16 of 41 (t_step 15) t/step  2.25E-03s (avg  2.27E-03s) ETA 0:00:00
+ [ 40%] step 17 of 41 (t_step 16) t/step  2.28E-03s (avg  2.27E-03s) ETA 0:00:00
+ [ 42%] step 18 of 41 (t_step 17) t/step  2.26E-03s (avg  2.27E-03s) ETA 0:00:00
+ [ 44%] step 19 of 41 (t_step 18) t/step  2.31E-03s (avg  2.27E-03s) ETA 0:00:00
+ [ 47%] step 20 of 41 (t_step 19) t/step  2.31E-03s (avg  2.27E-03s) ETA 0:00:00
+ [ 49%] step 21 of 41 (t_step 20) t/step  2.27E-03s (avg  2.27E-03s) ETA 0:00:00
+ [ 52%] step 22 of 41 (t_step 21) t/step  2.29E-03s (avg  2.27E-03s) ETA 0:00:00
+ [ 54%] step 23 of 41 (t_step 22) t/step  2.32E-03s (avg  2.27E-03s) ETA 0:00:00
+ [ 57%] step 24 of 41 (t_step 23) t/step  2.28E-03s (avg  2.28E-03s) ETA 0:00:00
+ [ 59%] step 25 of 41 (t_step 24) t/step  2.32E-03s (avg  2.28E-03s) ETA 0:00:00
+ [ 61%] step 26 of 41 (t_step 25) t/step  2.24E-03s (avg  2.28E-03s) ETA 0:00:00
+ [ 64%] step 27 of 41 (t_step 26) t/step  2.26E-03s (avg  2.27E-03s) ETA 0:00:00
+ [ 66%] step 28 of 41 (t_step 27) t/step  2.26E-03s (avg  2.27E-03s) ETA 0:00:00
+ [ 69%] step 29 of 41 (t_step 28) t/step  2.29E-03s (avg  2.28E-03s) ETA 0:00:00
+ [ 71%] step 30 of 41 (t_step 29) t/step  2.30E-03s (avg  2.28E-03s) ETA 0:00:00
+ [ 74%] step 31 of 41 (t_step 30) t/step  2.29E-03s (avg  2.28E-03s) ETA 0:00:00
+ [ 76%] step 32 of 41 (t_step 31) t/step  2.28E-03s (avg  2.28E-03s) ETA 0:00:00
+ [ 79%] step 33 of 41 (t_step 32) t/step  2.26E-03s (avg  2.28E-03s) ETA 0:00:00
+ [ 81%] step 34 of 41 (t_step 33) t/step  2.31E-03s (avg  2.28E-03s) ETA 0:00:00
+ [ 83%] step 35 of 41 (t_step 34) t/step  2.25E-03s (avg  2.28E-03s) ETA 0:00:00
+ [ 86%] step 36 of 41 (t_step 35) t/step  2.28E-03s (avg  2.28E-03s) ETA 0:00:00
+ [ 88%] step 37 of 41 (t_step 36) t/step  2.23E-03s (avg  2.28E-03s) ETA 0:00:00
+ Pressure relaxation produced a non-physical phasic density. Exiting.
+--------------------------------------------------------------------------
+MPI_ABORT was invoked on rank 0 in communicator MPI_COMM_WORLD
+with errorcode 1.
+
+NOTE: invoking MPI_ABORT causes Open MPI to kill all MPI processes.
+You may or may not see output from other processes, depending on
+exactly when Open MPI kills them.
+--------------------------------------------------------------------------
+
+mfc: ERROR > :( /work/u1131128/coding-adv1/mfc-bcskip/build/install/gpu-acc-c819d00b45/bin/simulation failed with exit code 1.
+
+ 
+
+Error: Submitting batch file for Interactive failed. It can be found here: /work/u1131128/coding-adv1/mfc-bcskip/tests/5F3BB2E0/MFC.sh. Please check the file for errors.
+
+Terminated
+
+mfc: ERROR > main.py finished with a 143 exit code.
+mfc: (venv) Exiting the Python virtual environment.
+
+  
+     ✗ FAILED: 1D -> Reactive Burn -> Condensed Programmed Det...
+       UUID: 5F3BB2E0
+       Attempts: 1
+       Error: Test tests/5F3BB2E0: 1D -> Reactive Burn -> Condensed Programmed Detonation -> 6eq: Failed to execute MFC.
+       Hint: Check build logs and case parameters
+  
+     ( 65/ 83)    1D -> Reactive Burn -> Condensed Programmed Det...   13.37    135ED2EF
+     ( 66/ 83)    1D -> Reactive Burn -> Condensed Programmed Det...   13.10    E639CA3A
+     ( 67/ 83)    1D -> Reactive Burn -> Condensed Programmed Det...   23.58    86893F55
+     ( 68/ 83)    1D -> Reactive Burn -> Condensed Programmed Det...   23.56    CB0DC420
+     ( 69/ 83)    3D Direction Symmetry -> Shock in X                  15.01    05D092C5
+     ( 70/ 83)    2D -> IBM -> Vieille Burn Rate                       15.02    B317404C
+     ( 71/ 83)    3D Direction Symmetry -> Shock in Y                  14.32    59C3F366
+     ( 72/ 83)    MPI Consistency -> 3D -> Bubbles                     27.74    75D7CC39
+     ( 73/ 83)    MPI Consistency -> 3D -> Viscous                     29.26    0090B316
+     ( 74/ 83)    MPI Consistency -> 3D -> Hypoelasticity              29.06    0DDE8A87
+     ( 75/ 83)    Restart Roundtrip -> 1D                              38.55    1A379909
+     ( 76/ 83)    Restart Roundtrip -> 3D                              38.92    C3A4DBAE
+     ( 77/ 83)    Kernel -> 2D -> MTHINC -> Grid Stretching            13.92    7A1719C6
+     ( 78/ 83)    Kernel -> 3D -> Grid Stretching                      14.69    B49877F3
+
+  
+
+╭──────────────────────────────── Test Summary ────────────────────────────────╮
+│                                                                              │
+│  ✗ 5 TESTS FAILED                                                            │
+│                                                                              │
+│      78 passed                                                               │
+│       5 failed                                                               │
+│     677 skipped                                                              │
+│    ────────────                                                              │
+│     760 total                                                                │
+│                                                                              │
+│    Time: 13m 13.8s                                                           │
+│                                                                              │
+│    Failed Tests:                                                             │
+│      • 2D -> Example -> isentropicvortex                                     │
+│        UUID: 9A00542C                                                        │
+│        (tolerance mismatch)                                                  │
+│      • 2D -> Example -> rayleigh_taylor                                      │
+│        UUID: 2BA0324F                                                        │
+│        (tolerance mismatch)                                                  │
+│      • 3D -> Example -> recovering_sphere                                    │
+│        UUID: 9E2CA336                                                        │
+│        (execution failed)                                                    │
+│      • 1D -> Example -> vacuum                                               │
+│        UUID: E8C7E354                                                        │
+│        (tolerance mismatch)                                                  │
+│      • 1D -> Reactive Burn -> Condensed Prog...                              │
+│        UUID: 5F3BB2E0                                                        │
+│        (execution failed)                                                    │
+│                                                                              │
+│    Next Steps:                                                               │
+│      • Run with --generate to update golden files (if changes are            │
+│  intentional)                                                                │
+│      • Check individual test output in tests/<UUID>/                         │
+│      • Run specific test: ./mfc.sh test --only <UUID>                        │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+
+mfc: ERROR > main.py finished with a 5 exit code.
+mfc: (venv) Exiting the Python virtual environment.

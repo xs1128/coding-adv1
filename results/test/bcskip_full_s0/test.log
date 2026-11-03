@@ -1,0 +1,58 @@
+mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn009 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 2
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | 
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Build | syscheck and pre_process
+
+
+ Build | syscheck and simulation
+
+
+
+ Test pre_process and simulation | Only EA8FA07E, 4E0FBE72, E777BE53, 138D6A0D, D79C3E6F, 8A59E8E6, 70DAE9E8, 3AE495F4, 5EC236F2, 48CCE072, AED93D34, C5B79059, 727F72ED, A60691E7, 3FC6FC4A, 2AB32975, 2FD933A2, ED728400, 9D92767D, 63CD6ADF, 2A5CFF02, F9850EA5, 16A922E4, 7789B55A, B3E70A3A, 48D5C130, 9090FC4B, 677DAA82, 7B71820F, 56BB8D80, 0347811A, 5D68B0F5, 3F0FA534, D78D6B12, 6FA80DE9, 3EE4302C, F4E54FC0, F207F0FE, B46CEFF3, 28D9A304, 71258175, 5527832F, 4AEF478A, 32D0F235, 49501B5A, AFE4994E, 18BDCBC8, F97573DB, F4F6AC27, E5E5CBD5, 2F35A1FE, 66CB22E3, 7B21681C, CB76A5E1, 21901F07, 8EAC3DA7, 8E3D99E6, 1C88A727, 02748F0F, 122B0BF3, 78EB6879, B077CE88, 5AC2F65D, ED75D01D, 471270BB, 120043F6, 4A0CDF9C, 61AF4509, 6AE3FB4E, A6846AD4, 1E738705, 0879E062, 83EFC30C, 1CCA82F5, 96AF00B3, 3A8359F6, 6D24B115, 461DCB09, FD891191, 9DAC4DDC, C4907722, F5512823, F28381D9, 0288BDAD, EBBC93BD, F1CF01C4, C79E1D3C, CD9D3050, 27B24CD9, and 2A6136EF (90 tests)
+  
+     Progress      Test Name                                        Time(s)   UUID
+  
+     (  1/ 90)    2D -> IBM -> STL                                     71.66    EA8FA07E
+     Still running (>2min) 4E0FBE72  3D -> IBM -> STL
+     Still running (>2min) E777BE53  3D -> ICPP -> STL
+     (  2/ 90)    3D -> ICPP -> STL                                   137.60    E777BE53
+     (  3/ 90)    2D -> ICPP -> STL                                    62.50    138D6A0D
+     (  4/ 90)    3D -> IBM -> STL                                    276.47    4E0FBE72
+     (  5/ 90)    1D -> bc=-1                                          58.59    D79C3E6F
+     (  6/ 90)    1D -> bc=-2                                          59.62    8A59E8E6
+     (  7/ 90)    1D -> bc=-4                                          86.47    70DAE9E8
+     (  8/ 90)    1D -> bc=-5                                          83.90    3AE495F4
+     (  9/ 90)    1D -> bc=-6                                          93.21    5EC236F2
+     ( 10/ 90)    1D -> bc=-7                                          93.13    48CCE072
+     ( 11/ 90)    1D -> bc=-8                                         104.91    AED93D34
+     ( 12/ 90)    1D -> bc=-9                                         103.37    C5B79059
+     ( 13/ 90)    1D -> bc=-10                                        106.05    727F72ED
+     ( 14/ 90)    1D -> bc=-11                                        107.68    A60691E7
+     ( 15/ 90)    1D -> bc=-12                                         89.83    3FC6FC4A
+     ( 16/ 90)    1D -> bc=-3                                          95.99    2AB32975
+     ( 17/ 90)    1D -> bc=-15                                         75.64    2FD933A2
+     ( 18/ 90)    1D -> bc=-16                                         88.42    ED728400
+     ( 19/ 90)    1D -> bc=-17                                        104.59    9D92767D
+     ( 20/ 90)    1D -> grcbc x                                        85.77    63CD6ADF
+     ( 21/ 90)    1D -> weno_order=3 -> wenoz=T                        71.84    F9850EA5
+     ( 22/ 90)    1D -> weno_order=3                                   86.76    2A5CFF02
+     ( 23/ 90)    1D -> weno_order=3 -> mapped_weno=T                  90.14    16A922E4
+     ( 24/ 90)    1D -> weno_order=5                                   97.02    7789B55A
+     ( 25/ 90)    1D -> weno_order=5 -> mp_weno=T                      97.09    B3E70A3A
+     ( 26/ 90)    1D -> weno_order=5 -> teno=T                         95.94    48D5C130
+     ( 27/ 90)    1D -> weno_order=5 -> wenoz=T                        81.09    9090FC4B
+     ( 28/ 90)    1D -> weno_order=5 -> mapped_weno=T                  75.86    677DAA82
+     ( 29/ 90)    1D -> weno_order=7                                   73.79    7B71820F
+     ( 30/ 90)    1D -> weno_order=7 -> teno=T                         73.98    56BB8D80
+     ( 31/ 90)    1D -> weno_order=7 -> wenoz=T                        68.76    0347811A
+     ( 32/ 90)    1D -> weno_order=7 -> mapped_weno=T                  65.75    5D68B0F5
