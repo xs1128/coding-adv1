@@ -1,0 +1,32 @@
+ Simulating a case-optimized 200x200x200 case on 1 rank(s) with OpenACC offloading.
+ [  0%] step 1 of 31 (t_step 0) t/step  0.00E+00s (avg  0.00E+00s) ETA 0:00:00
+ [  4%] step 2 of 31 (t_step 1) t/step  5.74E-02s (avg  0.00E+00s) ETA 0:00:00
+ [  7%] step 3 of 31 (t_step 2) t/step  2.88E-02s (avg  0.00E+00s) ETA 0:00:00
+ [ 10%] step 4 of 31 (t_step 3) t/step  2.88E-02s (avg  2.88E-02s) ETA 0:00:00
+ [ 13%] step 5 of 31 (t_step 4) t/step  2.88E-02s (avg  2.88E-02s) ETA 0:00:00
+ [ 17%] step 6 of 31 (t_step 5) t/step  2.88E-02s (avg  2.88E-02s) ETA 0:00:00
+ [ 20%] step 7 of 31 (t_step 6) t/step  2.88E-02s (avg  2.88E-02s) ETA 0:00:00
+ [ 23%] step 8 of 31 (t_step 7) t/step  2.88E-02s (avg  2.88E-02s) ETA 0:00:00
+ [ 26%] step 9 of 31 (t_step 8) t/step  2.88E-02s (avg  2.88E-02s) ETA 0:00:00
+ [ 30%] step 10 of 31 (t_step 9) t/step  2.88E-02s (avg  2.88E-02s) ETA 0:00:00
+ [ 33%] step 11 of 31 (t_step 10) t/step  2.88E-02s (avg  2.88E-02s) ETA 0:00:00
+ [ 36%] step 12 of 31 (t_step 11) t/step  2.89E-02s (avg  2.88E-02s) ETA 0:00:00
+ [ 39%] step 13 of 31 (t_step 12) t/step  2.88E-02s (avg  2.88E-02s) ETA 0:00:00
+ [ 42%] step 14 of 31 (t_step 13) t/step  2.88E-02s (avg  2.88E-02s) ETA 0:00:00
+ [ 46%] step 15 of 31 (t_step 14) t/step  2.88E-02s (avg  2.88E-02s) ETA 0:00:00
+ [ 49%] step 16 of 31 (t_step 15) t/step  2.88E-02s (avg  2.88E-02s) ETA 0:00:00
+ [ 52%] step 17 of 31 (t_step 16) t/step  2.89E-02s (avg  2.88E-02s) ETA 0:00:00
+ [ 55%] step 18 of 31 (t_step 17) t/step  2.88E-02s (avg  2.88E-02s) ETA 0:00:00
+ [ 59%] step 19 of 31 (t_step 18) t/step  2.88E-02s (avg  2.88E-02s) ETA 0:00:00
+ [ 62%] step 20 of 31 (t_step 19) t/step  2.88E-02s (avg  2.88E-02s) ETA 0:00:00
+ [ 65%] step 21 of 31 (t_step 20) t/step  2.88E-02s (avg  2.88E-02s) ETA 0:00:00
+ [ 68%] step 22 of 31 (t_step 21) t/step  2.88E-02s (avg  2.88E-02s) ETA 0:00:00
+ [ 71%] step 23 of 31 (t_step 22) t/step  2.88E-02s (avg  2.88E-02s) ETA 0:00:00
+ [ 75%] step 24 of 31 (t_step 23) t/step  2.88E-02s (avg  2.88E-02s) ETA 0:00:00
+ [ 78%] step 25 of 31 (t_step 24) t/step  2.88E-02s (avg  2.88E-02s) ETA 0:00:00
+ [ 81%] step 26 of 31 (t_step 25) t/step  2.88E-02s (avg  2.88E-02s) ETA 0:00:00
+ [ 84%] step 27 of 31 (t_step 26) t/step  2.88E-02s (avg  2.88E-02s) ETA 0:00:00
+ [ 88%] step 28 of 31 (t_step 27) t/step  2.88E-02s (avg  2.88E-02s) ETA 0:00:00
+ [ 91%] step 29 of 31 (t_step 28) t/step  2.88E-02s (avg  2.88E-02s) ETA 0:00:00
+ [ 94%] step 30 of 31 (t_step 29) t/step  2.88E-02s (avg  2.88E-02s) ETA 0:00:00
+ Performance:   0.1486531250000000      ns/gp/eq/rhs
