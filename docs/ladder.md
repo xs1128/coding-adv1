@@ -170,3 +170,12 @@ Applied 0001–0030 to a local v5.7.0 copy and read the result:
   call, 6 faces per stage. Caching the answer per face would need a reset at every `bc_type` write (pre_process writes
   it from patches too, and the shared code has no per-program macro), so it stays a follow-up to measure first (nsys host
   time of the populate call) rather than a change made blind.
+
+### Where a step goes in P22 (nsys 690689, 1 GPU, 10 steps, `results/prof/nsys_p22_1g`)
+- Steady steps 28.35–28.41 ms; first step 35.4 ms (was ~57 before 0031). The GPU is busy 28.14 ms of each 28.39 ms
+  step (any stream), idle 0.25 ms (0.9 %).
+- Per step: the three fused WENO5+HLLC sweeps 21.1 ms (74 %), the fused RK update 4.5 ms (16 %), the conversion to
+  primitives 1.5 ms (5 %); ghost-cell fills 0.40 ms, CBC kernels ~1.2 ms but on the second queue beside HLLC; 93 small
+  host-to-device copies 0.11 ms.
+- So at 1 GPU almost all time is in kernels that earlier rows already tuned (register caps 17/51/45, tiling 55/56,
+  split 63). The 4-GPU step (7.93 ms vs 28.37 / 4 = 7.09 ms) has more left: profile 690700.
