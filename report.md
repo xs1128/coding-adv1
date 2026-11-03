@@ -354,6 +354,13 @@ pageable copy plus the Lustre write. Running the case directory in `/dev/shm` an
 cut the median wall time from 4.039 to **3.810 s (−5.7 %)** on the exp-cbcdead binary (684750: 3 rounds × 5 reps,
 every round agrees; final state bitwise). A bigger OpenACC copy buffer for the save made it slower (684697).
 
+**Library search path (setting, disclosed; 2026-11-04).** `mpirun` alone took 0.82–0.92 s at 1 rank against 0.38–0.43 s for
+`srun`. Open MPI settings and hwloc without GPU plugins did not change it (696762, 696775). The cause is `LD_LIBRARY_PATH`:
+it lists 6 NVHPC folders on Lustre, and the loader tries each of them for every library (1842 attempts for `mpirun
+--version`), while the binaries' RPATHs already find the same files. With it unset (`NOLIBPATH=1`) the same 187 objects
+load (696781) and the wall median goes 3.551 / 3.648 → **2.792 / 2.822 s (−21 % / −23 %)** on 0038 (696791, 2 rounds × 5
+reps, `ob1` + `/dev/shm`); final state bitwise.
+
 **What did not work (all bitwise, all measured):** WENO kernel `collapse(4)` +15.7 %; other register caps on the
 merged kernel (+0.8 % to +7 %); RK update variants (+3.6 %, +7.5 %, +15 %); saving through an MPI-IO memory datatype
 (+70 %), a staging buffer or ROMIO hints (no gain); packed WENO coefficients (no gain, 670870); RK update per (cell,

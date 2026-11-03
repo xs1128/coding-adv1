@@ -324,6 +324,13 @@ spent in reading the initial state from Lustre and the save in a pageable copy p
 directory in `/dev/shm` and copying it back afterwards (`RUNLOCAL=1`) cut wall time 4.039 → 3.810 s (−5.7 %, 3 rounds
 × 5 reps, both arms with `ob1`); final state bitwise. A bigger OpenACC copy buffer for the save was slower (684697).
 
+**Library search path (setting, disclosed; 2026-11-04).** `mpirun` alone took 0.82–0.92 s at 1 rank against 0.38–0.43 s for
+`srun`. Open MPI settings and hwloc without GPU plugins did not change it (696762, 696775). The cause is `LD_LIBRARY_PATH`:
+it lists 6 NVHPC folders on Lustre, and the loader tries each of them for every library (1842 attempts for `mpirun
+--version`), while the binaries' RPATHs already find the same files. With it unset (`NOLIBPATH=1`) the same 187 objects
+load (696781) and the wall median goes 3.551 / 3.648 → **2.792 / 2.822 s (−21 % / −23 %)** on 0038 (696791, 2 rounds × 5
+reps, `ob1` + `/dev/shm`); final state bitwise.
+
 **Save experiments.** ROMIO hints from [research-env-tuning.md](background/research-env-tuning.md) §4: no change
 (669396). Restart I/O makes temporary array copies. Two fixes were rejected: *iomem*
 (wall +3.5 %, 669871) and *iobuf* (rounds disagree, 669917; not worth 70 lines).
