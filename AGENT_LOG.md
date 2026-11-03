@@ -186,6 +186,9 @@ the figure script disagreed. Rule: derived numbers come from raw files, in one s
   seven finished, verified A/Bs were deleted: `runs/exp/{cbcdirect_1g,rkpf2_1g,rkpf2c_4g_rdma,savets1_1g,savets1_1g_r2,
   savepack_1g,savepack_save10_1g}` (logs and inputs kept; timings and bitwise checks in `results/` and ladder rows 74,
   76–78). 25 GB free afterwards. No GPU cost. `runs/exp/readpack_1g` and `runs/final` are untouched.
+- **11-04: nsys could not start on hgpn019 (job 695468).** `/tmp/nvidia` on that node belonged to another user, so nsys
+  failed to create its temp folder and the run exited after 35 s (~0.6 GPU-min). `harness/nsyswrap.sh` now sets `TMPDIR`
+  to a per-job folder in `/dev/shm`, the fix nsys itself suggests. Resubmitted.
 
 ## Code the student must be able to defend
 (filled in as optimizations land)
