@@ -278,7 +278,13 @@ SM, waiting on loads). Each thread loaded equation j + 1 while computing equatio
 Uncapped that needs 179 registers (2 blocks per SM) and is slower (28.932 / 28.956 ms vs 27.863 / 27.858); compiling
 `m_rhs` with `-gpu=maxregcount:168` keeps 3 blocks for a 32 B stack: 27.645 / 27.671 ms (−0.78 % / −0.67 %), grind
 −0.40 % / −0.31 %, bitwise (1 GPU, job 693627, 2 rounds); 4 GPUs (693693): 7.548 → 7.484 ms
-(−0.85 %), grind −0.57 %, bitwise. Single-file recompiles with `-gpu=nounroll` or `loadcache`
+(−0.85 %), grind −0.57 %, bitwise.
+
+**Pending 0036 (on 0035; not in P22).** The save copied the output from the GPU into the host copy of `q_cons_ts(2)`,
+which nothing had touched, so the pageable copy also faulted in ~0.5 GB of pages (the 311 ms at 1.9 GB/s seen in nsys
+684808). 0036 copies and writes `q_cons_ts(1)` instead, equal at that point, whose host copy holds the initial state.
+With `ob1` and `/dev/shm` (1 GPU, 693774, 3 rounds × 5 reps): save 0.706 / 0.656 / 0.847 → 0.423 / 0.407 / 0.444 s,
+wall median 3.986 / 3.958 / 4.328 → 3.719 / 3.731 / 3.908 s; the restart file is bitwise the same (ladder row 77). Single-file recompiles with `-gpu=nounroll` or `loadcache`
 changed no register or spill counts (ladder rows 75–76). Full suite not run.
 
 **Several GPUs** (`rdma_mpi`, same node, P11 vs P18; bitwise):

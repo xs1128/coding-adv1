@@ -1,0 +1,33 @@
+From b8ce5fc26bc6bd990cec527f73a04abb706f8275 Mon Sep 17 00:00:00 2001
+From: xs1128 <ooixinsheng@gmail.com>
+Date: Wed, 4 Nov 2026 02:29:03 +0800
+Subject: [PATCH] Save: copy the state to the host from q_cons_ts(1)
+
+q_cons_ts(2) equals q_cons_ts(1) at a save, but its host copy is never
+touched before, so the device-to-host copy of the output first-touched
+about 0.5 GB of pages at 201^3. The host copy of q_cons_ts(1) already
+holds the initial state. The written values are the same. Unified-memory
+builds, which write q_cons_ts(2) from the host, are unchanged.
+---
+ src/simulation/m_start_up.fpp | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/src/simulation/m_start_up.fpp b/src/simulation/m_start_up.fpp
+index ed2edff..c3761a8 100644
+--- a/src/simulation/m_start_up.fpp
++++ b/src/simulation/m_start_up.fpp
+@@ -751,6 +751,11 @@ contains
+             $:END_GPU_PARALLEL_LOOP()
+             stor = 2
+         end if
++#ifndef FRONTIER_UNIFIED
++        ! Copy and write q_cons_ts(1), which q_cons_ts(2) now equals: its host copy already holds the initial state, so the
++        ! device-to-host copies below land in resident pages, while those into q_cons_ts(2) first-touched ~0.5 GB at 201^3.
++        stor = 1
++#endif
+ 
+         call cpu_time(start)
+         call nvtxStartRange("SAVE-DATA")
+-- 
+2.47.3
+

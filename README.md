@@ -97,6 +97,11 @@ each GPU thread fetched only the next equation's numbers ahead. It now fetches t
 registers so as many threads still fit on the GPU (without the cap it was 3.9 % slower). 1 GPU: 27.86 → 27.66 ms per
 step (−0.78 % / −0.67 %, job 693627); 4 GPUs: 7.548 → 7.484 ms (−0.85 %, 693693); bitwise. Full suite not run (ladder row 76).
 
+**Pending 0036 (on 0035, not in P22):** at the end of a run the answer is copied from the GPU into a part of CPU memory
+that had never been used, so the operating system had to set up every page during the copy. It now goes into the copy
+that already holds the starting state; the file written is the same. Saving takes about 0.42 s instead of 0.66–0.85 s,
+and a whole run (with the `ob1` and `/dev/shm` settings) 3.72–3.91 s instead of 3.96–4.33 s (jobs 693750, 693774; ladder row 77).
+
 **Run settings (disclosed, no code change):** at 1 GPU, Open MPI without UCX (`ob1`) and a run directory in node-local
 memory (`/dev/shm`) cut the wall time of a whole run, start-up and save included, to about 3.8 s (job 684750).
 
