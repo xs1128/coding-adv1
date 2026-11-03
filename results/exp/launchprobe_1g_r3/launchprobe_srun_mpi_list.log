@@ -1,0 +1,6 @@
+MPI plugin types are...
+	none
+	cray_shasta
+	pmi2
+	pmix
+specific pmix plugin versions available: pmix_v4

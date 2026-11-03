@@ -76,6 +76,14 @@ if [[ ${LAUNCHPROBE:-0} == 1 ]]; then
     tm srun_true $r env $RUN_ENV $SRUN_ENV timeout 60 srun -n 1 --mpi=pmix /bin/true
   done
   tm lddebug_sim 1 env $RUN_ENV LD_DEBUG=statistics timeout 90 mpirun -np 1 $MPIRUN_ARGS "$sim"
+  # where mpirun's own start-up goes: a syscall summary (results/) and a full timeline (runs/, large), and the same
+  # launch with a pre-generated hwloc topology (discovery on a 112-core, 8-GPU node is a usual cost)
+  timeout 60 strace -f -c -o "$out/launchprobe_strace_summary.txt" env $RUN_ENV mpirun -np 1 $MPIRUN_ARGS /bin/true || true
+  timeout 60 strace -f -ttt -T -o "$keep/strace_mpirun_true.txt" env $RUN_ENV mpirun -np 1 $MPIRUN_ARGS /bin/true || true
+  lstopo-no-graphics --of xml "$run/topo.xml" > /dev/null 2>&1 || true
+  for r in 1 2 3; do
+    tm mpirun_true_topo $r env $RUN_ENV OMPI_MCA_hwloc_base_topo_file=$run/topo.xml timeout 60 mpirun -np 1 $MPIRUN_ARGS /bin/true
+  done
   # one srun (PMIx) launch of the simulation; the timed reps' final state is kept beside it as *.dat.reps for verify
   last=$(ls restart_data/ | sed -nE 's/^lustre_([0-9]+)\.dat$/\1/p' | sort -n | tail -1)
   cp restart_data/lustre_${last}.dat restart_data/lustre_${last}.dat.reps
