@@ -136,3 +136,7 @@ Every experiment we ran, oldest first. Each kept change is the starting point fo
   after HLLC on the main queue. That needs the CBC module's per-call settings (direction, side, index ranges) kept per
   direction instead of in shared module variables, and must keep the original order when both sides of a direction are
   CBC. Expected: about 1–2 % at 1 GPU, more at 4 GPUs, where it would also even out the ranks.
+- The CBC FD kernel itself (`s_cbc_651` after 0028; machine code, no GPU run): 114 registers and a 448-byte stack per
+  thread (its small per-point arrays live in local memory). Its ~316 blocks all fit at once, so its 39 µs is one thread's
+  chain of dependent steps. Shortening it would mean making those arrays register-resident (full unrolling), a deeper
+  rewrite; with 0028 hiding most of it behind HLLC, at most about 1 % is left there.
