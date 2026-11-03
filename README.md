@@ -116,7 +116,7 @@ answer is the same (ladder rows 79–80).
 memory (`/dev/shm`) cut the wall time of a whole run, start-up and save included, to about 3.8 s (job 684750).
 Starting the run with `LD_LIBRARY_PATH` unset (`NOLIBPATH=1`) cuts it further: the variable lists 6 compiler folders on the
 slow shared file system, and the program finds the same libraries without it. With patches up to 0038, a whole run takes
-2.79–2.82 s instead of 3.55–3.65 s (median, job 696791), with the same answer (ladder row 85).
+2.79–2.82 s instead of 3.55–3.65 s (median, job 696791), with the same answer (ladder row 85). At 4 GPUs it saves about 0.6–0.9 s too (job 696824, row 86).
 
 **Since the 10-31 report**, the time per step at 1 GPU went from ~60 ms to ~28.4 ms (see [`report.md`](report.md) §11).
 

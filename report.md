@@ -359,7 +359,7 @@ every round agrees; final state bitwise). A bigger OpenACC copy buffer for the s
 it lists 6 NVHPC folders on Lustre, and the loader tries each of them for every library (1842 attempts for `mpirun
 --version`), while the binaries' RPATHs already find the same files. With it unset (`NOLIBPATH=1`) the same 187 objects
 load (696781) and the wall median goes 3.551 / 3.648 → **2.792 / 2.822 s (−21 % / −23 %)** on 0038 (696791, 2 rounds × 5
-reps, `ob1` + `/dev/shm`); final state bitwise.
+reps, `ob1` + `/dev/shm`); final state bitwise. At 4 GPUs (UCX with CUDA transports) it also works: wall median 7.324 / 7.192 → 6.468 / 6.582 s, grindtime unchanged, bitwise (696824).
 
 **What did not work (all bitwise, all measured):** WENO kernel `collapse(4)` +15.7 %; other register caps on the
 merged kernel (+0.8 % to +7 %); RK update variants (+3.6 %, +7.5 %, +15 %); saving through an MPI-IO memory datatype
