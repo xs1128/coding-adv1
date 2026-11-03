@@ -1,0 +1,3 @@
+nogpuhwloc rep 1: final state identical
+nogpuhwloc rep 2: final state identical
+nogpuhwloc rep 3: final state identical
