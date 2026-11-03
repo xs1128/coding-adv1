@@ -31,6 +31,9 @@ declare -A V=(
   [g5_posix]="UCX_TLS=self,posix,cuda_copy,cuda_ipc UCX_POSIX_USE_PROC_LINK=n OMPI_MCA_coll_hcoll_enable=0 OMPI_MCA_coll_ucc_enable=0 OMPI_MCA_pml=ucx OMPI_MCA_mtl=^ofi OMPI_MCA_btl=self OMPI_MCA_osc=^ucx UCX_MODULES=^ib,rdmacm"
   [g5_posixmods]="UCX_TLS=self,posix,cuda_copy,cuda_ipc UCX_POSIX_USE_PROC_LINK=n OMPI_MCA_coll_hcoll_enable=0 OMPI_MCA_coll_ucc_enable=0 OMPI_MCA_pml=ucx OMPI_MCA_mtl=^ofi OMPI_MCA_btl=self OMPI_MCA_osc=^ucx UCX_MODULES=^ib,rdmacm,gdrcopy,xpmem,knem,cma"
   [g5_nocuda]="UCX_TLS=self,sm UCX_POSIX_USE_PROC_LINK=n OMPI_MCA_coll_hcoll_enable=0 OMPI_MCA_coll_ucc_enable=0 OMPI_MCA_pml=ucx OMPI_MCA_mtl=^ofi OMPI_MCA_btl=self OMPI_MCA_osc=^ucx UCX_MODULES=^ib,rdmacm"
+  [h_memev]="UCX_TLS=self,sm,cuda_copy,cuda_ipc UCX_POSIX_USE_PROC_LINK=n OMPI_MCA_coll_hcoll_enable=0 OMPI_MCA_coll_ucc_enable=0 OMPI_MCA_pml=ucx OMPI_MCA_mtl=^ofi OMPI_MCA_btl=self OMPI_MCA_osc=^ucx UCX_MODULES=^ib,rdmacm UCX_MEM_EVENTS=n"
+  [h_hooks]="UCX_TLS=self,sm,cuda_copy,cuda_ipc UCX_POSIX_USE_PROC_LINK=n OMPI_MCA_coll_hcoll_enable=0 OMPI_MCA_coll_ucc_enable=0 OMPI_MCA_pml=ucx OMPI_MCA_mtl=^ofi OMPI_MCA_btl=self OMPI_MCA_osc=^ucx UCX_MODULES=^ib,rdmacm UCX_MEM_MALLOC_HOOKS=n UCX_MEM_MMAP_HOOK_MODE=none"
+  [h_proto]="UCX_TLS=self,sm,cuda_copy,cuda_ipc UCX_POSIX_USE_PROC_LINK=n OMPI_MCA_coll_hcoll_enable=0 OMPI_MCA_coll_ucc_enable=0 OMPI_MCA_pml=ucx OMPI_MCA_mtl=^ofi OMPI_MCA_btl=self OMPI_MCA_osc=^ucx UCX_MODULES=^ib,rdmacm UCX_PROTO_ENABLE=n"
 )
 # NOLIBPATH=1 (as in run.sbatch): start with LD_LIBRARY_PATH unset
 libu=(); [[ ${NOLIBPATH:-0} == 1 ]] && libu=(-u LD_LIBRARY_PATH)
