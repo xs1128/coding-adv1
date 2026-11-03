@@ -63,7 +63,7 @@ done
 smi "$out/smi_after.csv"
 
 # LAUNCHPROBE=1 (untimed, after the reps): how long launching alone takes. Times mpirun and srun of /bin/true (3 each,
-# each under a timeout) and records the dynamic loader's statistics for one mpirun of the simulation.
+# each under a timeout), records the dynamic loader's statistics for one mpirun of the simulation, and times one srun of it.
 if [[ ${LAUNCHPROBE:-0} == 1 ]]; then
   pf=$out/launchprobe.tsv; printf 'what\trep\twall_s\trc\n' > "$pf"
   tm() { local w=$1 r=$2; shift 2; local t0 t1 rc=0; t0=$(date +%s.%N); "$@" > "$out/launchprobe_$w.log" 2>&1 || rc=$?
@@ -74,6 +74,10 @@ if [[ ${LAUNCHPROBE:-0} == 1 ]]; then
     tm srun_true $r env $RUN_ENV timeout 60 srun -n 1 --mpi=pmix /bin/true
   done
   tm lddebug_sim 1 env $RUN_ENV LD_DEBUG=statistics timeout 90 mpirun -np 1 $MPIRUN_ARGS "$sim"
+  # one srun (PMIx) launch of the simulation; the timed reps' final state is kept beside it as *.dat.reps for verify
+  last=$(ls restart_data/ | sed -nE 's/^lustre_([0-9]+)\.dat$/\1/p' | sort -n | tail -1)
+  cp restart_data/lustre_${last}.dat restart_data/lustre_${last}.dat.reps
+  tm srun_sim 1 env $RUN_ENV timeout 90 srun -n 1 --mpi=pmix "$sim"
 fi
 
 # extra rep under NVTX-only nsys: per-rank step times (grind is only the min stage)
