@@ -149,6 +149,7 @@ The scripts expect this folder at `/work/u1131128/coding-adv1` on nano4 (`tools/
 ```bash
 harness/reproduce.sh build     # login node, no GPU: clone v5.7.0, apply our patches, compile (~1 h)
 harness/reproduce.sh run       # submit the timing jobs on 1, 4 and 8 GPUs
+harness/reproduce.sh wall      # submit the 1- and 4-GPU wall-time jobs with the disclosed run settings
 harness/reproduce.sh verify    # check every result is bit-for-bit the same as plain v5.7.0, print a summary
 ```
 

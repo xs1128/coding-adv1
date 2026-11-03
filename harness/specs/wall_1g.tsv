@@ -1,0 +1,3 @@
+# 1 GPU wall time: v5.7.0 as shipped vs P22 with the disclosed run settings (ladder rows 85, 98, 99; ob1 and /dev/shm from 684750)
+base	mfc	-	-
+final	mfc-repro	-	RUNLOCAL=1 NOLIBPATH=1 LAUNCH=singleton SINGLETON_LDP=/work/envstack/apps/nvhpc/26.3/Linux_x86_64/26.3/comm_libs/13.1/hpcx/hpcx-2.25.1/ompi/lib RUN_ENV=OMPI_MCA_pml=ob1@OMPI_MCA_btl=self+vader@OMPI_MCA_osc=^ucx
