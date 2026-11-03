@@ -198,6 +198,9 @@ the figure script disagreed. Rule: derived numbers come from raw files, in one s
   `runs/exp/{readpack_1g,eagerload_1g,direct_1g,launchprobe_1g,launchprobe_1g_r2..r5,nogpuhwloc_1g}` (each compared bitwise
   with its A arm or the v5.7.0 reference, or from an already verified binary; results in `results/` and the ladder).
   `runs/exp/readtype_1g` (0038) and `runs/final` are untouched. No GPU cost.
+- **2026-11-04, `/work` at 11 GB free (submit.sh refuses below 10 GB).** Deleted 8 more run dumps whose final states had
+  passed their bitwise checks (nolibpath_1g, nolibpath_4g, runlocal_4g, nohcoll_1g, nohcoll_4g, smcuda_4g_probe,
+  launchprobe2_1g, launchprobe3_1g; results in `results/` and ladder rows 85–89): 22 GB free afterwards. No GPU cost.
 
 ## Code the student must be able to defend
 (filled in as optimizations land)
