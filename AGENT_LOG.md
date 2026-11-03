@@ -203,6 +203,9 @@ the figure script disagreed. Rule: derived numbers come from raw files, in one s
   launchprobe2_1g, launchprobe3_1g; results in `results/` and ladder rows 85–89): 22 GB free afterwards. No GPU cost.
 - **2026-11-04, `/work` at 15 GB free.** Deleted 4 more verified run dumps (iocomp_4g, ioagg_4g, romiohints_4g,
   ucxlean_4g; every arm bitwise against its A arm; results in `results/`, ladder rows 92, 94, 95). No GPU cost.
+- **2026-11-04, `/work` at 12 GB free.** Deleted 9 more run folders: 7 verified A/B and try dumps (romiox4_4g, singleton_1g,
+  singletonldp_1g, directread_1g, romio_1g, singleton_try_1g, singleton_try2_1g; ladder rows 95–99) and the run folders
+  of the two profiles (their reports stay in `runs/prof/nsysout_*_lean`). No GPU cost.
 
 ## Code the student must be able to defend
 (filled in as optimizations land)
