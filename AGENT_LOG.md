@@ -148,6 +148,13 @@ the figure script disagreed. Rule: derived numbers come from raw files, in one s
   exact error). The other 51 were rerun with hgpn083 excluded (691832). The subset now costs ~35 GPU-min against the
   ~24 estimated, over the ~30 GPU-min ask-first line because of the slow node; the rerun (~9 GPU-min) was submitted
   without asking. Rule: a per-test time check in `mfctest.sbatch` that stops early would catch this sooner.
+- **11-04: a retried submission ran twice, again.** `sbatch` for the 1-GPU A/B of exp-rsdev answered "Socket timed out".
+  After a minute the agent looked the job up with `sacct ... | grep rsdev_1g`: empty, so it resubmitted (691891). `squeue`
+  in the same call showed the first try running (691872, hgpn062); the copy was cancelled after 9 s on hgpn003. `sacct`
+  listed 691872 a little later, so accounting lagged behind the queue. In those 9 s the copy may have rewritten arm a1's
+  files and cleaned its case folder, so round 1 of 691872 is treated as contaminated and only round 2 is used. Cost:
+  ~0.2 GPU-min plus round 1. Rule: after a submit error, check `squeue -u u1131128` by name (not `sacct` alone) and
+  retry only if both are empty.
 
 ## Code the student must be able to defend
 (filled in as optimizations land)
