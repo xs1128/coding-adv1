@@ -179,3 +179,14 @@ Applied 0001–0030 to a local v5.7.0 copy and read the result:
   host-to-device copies 0.11 ms.
 - So at 1 GPU almost all time is in kernels that earlier rows already tuned (register caps 17/51/45, tiling 55/56,
   split 63). The 4-GPU step (7.93 ms vs 28.37 / 4 = 7.09 ms) has more left: profile 690700.
+
+### Where a step goes in P22 at 4 GPUs (nsys 690700, `rdma_mpi`, 10 steps, `results/prof/nsys_p22_4g`)
+- Under nsys a step takes 8.50 ms on every rank (7.93 ms without it, 686954). GPU busy 7.44 / 7.51 / 7.57 / 7.67 ms on
+  ranks 0–3, idle 1.06 / 0.99 / 0.93 / 0.83 ms (10–12 %). The busiest rank (3) still idles 0.83 ms, so most of the
+  wait is no longer the CBC imbalance (0028–0029 fixed most of that) but time on the critical path with the GPU empty.
+- Inside `RHS-COMMUNICATION` (one per stage, x then y exchange plus the ghost fills) the GPU idles 0.51–0.65 ms per step.
+  Each exchange leaves two gaps of 14–19 µs on the GPU: pack → (host wakes, MPI handshake) → peer-to-peer copy →
+  (MPI completes, unpack launched) → unpack. The MPI call itself is 30–60 µs (up to 180 µs on rank 0 when waiting).
+- Idea (exp-haloyz): the x sweep reads interior y/z cells only, so the y/z halo work can wait until the x sweep is
+  queued and then run on OpenACC queue 2 while the host sits in MPI. Expected: most of the y exchange's ~70–80 µs of GPU
+  idle per stage, about 3 % at 4 GPUs; nothing at 1 GPU (no MPI neighbour, path off).
