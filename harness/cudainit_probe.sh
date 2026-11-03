@@ -9,7 +9,7 @@ echo "uct_cuda=$(readlink -f "$ucx")"
 nvidia-smi --query-gpu=index,persistence_mode,pstate --format=csv,noheader
 t() {  # $1 = what: nvml | cuinit | uctcuda
   env -u LD_LIBRARY_PATH python3 -I - "$1" "$ucx" <<'EOF'
-import ctypes, sys, time
+import ctypes, os, sys, time
 w, ucx = sys.argv[1], sys.argv[2]
 t0 = time.perf_counter()
 if w == "nvml":
@@ -17,7 +17,7 @@ if w == "nvml":
 elif w == "cuinit":
     r = ctypes.CDLL("libcuda.so.1").cuInit(0)
 else:
-    r = ctypes.CDLL(ucx, mode=ctypes.RTLD_NOW | ctypes.RTLD_GLOBAL) and 0
+    r = ctypes.CDLL(ucx, mode=os.RTLD_NOW | os.RTLD_GLOBAL) and 0
 print(f"{w}\t{time.perf_counter() - t0:.3f}\tret={r}")
 EOF
 }
@@ -26,4 +26,7 @@ for rep in 1 2 3; do
     echo "alone rep$rep $(t $w)"
     for i in 1 2 3 4; do t $w & done | sed "s/^/x4 rep$rep /"; wait
   done
+  # each process sees only its own GPU (as with CUDA_VISIBLE_DEVICES per rank)
+  echo "alone1gpu rep$rep $(CUDA_VISIBLE_DEVICES=0 t cuinit)"
+  for i in 0 1 2 3; do CUDA_VISIBLE_DEVICES=$i t cuinit & done | sed "s/^/x4_1gpu rep$rep /"; wait
 done
