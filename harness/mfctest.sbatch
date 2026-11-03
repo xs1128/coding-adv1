@@ -12,6 +12,10 @@ source "$ROOT/scripts/env.sh"
 export OMPI_MCA_rmaps_base_oversubscribe=1   # multi-rank tests share the 1-2 GPUs (correctness only)
 : "${LABEL:?}" "${NGPU:=1}" "${TEST_ARGS:=}" "${JOBS:=$((2 * NGPU))}"
 out=$ROOT/results/$LABEL; mkdir -p "$out"
+# A power-braked GPU runs every test ~5x slower and the shard times out (bcskip_full_s0, 685707 on hgpn009): stop at once
+if nvidia-smi --query-gpu=clocks_event_reasons.hw_power_brake_slowdown --format=csv,noheader | grep -q '^Active'; then
+  echo "power brake active on $(hostname); not testing" | tee "$out/test.log" >&2; echo "$(hostname)" >> "$out/braked_nodes.txt"; exit 3
+fi
 {
   echo "job=$SLURM_JOB_ID host=$(hostname) date=$(date -Iseconds) ngpu=$NGPU jobs=$JOBS test_args=$TEST_ARGS"
   cat "$ROOT/.provenance"

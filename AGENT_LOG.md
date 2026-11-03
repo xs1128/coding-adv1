@@ -117,5 +117,11 @@ the figure script disagreed. Rule: derived numbers come from raw files, in one s
   after 0024. Found while rebuilding the series offline; moved to `patches/exp/`. Builds on nano4 used named
   worktrees, so no result is affected. Rule: `patches/opt/` holds only `NNNN-*.patch`.
 
+- **11-03: a test shard ran on a node already known to be braked.** hgpn009 had refused A/B job 680922 for its power
+  brake, but was never added to the exclude list, and the test script had no brake check. Suite shard 0 (685707) ran
+  there ~5x slow (66–76 s per test vs 12–15 s) and timed out: 25 GPU-min, no result. Users cannot edit pending jobs, so
+  the 6 waiting shards were cancelled before starting and resubmitted without hgpn009; `mfctest.sbatch` now exits at
+  once on a braked GPU, like `ab.sbatch`.
+
 ## Code the student must be able to defend
 (filled in as optimizations land)
