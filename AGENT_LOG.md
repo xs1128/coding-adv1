@@ -155,6 +155,12 @@ the figure script disagreed. Rule: derived numbers come from raw files, in one s
   files and cleaned its case folder, so round 1 of 691872 is treated as contaminated and only round 2 is used. Cost:
   ~0.2 GPU-min plus round 1. Rule: after a submit error, check `squeue -u u1131128` by name (not `sacct` alone) and
   retry only if both are empty.
+- **11-04: `pkill -f` killed its own remote shell.** To stop a login-node build of exp-haloxs, the agent ran
+  `pkill -u u1131128 -f "scripts/build.sh caseopt"` inside an `hpc` command. That text was also in the remote shell's
+  own command line, so the shell killed itself (hpc exit 255; the master connection stayed up, no re-login). The build
+  kept running and the edit in the same command never ran. Found on the next look; the build was stopped by PID and
+  with patterns anchored at `^`, the edit was rerun. No GPU cost. Rule: in `hpc` commands, kill by PID or with an
+  anchored pattern, never `pkill -f` on a string the command line itself contains.
 
 ## Code the student must be able to defend
 (filled in as optimizations land)
