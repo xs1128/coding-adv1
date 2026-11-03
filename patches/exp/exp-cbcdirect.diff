@@ -1,0 +1,186 @@
+diff --git a/src/simulation/m_cbc.fpp b/src/simulation/m_cbc.fpp
+index 1e58ee0..e19176f 100644
+--- a/src/simulation/m_cbc.fpp
++++ b/src/simulation/m_cbc.fpp
+@@ -24,7 +24,7 @@ module m_cbc
+ 
+     implicit none
+ 
+-    private; public :: s_initialize_cbc_module, s_cbc, s_finalize_cbc_module, f_cbc_split
++    private; public :: s_initialize_cbc_module, s_cbc, s_finalize_cbc_module, f_cbc_split, f_cbc_flux_faces
+ 
+     ! The cell-average primitive variables. They are obtained by reshaping (RS) q_prim_vf in the coordinate direction normal to the
+     ! domain boundary along which the CBC is applied.
+@@ -84,6 +84,8 @@ module m_cbc
+     !> Side (-1/+1) of each direction whose CBC kernels were queued ahead of the Riemann solve (s_cbc phase 1) and still need their
+     !! copy-back; 0 if none. See f_cbc_split.
+     integer, dimension(1:3) :: cbc_pending = 0
++    !> Per direction: phase 1 (with direct) already copied the fluxes back, so the later call only waits for cbc_queue
++    logical, dimension(1:3) :: cbc_copied = .false.
+     !> OpenACC queue for CBC kernels queued ahead of the Riemann solve
+     integer, parameter :: cbc_queue = 2
+ 
+@@ -539,7 +541,7 @@ contains
+     end subroutine s_associate_cbc_coefficients_pointers
+ 
+     !> Apply characteristic boundary conditions by modifying fluxes near domain boundaries
+-    subroutine s_cbc(q_prim_vf, flux_vf, flux_src_vf, cbc_dir_norm, cbc_loc_norm, ix, iy, iz, phase)
++    subroutine s_cbc(q_prim_vf, flux_vf, flux_src_vf, cbc_dir_norm, cbc_loc_norm, ix, iy, iz, phase, direct)
+ 
+         type(scalar_field), dimension(sys_size), intent(in)    :: q_prim_vf
+         type(scalar_field), dimension(sys_size), intent(inout) :: flux_vf, flux_src_vf
+@@ -548,6 +550,9 @@ contains
+         !> 1: queue the CBC kernels on cbc_queue only (called before the Riemann solve, see f_cbc_split). Absent: everything, or
+         !! only the copy-back if phase 1 already ran for this boundary.
+         integer, intent(in), optional :: phase
++        !> With phase 1: also copy the fluxes back into flux_vf and flux_src_vf on cbc_queue. The caller's Riemann solve then skips
++        !! this boundary's f_cbc_flux_faces() faces, which hold only this copy.
++        logical, intent(in), optional :: direct
+         integer                       :: default_queue
+         real(wp)                      :: drho_dt
+         real(wp)                      :: dpres_dt
+@@ -604,7 +609,11 @@ contains
+             ! (queued since on the default queue), and nothing has touched this module's state in between.
+             cbc_pending(cbc_dir) = 0
+             $:GPU_WAIT(extraAccArgs='(cbc_queue) async')
+-            call s_finalize_cbc(flux_vf, flux_src_vf)
++            if (cbc_copied(cbc_dir)) then
++                cbc_copied(cbc_dir) = .false.
++            else
++                call s_finalize_cbc(flux_vf, flux_src_vf)
++            end if
+             return
+         end if
+         if (present(phase)) then
+@@ -1033,6 +1042,13 @@ contains
+ 
+ #if defined(MFC_OpenACC) && defined(MFC_NVHPC)
+         if (present(phase)) then
++            if (present(direct)) then
++                if (direct) then
++                    ! dj is on the GPU already (s_cbc_set_device_state, same queue)
++                    call s_finalize_cbc(flux_vf, flux_src_vf, dj_on_device=.true.)
++                    cbc_copied(cbc_dir) = .true.
++                end if
++            end if
+             call acc_set_default_async(default_queue)
+             cbc_pending(cbc_dir) = cbc_loc
+             return
+@@ -1106,6 +1122,13 @@ contains
+ 
+     end function f_cbc_split
+ 
++    !> Number of faces next to a CBC boundary whose fluxes s_finalize_cbc writes (flux layers -1..cbc_flux_jend)
++    integer function f_cbc_flux_faces()
++
++        f_cbc_flux_faces = cbc_flux_jend + 2
++
++    end function f_cbc_flux_faces
++
+     !> Copy this boundary's direction, location, index bounds, direction flags and cell widths (set on the host just before) to the
+     !! GPU with one kernel that receives them as arguments. The widths are read from the GPU's copy of dx, dy or dz, which holds the
+     !! same values as the host copy that s_associate_cbc_coefficients_pointers used.
+@@ -1397,16 +1420,19 @@ contains
+     end subroutine s_initialize_cbc
+ 
+     !> Deallocation and/or the disassociation procedures that are necessary in order to finalize the CBC application
+-    subroutine s_finalize_cbc(flux_vf, flux_src_vf)
++    subroutine s_finalize_cbc(flux_vf, flux_src_vf, dj_on_device)
+ 
+         type(scalar_field), dimension(sys_size), intent(inout) :: flux_vf, flux_src_vf
++        logical, intent(in), optional                          :: dj_on_device
+         integer                                                :: i, j, k, r  !< Generic loop iterators
+         integer                                                :: jend
+         ! Determining the indicial shift based on CBC location
+ 
+         jend = cbc_flux_jend
+         dj = max(0, cbc_loc)
+-        $:GPU_UPDATE(device='[dj]', extraAccArgs='async')
++        if (.not. present(dj_on_device)) then
++            $:GPU_UPDATE(device='[dj]', extraAccArgs='async')
++        end if
+ 
+         ! Reshaping Outputted Data in x-direction
+         if (cbc_dir == 1) then
+diff --git a/src/simulation/m_rhs.fpp b/src/simulation/m_rhs.fpp
+index a4de6d5..97aa8d3 100644
+--- a/src/simulation/m_rhs.fpp
++++ b/src/simulation/m_rhs.fpp
+@@ -64,6 +64,11 @@ module m_rhs
+     integer, parameter :: halo_queue = 2
+     logical            :: halo_yz_decided = .false., halo_yz_deferred = .false., defer_yz_now = .false.
+ 
++    !> With the fused HLLC path, CBC phase 1 also copies its fluxes back (s_cbc direct), and the Riemann solve skips the faces next
++    !! to that CBC boundary: their Riemann fluxes were always overwritten by the copy-back, and nothing else reads them. The copy
++    !! then runs on cbc_queue alongside the solve instead of after it on the default queue. Decided on the first call.
++    logical :: cbc_direct_decided = .false., cbc_direct = .false.
++
+     !> On the plain path the RK stage state is q_cons_qp itself (m_time_steppers points q_cons_ts(1) at it), so s_compute_rhs skips
+     !! the per-stage copy. The conversion writes the cont/adv entries back unchanged and reads the interior only; the halo fill then
+     !! writes the ghost cells, which the RK update never touches. Physics that change q_cons_qp in place, or read the stage state's
+@@ -1142,6 +1147,7 @@ contains
+         type(scalar_field), dimension(sys_size), intent(inout) :: rhs_vf
+         logical, intent(in)                                    :: is_hat_L
+         integer                                                :: cbc_side
++        type(int_bounds_info)                                  :: ixr, iyr, izr  !< faces the Riemann solve computes
+ 
+         ! Configuring Coordinate Direction Indexes
+ 
+@@ -1168,15 +1174,23 @@ contains
+ 
+         ! CBC on one side of this direction whose kernels do not read the Riemann fluxes: queue them now on their own OpenACC
+         ! queue so they run alongside the Riemann solve; the s_cbc call in s_compute_advection_source_term then only copies back.
++        ixr = irx; iyr = iry; izr = irz
+         if (f_cbc_split(id, cbc_side)) then
+-            call s_cbc(q_prim_qp%vf, flux_n(id)%vf, flux_src_n(id)%vf, id, cbc_side, irx, iry, irz, phase=1)
++            if (.not. cbc_direct_decided) call s_decide_cbc_direct()
++            call s_cbc(q_prim_qp%vf, flux_n(id)%vf, flux_src_n(id)%vf, id, cbc_side, irx, iry, irz, phase=1, direct=cbc_direct)
++            if (cbc_direct) then
++                ! The faces the CBC copy-back writes: -1 .. f_cbc_flux_faces() - 2 at the beginning, the mirror image at the end
++                if (id == 1) call s_skip_cbc_faces(ixr, cbc_side, m)
++                if (id == 2) call s_skip_cbc_faces(iyr, cbc_side, n)
++                if (id == 3) call s_skip_cbc_faces(izr, cbc_side, p)
++            end if
+         end if
+ 
+         ! Computing Riemann Solver Flux and Source Flux
+         call nvtxStartRange("RHS-RIEMANN-SOLVER")
+         call s_riemann_solver(qR_rsx_vf, dqR_prim_dx_n(id)%vf, dqR_prim_dy_n(id)%vf, dqR_prim_dz_n(id)%vf, qR_prim(id)%vf, &
+                               & qL_rsx_vf, dqL_prim_dx_n(id)%vf, dqL_prim_dy_n(id)%vf, dqL_prim_dz_n(id)%vf, qL_prim(id)%vf, &
+-                              & q_prim_qp%vf, flux_n(id)%vf, flux_src_n(id)%vf, flux_gsrc_n(id)%vf, id, irx, iry, irz, q_slab, &
++                              & q_prim_qp%vf, flux_n(id)%vf, flux_src_n(id)%vf, flux_gsrc_n(id)%vf, id, ixr, iyr, izr, q_slab, &
+                               & qp_layer)
+         call nvtxEndRange
+ 
+@@ -1205,6 +1219,31 @@ contains
+ 
+     end subroutine s_decide_halo_yz
+ 
++    !> Whether CBC phase 1 copies its fluxes back itself and the Riemann solve skips those faces (cbc_direct): the fused HLLC path,
++    !! whose only per-face outputs are the flux slab and flux_src(adv%beg), both written by the copy-back (every flux, as adv%end =
++    !! sys_size), and enough cells that the trimmed face range stays long.
++    subroutine s_decide_cbc_direct()
++
++        cbc_direct_decided = .true.
++        cbc_direct = recon_riemann_fused .and. flux_per_dir .and. .not. use_nc_iface_vel .and. eqn_idx%adv%end == sys_size
++        if (m < 8 .or. (n > 0 .and. n < 8) .or. (p > 0 .and. p < 8)) cbc_direct = .false.
++
++    end subroutine s_decide_cbc_direct
++
++    !> Drop the faces next to the CBC side loc (-1 or 1) of a direction with cells 0..last from the face range ir
++    subroutine s_skip_cbc_faces(ir, loc, last)
++
++        type(int_bounds_info), intent(inout) :: ir
++        integer, intent(in)                  :: loc, last
++
++        if (loc == -1) then
++            ir%beg = -1 + f_cbc_flux_faces()
++        else
++            ir%end = last - f_cbc_flux_faces()
++        end if
++
++    end subroutine s_skip_cbc_faces
++
+     !> Accumulate advection source contributions from a given coordinate direction into the RHS
+     subroutine s_compute_advection_source_term(idir, rhs_vf, q_cons_vf, q_prim_vf, flux_src_n_vf, is_hat_L)
+ 
