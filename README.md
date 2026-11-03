@@ -29,6 +29,10 @@ is 5.48 s (median) for P22 and 5.63 s for P21, but the ranges overlap (5.24–5.
 saving take most of it. Earlier jobs on other nodes: 686551 (v5.7.0 76.9, P20 29.7, P21 28.3 ms: P20 2.59×, P21
 2.72×) and 680943 (v5.7.0 77.8, P20 29.8 ms: 2.61×).
 
+**Whole run, start-up and save included** (`harness/reproduce.sh wall`, same node per job, every answer bit-for-bit
+identical to v5.7.0): with the disclosed run settings below, P22 takes 2.783 s against 7.758 s for v5.7.0 at 1 GPU
+(2.79×, job 697810) and 4.603 s against 11.889 s at 4 GPUs (2.58×, job 697811).
+
 For comparison, the 10-31 report ("P4", patches 0001–0006) was 1.27× faster at 1 GPU (60.38 ms vs 76.74 ms, two
 chained A/Bs). On 4 and 8 GPUs the 10-31 numbers are 1.35× and 2.23×; later multi-GPU results are in [`report.md`](report.md) §11.
 
