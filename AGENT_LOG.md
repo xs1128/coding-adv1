@@ -170,6 +170,11 @@ the figure script disagreed. Rule: derived numbers come from raw files, in one s
   under `runs/prof/` were deleted. No profile is ever compared bitwise, and every profile's CSV extracts are in
   `results/prof/`; the `.nsys-rep`/`.ncu-rep` files were kept. `runs/prof` went from 31 GB to 1.4 GB, and the
   quota from 9 to 39 GB free. No GPU cost. `runs/final` (18 GB) is untouched.
+- **11-04: scratch folder deleted by our own sync.** For a login-node compile test of the Riemann file with different
+  `-gpu=` flags, the scratch folder was put at `$ROOT/scratch/`, inside the synced tree. The next `tools/sync.sh push`
+  (`rsync --delete`) removed it while three compiles were writing to it, and their results were lost. Only that folder
+  was affected (`mfc*`, `runs/`, `results/`, `logs/` are excluded from the delete). Redone under `$ROOT/logs/flags/`.
+  No GPU cost. Rule: scratch work on nano4 goes under `logs/` or a `mfc-*` worktree, never in a new top-level folder.
 
 ## Code the student must be able to defend
 (filled in as optimizations land)
