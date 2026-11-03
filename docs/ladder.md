@@ -153,3 +153,15 @@ Every experiment we ran, oldest first. Each kept change is the starting point fo
   measured from. Letting the host run ahead would change what that timer measures, so it stays.
 - The 9 `cuEventSynchronize` per step (15.9 ms of host waiting) come from 0028's "default queue waits for the CBC
   queue": NVHPC implements that wait on the host. The Riemann solve is still running then, so the GPU does not starve.
+
+### Offline review of 0030 (no GPU time; nano4 login lapsed)
+Applied 0001–0030 to a local v5.7.0 copy and read the result:
+- The early `return` skips nothing else: the per-cell loop is the last statement of `s_populate_bc_direction`, and its
+  only other work (QBMM pb/mv extrapolation) is already off on the fast path (`bc_fast` excludes QBMM).
+- The skip test reads the host copy of `bc_type`. In `simulation` that copy is written only at start-up (default codes or
+  `bc_type.dat`, `m_start_up.fpp` 175–177 / 501–503) and each write is followed by `GPU_UPDATE(device=...)`; no GPU kernel
+  writes `bc_type`. So host and GPU copies agree whenever the test runs. MPI faces get code 0, which is outside the skip set.
+- Cost left: the test is a host `all()` over one face of `bc_type` (about 211² one-byte codes on the benchmark) on every
+  call, 6 faces per stage. Caching the answer per face would need a reset at every `bc_type` write (pre_process writes
+  it from patches too, and the shared code has no per-program macro), so it stays a follow-up to measure first (nsys host
+  time of the populate call) rather than a change made blind.
