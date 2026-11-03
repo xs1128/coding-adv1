@@ -182,6 +182,10 @@ the figure script disagreed. Rule: derived numbers come from raw files, in one s
   samples, a figure from an earlier ad-hoc query over all of INIT that no raw file holds. Regenerated from the 693834
   sqlite into `results/prof/nsys_shm_ob1_savets1_r2/init_breakdown.txt` (INIT-MODULES: 129 of 148) and corrected before
   committing. Rule: write every profile query's output to `results/` before quoting it.
+- **11-04 (evening): 12 GB free.** As before, the 28 final-state dumps (`restart_data/lustre_30.dat`, 0.52 GB each) of
+  seven finished, verified A/Bs were deleted: `runs/exp/{cbcdirect_1g,rkpf2_1g,rkpf2c_4g_rdma,savets1_1g,savets1_1g_r2,
+  savepack_1g,savepack_save10_1g}` (logs and inputs kept; timings and bitwise checks in `results/` and ladder rows 74,
+  76–78). 25 GB free afterwards. No GPU cost. `runs/exp/readpack_1g` and `runs/final` are untouched.
 
 ## Code the student must be able to defend
 (filled in as optimizations land)
