@@ -1,0 +1,66 @@
+From ed26768f9a95d753e48dd1a8612a2d3037bea41c Mon Sep 17 00:00:00 2001
+From: xs1128 <ooixinsheng@gmail.com>
+Date: Wed, 4 Nov 2026 03:51:24 +0800
+Subject: [PATCH] Start-up: read each equation of the restart file straight
+ into the field with a memory subarray type
+
+---
+ src/simulation/m_start_up.fpp | 35 ++++++++++++++++++++++++++++++++++-
+ 1 file changed, 34 insertions(+), 1 deletion(-)
+
+diff --git a/src/simulation/m_start_up.fpp b/src/simulation/m_start_up.fpp
+index 2731eac..e7700ec 100644
+--- a/src/simulation/m_start_up.fpp
++++ b/src/simulation/m_start_up.fpp
+@@ -483,7 +483,11 @@ contains
+                         disp = m_MOK*max(MOK, n_MOK)*max(MOK, p_MOK)*WP_MOK*(var_MOK - 1)
+ 
+                         call MPI_FILE_SET_VIEW(ifile, disp, mpi_io_p, MPI_IO_DATA%view(i), 'native', mpi_info_int, ierr)
+-                        call MPI_FILE_READ_ALL(ifile, MPI_IO_DATA%var(i)%sf, data_size*mpi_io_type, mpi_io_p, status, ierr)
++                        if (f_read_into_field_ok(q_cons_vf(i)%sf)) then
++                            call s_read_into_field(ifile, q_cons_vf(i)%sf)
++                        else
++                            call MPI_FILE_READ_ALL(ifile, MPI_IO_DATA%var(i)%sf, data_size*mpi_io_type, mpi_io_p, status, ierr)
++                        end if
+                     end do
+                 end if
+ 
+@@ -506,6 +510,35 @@ contains
+ 
+     end subroutine s_read_parallel_data_files
+ 
++    !> Whether s_read_into_field can read straight into sf: plain values into a contiguous field that covers the interior
++    logical function f_read_into_field_ok(sf)
++
++        real(stp), pointer, dimension(:,:,:), intent(in) :: sf
++
++        f_read_into_field_ok = mpi_io_type == 1 .and. is_contiguous(sf) .and. all(lbound(sf) <= 0) .and. ubound(sf, &
++            & 1) >= m .and. ubound(sf, 2) >= n .and. ubound(sf, 3) >= p
++
++    end function f_read_into_field_ok
++
++#ifdef MFC_MPI
++    !> Read one equation of the restart file straight into the interior (0:m, 0:n, 0:p) of sf, described to MPI by a memory subarray
++    !! type, so that MPI places each value and leaves the ghost cells alone. Handing MPI-IO the interior section itself, which is
++    !! not contiguous, made the Fortran runtime copy it into a fresh temporary and back: most of the start-up read at 201^3.
++    impure subroutine s_read_into_field(ifile, sf)
++
++        integer, intent(in)                              :: ifile
++        real(stp), pointer, dimension(:,:,:), intent(in) :: sf
++        integer, dimension(MPI_STATUS_SIZE)              :: status
++        integer                                          :: ierr, memtype
++
++        call MPI_TYPE_CREATE_SUBARRAY(3, shape(sf), [m + 1, n + 1, p + 1], -lbound(sf), MPI_ORDER_FORTRAN, mpi_io_p, memtype, ierr)
++        call MPI_TYPE_COMMIT(memtype, ierr)
++        call MPI_FILE_READ_ALL(ifile, sf(lbound(sf, 1), lbound(sf, 2), lbound(sf, 3)), 1, memtype, status, ierr)
++        call MPI_TYPE_FREE(memtype, ierr)
++
++    end subroutine s_read_into_field
++#endif
++
+     !> Initialize internal-energy equations from phase mass, mixture momentum, and total energy
+     subroutine s_initialize_internal_energy_equations(v_vf)
+ 
+-- 
+2.47.3
+

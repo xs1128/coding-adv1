@@ -294,10 +294,11 @@ views. 1 GPU (694651, `ob1` + `/dev/shm`, 2 rounds × 5 reps): save 0.375 / 0.34
 3.638 / 3.509 → 3.404 / 3.413 s. Bitwise, also for the final state of a run with saves at steps 10 and 20 (694653).
 
 **Pending 0038 (on 0037; not in P22).** The same profile puts 129 of the 148 CPU samples of the start-up read (INIT-MODULES, 555 ms) in the same kind of
-runtime copy, this time of the section MPI-IO reads into. 0038 reads each equation straight into the start of its own array, spreads
-the values back to their places in reverse order, and zeroes the ghost cells (shared-file FP64 reads into contiguous fields only).
-1 GPU (694689, `ob1` + `/dev/shm`, 2 rounds × 5 reps): wall median 3.458 / 3.532 → 3.292 / 3.331 s, grind unchanged, bitwise
-(ladder row 79).
+runtime copy, this time of the section MPI-IO reads into. A first version read each equation into the start of its own array and spread the
+values back in reverse order: 1 GPU (694689, `ob1` + `/dev/shm`, 2 rounds × 5 reps), wall median 3.458 / 3.532 → 3.292 / 3.331 s
+against 0037, grind unchanged, bitwise. 0038 instead hands MPI-IO each field with a memory subarray type that selects the
+interior (shared-file FP64 reads into contiguous fields only), so the ghost cells stay untouched as in v5.7.0. It is as fast as
+the first version (3.278 / 3.292 → 3.261 / 3.334 s, 696366) with about a third of the code, and bitwise (ladder rows 79–80).
 
 Single-file recompiles with `-gpu=nounroll` or `loadcache`
 changed no register or spill counts (ladder rows 75–76). Full suite not run.

@@ -259,9 +259,11 @@ Chemistry GPU builds stopped linking after 0012, for the same linker reason. 001
   into fresh memory first (half of the save's CPU samples, nsys 693834). The GPU now packs each interior into the storage
   of `q_cons_ts(1)` (backed up in `q_cons_ts(2)`, restored after), the host copy lands in resident pages, and MPI-IO
   writes contiguous views. Save 0.34–0.38 → 0.24 s, wall −6.4 % / −2.7 % (694651); bitwise, also with mid-run saves (694653).
-- **0038, in-place read.** The start-up read had the same problem in reverse (129 of 148 INIT-MODULES samples in the runtime copy, nsys 693834).
-  MPI-IO now reads each equation into the start of its own array; the values are spread back to their places in reverse order
-  and the ghost cells zeroed. Wall 3.458 / 3.532 → 3.292 / 3.331 s (−4.8 % / −5.7 %, 694689); grind unchanged; bitwise.
+- **0038, read into the field.** The start-up read had the same problem in reverse (129 of 148 INIT-MODULES samples in the runtime copy, nsys 693834).
+  MPI-IO now gets each field with a memory subarray type that selects its interior, so MPI places every value and the ghost
+  cells stay as they were. A first version (exp-readpack) read into the start of the array and spread the values back in reverse
+  order: wall 3.458 / 3.532 → 3.292 / 3.331 s (−4.8 % / −5.7 %, 694689) against 0037. The subarray version is as fast
+  (3.278 / 3.292 → 3.261 / 3.334 s, 696366), about a third of the code, and leaves the ghost cells alone, so it replaced it. Bitwise.
 - **Rejected on the way:** splitting the x sweep around the x halo exchange (exp-haloxs, +0.35 % at 4 GPUs, 692179). The
   exchange waits for the neighbour rank, and the ranks with more CBC sides are the slow ones (nsys 692237), which is
   what led to 0034.
