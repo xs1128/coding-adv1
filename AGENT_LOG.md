@@ -112,6 +112,10 @@ the figure script disagreed. Rule: derived numbers come from raw files, in one s
   started on a guessed job id instead of the one `submit.sh` printed. Rule: copy the id from the output.
 - **11-03: a guard named a flag this MFC version does not have** (`hyperelasticity`); the build stopped on it, caught
   before any GPU time.
+- **11-03: a rejected patch sat in `patches/opt/` since 10-22.** The K4a experiment (ladder row 3, rejected) was saved as
+  `patches/opt/exp-k4a-hllc-dir-idx-const.patch`, so the README recipe `git am patches/opt/*.patch` stopped on it
+  after 0024. Found while rebuilding the series offline; moved to `patches/exp/`. Builds on nano4 used named
+  worktrees, so no result is affected. Rule: `patches/opt/` holds only `NNNN-*.patch`.
 
 ## Code the student must be able to defend
 (filled in as optimizations land)
