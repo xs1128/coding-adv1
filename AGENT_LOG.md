@@ -123,5 +123,12 @@ the figure script disagreed. Rule: derived numbers come from raw files, in one s
   the 6 waiting shards were cancelled before starting and resubmitted without hgpn009; `mfctest.sbatch` now exits at
   once on a braked GPU, like `ab.sbatch`.
 
+- **11-03: a retried submission ran twice.** `sbatch` for the 4-GPU A/B of 0031 answered "Socket timed out" twice;
+  `squeue` checked between the two tries showed nothing, so the agent submitted again. Both tries had been accepted
+  (686919 and 686921, same submit second). They ran on the same node at once and wrote the same folders: 686921 died on
+  a file clash after 1:40 but first timed its B arm while 686919 timed its A arm, so 686919's A/B is contaminated (A arm
+  wall 9.2–10.0 s vs 7.5 s). Cost: ~13 GPU-min, no usable result; rerun under a new label. Rule: after a submit error,
+  wait a minute and look the job up by name with `sacct` before trying again.
+
 ## Code the student must be able to defend
 (filled in as optimizations land)

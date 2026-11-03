@@ -1,0 +1,12 @@
+cp: cannot create regular file '/work/u1131128/coding-adv1/runs/exp/cbcdevset_4g_rdma/a1/case.py': File exists
+a1 failed
+rep	wall_s	grind_ns
+1	8.707	4.0765625000000000E-002
+2	9.963	4.0639062500000003E-002
+3	8.891	4.0706249999999999E-002
+rank	steps	first_ms	step_med_ms	step_min_ms	step_max_ms	rhs_med_ms	comm_med_ms
+0	30	33.966	7.915	7.877	7.950	1.753	0.355
+1	30	33.075	7.919	7.864	7.955	1.758	0.320
+2	30	33.766	7.922	7.876	7.955	1.765	0.320
+3	30	33.099	7.923	7.877	7.950	1.775	0.291
+all	30	33.966	7.923	7.877	7.955	1.775	0.355
