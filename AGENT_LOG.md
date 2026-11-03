@@ -208,7 +208,8 @@ the figure script disagreed. Rule: derived numbers come from raw files, in one s
   of the two profiles (their reports stay in `runs/prof/nsysout_*_lean`). No GPU cost.
 - **2026-11-04: `harness/reproduce.sh` built the wrong final version.** Its `git am` glob `patches/opt/00[0-2][0-9]-*.patch`
   stopped at 0029, so 0030–0031 of P22 were left out; the same kind of fixed range had already gone stale once (5d822ac).
-  Found while adding the wall-time step; the glob is now `patches/opt/*.patch`. No job had used it since 0030 landed.
+  Found while adding the wall-time step; the glob is now `patches/opt/*.patch`. The script had never been run (no `repro/`
+  rows in `results/jobs.tsv`, no `mfc-repro` worktree).
 
 ## Code the student must be able to defend
 (filled in as optimizations land)
