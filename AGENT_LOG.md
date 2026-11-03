@@ -178,6 +178,10 @@ the figure script disagreed. Rule: derived numbers come from raw files, in one s
 - **11-04: nsys profile lost (job 693829).** `NSYS_OUT` named a folder under `runs/prof/` that did not exist; nsys
   cannot create it, so the report went to the compute node's `/tmp` and was lost (~0.7 GPU-min). Resubmitted as 693834
   after `mkdir -p`. Rule: create the `NSYS_OUT` folder before submitting.
+- **11-04: start-up sample count from memory, not from a file.** The first draft of the 0038 docs said "124 of 354"
+  samples, a figure from an earlier ad-hoc query over all of INIT that no raw file holds. Regenerated from the 693834
+  sqlite into `results/prof/nsys_shm_ob1_savets1_r2/init_breakdown.txt` (INIT-MODULES: 129 of 148) and corrected before
+  committing. Rule: write every profile query's output to `results/` before quoting it.
 
 ## Code the student must be able to defend
 (filled in as optimizations land)

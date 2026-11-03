@@ -107,6 +107,10 @@ not one block of memory, so it first copied it into fresh memory. Now the GPU pa
 copy to the CPU, and the writer uses it as is. Saving takes about 0.24 s instead of 0.34–0.38 s; a whole run 3.40–3.41 s
 instead of 3.51–3.64 s (job 694651); the file is the same, also with saves in the middle of a run (694653; ladder row 78).
 
+**Pending 0038 (on 0037, not in P22):** reading the starting state had the same problem the other way round: the reader
+filled a fresh block and the runtime then copied it into place. Now each variable is read straight into its own memory and moved
+into position there. A whole run takes 3.29–3.33 s instead of 3.46–3.53 s (median, job 694689); the answer is the same (ladder row 79).
+
 **Run settings (disclosed, no code change):** at 1 GPU, Open MPI without UCX (`ob1`) and a run directory in node-local
 memory (`/dev/shm`) cut the wall time of a whole run, start-up and save included, to about 3.8 s (job 684750).
 

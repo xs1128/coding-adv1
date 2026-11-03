@@ -1,0 +1,103 @@
+From 3982f04226147c64e12cca7c161ef019a70c940e Mon Sep 17 00:00:00 2001
+From: xs1128 <ooixinsheng@gmail.com>
+Date: Wed, 4 Nov 2026 03:22:34 +0800
+Subject: [PATCH] Start-up: read each equation of the restart file in place
+
+MPI-IO was handed each equation interior section (0:m, 0:n, 0:p), which
+is not contiguous, so the Fortran runtime copied it into a fresh
+temporary, read into that and copied it back: most of the start-up read
+at 201^3 (CPU sampling). Now the file data is read straight into the
+field storage and spread over the interior in place, last value first,
+and the ghost cells are zeroed as freshly allocated memory holds them.
+Shared-file parallel I/O of the plain state only; the state read is the
+same.
+---
+ src/simulation/m_start_up.fpp | 65 ++++++++++++++++++++++++++++++++++-
+ 1 file changed, 64 insertions(+), 1 deletion(-)
+
+diff --git a/src/simulation/m_start_up.fpp b/src/simulation/m_start_up.fpp
+index 2731eac..65d857f 100644
+--- a/src/simulation/m_start_up.fpp
++++ b/src/simulation/m_start_up.fpp
+@@ -483,7 +483,11 @@ contains
+                         disp = m_MOK*max(MOK, n_MOK)*max(MOK, p_MOK)*WP_MOK*(var_MOK - 1)
+ 
+                         call MPI_FILE_SET_VIEW(ifile, disp, mpi_io_p, MPI_IO_DATA%view(i), 'native', mpi_info_int, ierr)
+-                        call MPI_FILE_READ_ALL(ifile, MPI_IO_DATA%var(i)%sf, data_size*mpi_io_type, mpi_io_p, status, ierr)
++                        if (f_read_in_place_ok(q_cons_vf(i)%sf, data_size)) then
++                            call s_read_field_in_place(ifile, q_cons_vf(i)%sf, data_size, .true.)
++                        else
++                            call MPI_FILE_READ_ALL(ifile, MPI_IO_DATA%var(i)%sf, data_size*mpi_io_type, mpi_io_p, status, ierr)
++                        end if
+                     end do
+                 end if
+ 
+@@ -506,6 +510,65 @@ contains
+ 
+     end subroutine s_read_parallel_data_files
+ 
++    !> Whether s_read_field_in_place can read into sf: a contiguous field that covers the interior and holds data_size values
++    logical function f_read_in_place_ok(sf, data_size)
++
++        real(stp), pointer, dimension(:,:,:), intent(in) :: sf
++        integer, intent(in)                              :: data_size
++
++        f_read_in_place_ok = mpi_io_type == 1 .and. is_contiguous(sf) .and. size(sf, kind=8) >= int(data_size, &
++            & 8) .and. all(lbound(sf) <= 0) .and. ubound(sf, 1) >= m .and. ubound(sf, 2) >= n .and. ubound(sf, 3) >= p
++
++    end function f_read_in_place_ok
++
++#ifdef MFC_MPI
++    !> Read one equation of the restart file into the storage of sf, spread it over the interior (0:m, 0:n, 0:p) in place, and zero
++    !! the ghost cells (as freshly allocated memory holds them). MPI-IO was handed the interior section, which is not contiguous, so
++    !! the Fortran runtime copied it into a fresh temporary and back: most of the start-up read at 201^3. The spread works in place
++    !! because each interior value's position in sf is at or after its position in the file's order, so it runs from the last value
++    !! back to the first and never overwrites one it has yet to move.
++    impure subroutine s_read_field_in_place(ifile, sf, data_size, collective)
++
++        use, intrinsic :: iso_c_binding, only: c_loc, c_f_pointer
++
++        integer, intent(in)                              :: ifile, data_size
++        real(stp), pointer, dimension(:,:,:), intent(in) :: sf
++        logical, intent(in)                              :: collective
++        real(stp), pointer, dimension(:)                 :: flat
++        integer, dimension(MPI_STATUS_SIZE)              :: status
++        integer                                          :: ierr, j, k, l, mm, nn, b1, e1, b2, e2, b3, e3
++
++        b1 = lbound(sf, 1); e1 = ubound(sf, 1); b2 = lbound(sf, 2); e2 = ubound(sf, 2); b3 = lbound(sf, 3); e3 = ubound(sf, 3)
++        call c_f_pointer(c_loc(sf(b1, b2, b3)), flat, [data_size])
++        if (collective) then
++            call MPI_FILE_READ_ALL(ifile, flat, data_size*mpi_io_type, mpi_io_p, status, ierr)
++        else
++            call MPI_FILE_READ(ifile, flat, data_size*mpi_io_type, mpi_io_p, status, ierr)
++        end if
++
++        mm = m + 1; nn = n + 1
++        do l = p, 0, -1
++            do k = n, 0, -1
++                do j = m, 0, -1
++                    sf(j, k, l) = flat(1 + j + mm*(k + nn*l))
++                end do
++            end do
++        end do
++
++        do l = b3, e3
++            do k = b2, e2
++                if (l < 0 .or. l > p .or. k < 0 .or. k > n) then
++                    sf(b1:e1,k, l) = 0._stp
++                else
++                    sf(b1:-1,k, l) = 0._stp
++                    sf(m + 1:e1,k, l) = 0._stp
++                end if
++            end do
++        end do
++
++    end subroutine s_read_field_in_place
++#endif
++
+     !> Initialize internal-energy equations from phase mass, mixture momentum, and total energy
+     subroutine s_initialize_internal_energy_equations(v_vf)
+ 
+-- 
+2.47.3
+

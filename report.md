@@ -291,7 +291,15 @@ wall median 3.986 / 3.958 / 4.328 → 3.719 / 3.731 / 3.908 s; the restart file 
 non-contiguous interior section `sf(0:m, 0:n, 0:p)` before MPI-IO. 0037 packs each interior on the GPU into the storage
 of `q_cons_ts(1)` (its copy in `q_cons_ts(2)` restores it afterwards), copies that to the host, and writes contiguous
 views. 1 GPU (694651, `ob1` + `/dev/shm`, 2 rounds × 5 reps): save 0.375 / 0.340 → 0.237 / 0.241 s, wall median
-3.638 / 3.509 → 3.404 / 3.413 s. Bitwise, also for the final state of a run with saves at steps 10 and 20 (694653). Single-file recompiles with `-gpu=nounroll` or `loadcache`
+3.638 / 3.509 → 3.404 / 3.413 s. Bitwise, also for the final state of a run with saves at steps 10 and 20 (694653).
+
+**Pending 0038 (on 0037; not in P22).** The same profile puts 129 of the 148 CPU samples of the start-up read (INIT-MODULES, 555 ms) in the same kind of
+runtime copy, this time of the section MPI-IO reads into. 0038 reads each equation straight into the start of its own array, spreads
+the values back to their places in reverse order, and zeroes the ghost cells (shared-file FP64 reads into contiguous fields only).
+1 GPU (694689, `ob1` + `/dev/shm`, 2 rounds × 5 reps): wall median 3.458 / 3.532 → 3.292 / 3.331 s, grind unchanged, bitwise
+(ladder row 79).
+
+Single-file recompiles with `-gpu=nounroll` or `loadcache`
 changed no register or spill counts (ladder rows 75–76). Full suite not run.
 
 **Several GPUs** (`rdma_mpi`, same node, P11 vs P18; bitwise):

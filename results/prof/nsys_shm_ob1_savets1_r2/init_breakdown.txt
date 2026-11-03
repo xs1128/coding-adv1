@@ -1,0 +1,29 @@
+# generated from runs/prof/nsysout_savets1/nsys_rank0.sqlite (job 693834) by an sqlite query (logs/initbd.py)
+nvtx INIT ms 1263.3
+nvtx INIT-MPI ms 646.1
+nvtx INIT-MODULES ms 555.4
+nvtx INIT-GPU-VARS ms 61.7
+INIT-MODULES cpu samples 148
+INIT-MODULES samples 129 pgf90_copy_f77_argl_i8
+INIT-MODULES samples 2 0x14ab5181c890
+INIT-MODULES samples 2 0x7ffe185ebb18
+INIT-MODULES samples 2 0xffffffff95c00b90
+INIT-MODULES osrt poll ms 1063.7 n 52
+INIT-MODULES osrt pread ms 115.2 n 11
+INIT-MODULES osrt ioctl ms 28.1 n 342
+INIT-MODULES osrt open ms 0.0 n 3
+INIT-MPI cpu samples 141
+INIT-MPI samples 16 __memset_avx512_unaligned_erms
+INIT-MPI samples 7 __memcpy_avx512_unaligned_erms
+INIT-MPI samples 5 __memcpy_sse2_unaligned_erms
+INIT-MPI samples 5 0x14ab52572d6f
+INIT-MPI osrt epoll_wait ms 4985.0 n 34
+INIT-MPI osrt poll ms 685.1 n 40
+INIT-MPI osrt ioctl ms 200.0 n 635
+INIT-MPI osrt read ms 31.6 n 897
+INIT-GPU-VARS cpu samples 65
+INIT-GPU-VARS samples 12 0x14ab5181e8fc
+INIT-GPU-VARS samples 11 0x14ab5181e864
+INIT-GPU-VARS samples 9 0x14ab5181e90c
+INIT-GPU-VARS samples 7 0x14ab5181e874
+INIT-GPU-VARS osrt poll ms 50.3 n 5

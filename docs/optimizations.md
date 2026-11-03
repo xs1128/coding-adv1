@@ -239,7 +239,7 @@ Chemistry GPU builds stopped linking after 0012, for the same linker reason. 001
 - **Gain.** First step 57 → 36 ms; grind −0.30 % at 1 GPU (686808), −1.3 % per step at 4 GPUs (686954); P21 28.46 →
   P22 28.37 ms in the direct check (690631). Bitwise; full suite clean (ladder row 70).
 
-### Pending (0032–0037): not in P22 until a full suite passes
+### Pending (0032–0038): not in P22 until a full suite passes
 - **0032, y/z halos beside the x sweep** (multi-GPU only). With an MPI neighbour in y or z, the y/z ghost cells are filled
   on a second queue after the x sweep is queued, so the GPU runs it while the host waits on MPI. 4 GPUs −1.8 % (690856).
 - **0033, Riemann-state values by one kernel.** 10 tiny host copies before every Riemann solve, run one after another,
@@ -259,6 +259,9 @@ Chemistry GPU builds stopped linking after 0012, for the same linker reason. 001
   into fresh memory first (half of the save's CPU samples, nsys 693834). The GPU now packs each interior into the storage
   of `q_cons_ts(1)` (backed up in `q_cons_ts(2)`, restored after), the host copy lands in resident pages, and MPI-IO
   writes contiguous views. Save 0.34–0.38 → 0.24 s, wall −6.4 % / −2.7 % (694651); bitwise, also with mid-run saves (694653).
+- **0038, in-place read.** The start-up read had the same problem in reverse (129 of 148 INIT-MODULES samples in the runtime copy, nsys 693834).
+  MPI-IO now reads each equation into the start of its own array; the values are spread back to their places in reverse order
+  and the ghost cells zeroed. Wall 3.458 / 3.532 → 3.292 / 3.331 s (−4.8 % / −5.7 %, 694689); grind unchanged; bitwise.
 - **Rejected on the way:** splitting the x sweep around the x halo exchange (exp-haloxs, +0.35 % at 4 GPUs, 692179). The
   exchange waits for the neighbour rank, and the ranks with more CBC sides are the slow ones (nsys 692237), which is
   what led to 0034.
@@ -342,4 +345,4 @@ directory in `/dev/shm` and copying it back afterwards (`RUNLOCAL=1`) cut wall t
    ([research-halo-overlap.md](background/research-halo-overlap.md) option 4b, second half).
 3. **Overlap halos with compute**, and fuse the copy-like kernels ([report.md](../report.md) §9). The y/z part is
    0032; the x part did not pay (exp-haloxs). What is left at 4 GPUs is the rank imbalance from CBC work.
-4. **Full suite for 0032–0037** (~120 GPU-min, needs the user's OK), then they become official.
+4. **Full suite for 0032–0038** (~120 GPU-min, needs the user's OK), then they become official.
