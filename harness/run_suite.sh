@@ -17,6 +17,8 @@ for st in "$MFC_DIR"/build/staging/gpu-acc-*; do
   inst=$MFC_DIR/build/install/$(basename "$st")
   ls "$inst"/bin/* > /dev/null 2>&1 || { echo "run_suite: $(basename "$st") configured but not installed (run ./mfc.sh test --dry-run -j 8 --gpu acc)" >&2; exit 2; }
 done
+# nano4's QOS takes at most 7 queued jobs per user (QOSMaxSubmitJobPerUserLimit): with SHARDS=8 the last shard is
+# refused and must be submitted (AFTER= the previous shard) once a shard has finished (bcskip_full, 2026-11-03).
 # Each shard gets its UUIDs explicitly (--only): a --from/--to range follows the runner's order at run time, which lost
 # 59 tests of the P18 suite (shard 6 ran 14 of 94; made up by job 671033).
 # The 39 "Convergence" tests are left out: a plain `./mfc.sh test` skips them, and each one calls `./mfc.sh run`, which
