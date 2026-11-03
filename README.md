@@ -92,6 +92,11 @@ overwrote. Now the copy runs on the CBC's own queue during the solve, and the so
 28.15 → 27.83 / 27.79 ms per step (−1.0 % / −1.3 %, job 692419); 4 GPUs: 7.710 → 7.541 ms (−2.2 %, 692812); bitwise,
 also with CBC on the other side of the box (692840); the 30 CBC tests pass (692852). Full suite not run (ladder row 74).
 
+**Pending 0035 (on 0034, not in P22):** the final update pass (RK update) waited on memory most of the time, because
+each GPU thread fetched only the next equation's numbers ahead. It now fetches two ahead, and that file is capped at 168
+registers so as many threads still fit on the GPU (without the cap it was 3.9 % slower). 1 GPU: 27.86 → 27.66 ms per
+step (−0.78 % / −0.67 %, job 693627), bitwise. Full suite not run (ladder row 76).
+
 **Run settings (disclosed, no code change):** at 1 GPU, Open MPI without UCX (`ob1`) and a run directory in node-local
 memory (`/dev/shm`) cut the wall time of a whole run, start-up and save included, to about 3.8 s (job 684750).
 

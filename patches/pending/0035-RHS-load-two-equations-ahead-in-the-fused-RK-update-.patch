@@ -1,0 +1,102 @@
+From a280ff3569c5715203afbfde7c54f99ee7037955 Mon Sep 17 00:00:00 2001
+From: xs1128 <ooixinsheng@gmail.com>
+Date: Wed, 4 Nov 2026 02:15:03 +0800
+Subject: [PATCH] RHS: load two equations ahead in the fused RK update, capped
+ at 168 registers
+
+The fused RK update (s_add_flux_differences_rk_update_slabs) loaded the
+fluxes and states of equation j + 1 while it computed equation j, so
+each thread had one equation of loads in flight; ncu showed it waiting
+on memory at 2.25 TB/s with 3 blocks per SM. It now keeps two equations
+in flight (j + 1 and j + 2). That needs 179 registers (2 blocks per SM,
+slower), so m_rhs is compiled with -gpu=maxregcount:168, which keeps 3
+blocks for 28 bytes of spills. No other m_rhs kernel uses more than 168.
+
+The arithmetic is unchanged, so the results are bitwise the same.
+H200, perf3d 201^3, 1 GPU: 27.86 -> 27.66 ms per step (-0.7 %).
+---
+ CMakeLists.txt           |  5 +++++
+ src/simulation/m_rhs.fpp | 30 ++++++++++++++++++++++--------
+ 2 files changed, 27 insertions(+), 8 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index c773ef5..1ea2713 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -187,6 +187,11 @@ if (MFC_SIMULATION)
+         # this file at 128 doubles that for a few L1-resident spills (best of 168/128/96 on H200).
+         set_source_files_properties("${CMAKE_BINARY_DIR}/fypp/simulation/m_weno.fpp.f90"
+                                     PROPERTIES COMPILE_OPTIONS "-gpu=maxregcount:128")
++
++        # The fused RK update in m_rhs loads two equations ahead and then needs 179 registers: 2 blocks of 128 threads per
++        # SM. A cap of 168 keeps 3 blocks (28 bytes of spills). No other m_rhs kernel uses more than 168.
++        set_source_files_properties("${CMAKE_BINARY_DIR}/fypp/simulation/m_rhs.fpp.f90"
++                                    PROPERTIES COMPILE_OPTIONS "-gpu=maxregcount:168")
+     endif()
+ 
+     MFC_SETUP_TARGET(TARGET  simulation
+diff --git a/src/simulation/m_rhs.fpp b/src/simulation/m_rhs.fpp
+index 97aa8d3..b10a3c2 100644
+--- a/src/simulation/m_rhs.fpp
++++ b/src/simulation/m_rhs.fpp
+@@ -2168,6 +2168,7 @@ contains
+         real(wp)             :: inv_dx, inv_dy, inv_dz, r, dux, duy, duz, dtl
+         real(wp)             :: fx0, fx1, fy0, fy1, fz0, fz1, v1, vs
+         real(wp)             :: nfx0, nfx1, nfy0, nfy1, nfz0, nfz1, nv1, nvs
++        real(wp)             :: mfx0, mfx1, mfy0, mfy1, mfz0, mfz1, mv1, mvs  !< two equations ahead
+ 
+         ! fx(:, :, :, j + (d - 1)*sys_size) is flux_n(d)%vf(j)%sf; fs(:, :, :, 1 + (d - 1)*(sys_size - adv%beg + 1)) is the face
+         ! velocity of direction d (flux_src_rsx_vf from adv%beg). The scalars are kernel arguments, not module reads.
+@@ -2175,8 +2176,8 @@ contains
+         sy = sys_size; sz = 2*sys_size; uy = 1 + (sys_size - ab + 1); uz = 1 + 2*(sys_size - ab + 1)
+ 
+         $:GPU_PARALLEL_LOOP(extraAccArgs=GPU_ASYNC, collapse=3, private='[j, jn, k, l, q, inv_dx, inv_dy, inv_dz, r, fx0, fx1, &
+-                            & fy0, fy1, fz0, fz1, v1, vs, nfx0, nfx1, nfy0, nfy1, nfz0, nfz1, nv1, nvs, dux, duy, duz]', &
+-                            & firstprivate='[ns, ab, ae, dtl, sy, sz, uy, uz]')
++                            & fy0, fy1, fz0, fz1, v1, vs, nfx0, nfx1, nfy0, nfy1, nfz0, nfz1, nv1, nvs, mfx0, mfx1, mfy0, mfy1, &
++                            & mfz0, mfz1, mv1, mvs, dux, duy, duz]', firstprivate='[ns, ab, ae, dtl, sy, sz, uy, uz]')
+         do l = 0, p
+             do k = 0, n
+                 do q = 0, m
+@@ -2197,19 +2198,32 @@ contains
+                         duz = fs(q, k, l, uz) - fs(q, k, l - 1, uz)
+                     end if
+                     nv1 = q1(q, k, l, 1); nvs = qs(q, k, l, 1)
++                    mfx0 = 0._wp; mfx1 = 0._wp; mfy0 = 0._wp; mfy1 = 0._wp; mfz0 = 0._wp; mfz1 = 0._wp
++                    mv1 = 0._wp; mvs = 0._wp
++                    if (ns > 1) then
++                        mfx0 = fx(q - 1, k, l, 2); mfx1 = fx(q, k, l, 2)
++                        if (n > 0) then
++                            mfy0 = fx(q, k - 1, l, 2 + sy); mfy1 = fx(q, k, l, 2 + sy)
++                        end if
++                        if (p > 0) then
++                            mfz0 = fx(q, k, l - 1, 2 + sz); mfz1 = fx(q, k, l, 2 + sz)
++                        end if
++                        mv1 = q1(q, k, l, 2); mvs = qs(q, k, l, 2)
++                    end if
+                     $:GPU_LOOP(parallelism='[seq]')
+                     do j = 1, ns
+                         fx0 = nfx0; fx1 = nfx1; fy0 = nfy0; fy1 = nfy1; fz0 = nfz0; fz1 = nfz1; v1 = nv1; vs = nvs
+-                        if (j < ns) then
+-                            jn = j + 1
+-                            nfx0 = fx(q - 1, k, l, jn); nfx1 = fx(q, k, l, jn)
++                        nfx0 = mfx0; nfx1 = mfx1; nfy0 = mfy0; nfy1 = mfy1; nfz0 = mfz0; nfz1 = mfz1; nv1 = mv1; nvs = mvs
++                        if (j + 1 < ns) then
++                            jn = j + 2
++                            mfx0 = fx(q - 1, k, l, jn); mfx1 = fx(q, k, l, jn)
+                             if (n > 0) then
+-                                nfy0 = fx(q, k - 1, l, jn + sy); nfy1 = fx(q, k, l, jn + sy)
++                                mfy0 = fx(q, k - 1, l, jn + sy); mfy1 = fx(q, k, l, jn + sy)
+                             end if
+                             if (p > 0) then
+-                                nfz0 = fx(q, k, l - 1, jn + sz); nfz1 = fx(q, k, l, jn + sz)
++                                mfz0 = fx(q, k, l - 1, jn + sz); mfz1 = fx(q, k, l, jn + sz)
+                             end if
+-                            nv1 = q1(q, k, l, jn); nvs = qs(q, k, l, jn)
++                            mv1 = q1(q, k, l, jn); mvs = qs(q, k, l, jn)
+                         end if
+                         r = inv_dx*(fx0 - fx1)
+                         if (j >= ab .and. j <= ae) then
+-- 
+2.47.3
+

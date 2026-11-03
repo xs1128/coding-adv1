@@ -273,6 +273,13 @@ final value is unchanged. 1 GPU (692419, 2 rounds): 28.116 / 28.153 → 27.827 /
 mirrored case with CBC at the beginning of each direction (692840); the 30 CBC tests pass (692852). No suite test takes
 this path, so the full suite (not run) would check only that nothing else changed (ladder row 74).
 
+**Pending 0035 (on 0034; not in P22).** The fused RK update is latency-bound (ncu 681191: 2.25 TB/s, 3 blocks per
+SM, waiting on loads). Each thread loaded equation j + 1 while computing equation j; 0035 keeps j + 1 and j + 2 in flight.
+Uncapped that needs 179 registers (2 blocks per SM) and is slower (28.932 / 28.956 ms vs 27.863 / 27.858); compiling
+`m_rhs` with `-gpu=maxregcount:168` keeps 3 blocks for a 32 B stack: 27.645 / 27.671 ms (−0.78 % / −0.67 %), grind
+−0.40 % / −0.31 %, bitwise (1 GPU, job 693627, 2 rounds). Single-file recompiles with `-gpu=nounroll` or `loadcache`
+changed no register or spill counts (ladder rows 75–76). Full suite not run.
+
 **Several GPUs** (`rdma_mpi`, same node, P11 vs P18; bitwise):
 
 | GPUs | P11 step | P18 step | Change | Job |

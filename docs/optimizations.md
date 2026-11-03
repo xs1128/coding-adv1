@@ -239,7 +239,7 @@ Chemistry GPU builds stopped linking after 0012, for the same linker reason. 001
 - **Gain.** First step 57 → 36 ms; grind −0.30 % at 1 GPU (686808), −1.3 % per step at 4 GPUs (686954); P21 28.46 →
   P22 28.37 ms in the direct check (690631). Bitwise; full suite clean (ladder row 70).
 
-### Pending (0032–0034): not in P22 until a full suite passes
+### Pending (0032–0035): not in P22 until a full suite passes
 - **0032, y/z halos beside the x sweep** (multi-GPU only). With an MPI neighbour in y or z, the y/z ghost cells are filled
   on a second queue after the x sweep is queued, so the GPU runs it while the host waits on MPI. 4 GPUs −1.8 % (690856).
 - **0033, Riemann-state values by one kernel.** 10 tiny host copies before every Riemann solve, run one after another,
@@ -248,6 +248,10 @@ Chemistry GPU builds stopped linking after 0012, for the same linker reason. 001
   queue (250 µs per step at 1 GPU, 690689), and the solve computed the 3 boundary faces it overwrites. Now the CBC
   queue copies back during the solve and the solve skips those faces. 1 GPU −1.0 % / −1.3 % (692419); 4 GPUs −2.2 %
   (692812). Bitwise everywhere, also with CBC at the beginning of each direction (692840).
+- **0035, RK update loads two equations ahead.** The fused RK update waits on memory (2.25 TB/s, 3 blocks per SM,
+  681191) with one equation of loads in flight per thread; it now keeps two. That alone needs 179 registers and 2 blocks
+  per SM, which is 3.8–3.9 % slower; with `m_rhs` capped at 168 registers (3 blocks, 32 B stack) it is −0.78 % / −0.67 %
+  per step at 1 GPU (693627). Bitwise. The cap is a disclosed build change.
 - **Rejected on the way:** splitting the x sweep around the x halo exchange (exp-haloxs, +0.35 % at 4 GPUs, 692179). The
   exchange waits for the neighbour rank, and the ranks with more CBC sides are the slow ones (nsys 692237), which is
   what led to 0034.
@@ -331,4 +335,4 @@ directory in `/dev/shm` and copying it back afterwards (`RUNLOCAL=1`) cut wall t
    ([research-halo-overlap.md](background/research-halo-overlap.md) option 4b, second half).
 3. **Overlap halos with compute**, and fuse the copy-like kernels ([report.md](../report.md) §9). The y/z part is
    0032; the x part did not pay (exp-haloxs). What is left at 4 GPUs is the rank imbalance from CBC work.
-4. **Full suite for 0032–0034** (~120 GPU-min, needs the user's OK), then they become official.
+4. **Full suite for 0032–0035** (~120 GPU-min, needs the user's OK), then they become official.
