@@ -227,7 +227,17 @@ Chemistry GPU builds stopped linking after 0012, for the same linker reason. 001
 - **0030.** The per-cell boundary kernel is not launched on faces whose cells 0026 already filled: −0.75 % (685452).
 - **Gain.** P20 29.68 → P21 28.27 ms (−4.75 %, 686551, all arms bitwise); about −11 % per step at 4 GPUs (chained).
 - **Cost found later.** 0028's queue makes the OpenACC runtime allocate a pinned staging buffer on its first host copy:
-  21 ms once per run (nsys 685403). Being fixed by queuing those small copies before the queue switch (exp-cbcnobuf).
+  21 ms once per run (nsys 685403). Fixed in P22.
+
+### P22 (0031): the CBC sets its GPU state with one kernel
+- **Slow.** Each CBC call sent 9 small copies from the host (direction, location, bounds, flags, cell widths). On the
+  CBC queue the first one makes the runtime pin a staging buffer: 21 ms in the first step.
+- **Tried first.** Sending the copies on the default queue before the switch (exp-cbcnobuf): the 21 ms went away, but the
+  copies then sat between the big kernels, +0.15 % per step (686710). Rejected.
+- **Change.** One single-block kernel on the CBC queue takes the values as arguments and writes them, reading the cell
+  widths from the GPU copy of dx/dy/dz. No host copy at all.
+- **Gain.** First step 57 → 36 ms; grind −0.30 % at 1 GPU (686808), −1.3 % per step at 4 GPUs (686954); P21 28.46 →
+  P22 28.37 ms in the direct check (690631). Bitwise; full suite clean (ladder row 70).
 
 ### Early ideas we rejected
 NVHPC 25.9 (no gain, not bitwise); fixing `dir_idx` at compile time in HLLC (255 registers); WENO `vector_length`
@@ -299,6 +309,7 @@ directory in `/dev/shm` and copying it back afterwards (`RUNLOCAL=1`) cut wall t
   bitwise A/B runs but no suite run.
 - **P20:** full suite 672459–672470 clean.
 - **P21** (0001–0030; 685708, 685821, 685825–685829, 685933): 690 pass, the 23 known failures with P20's exact errors.
+- **P22** (0001–0031; 689787–689791, 689793, 689794, 689934): the same.
 
 ## Next
 1. **8 GPUs, code-only arm:** v5.7.0 with `rdma_mpi` on the node of 606019 (≈32 GPU-min, needs the user's OK). The

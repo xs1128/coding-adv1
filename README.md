@@ -15,18 +15,19 @@ This is our homework for the SC26 Student Cluster Competition: take the fluid si
 
 ## The result (1 H200 GPU, 201³ grid, 30 steps)
 
-All runs in one job on one node, taking turns (job 686551, 2026-11-03, 2 rounds). Every run's final answer is
-**bit-for-bit identical** to plain v5.7.0.
+All runs in one job on one node, taking turns (job 690631, 2026-11-03, node hgpn011, 2 rounds). Every run's final
+answer is **bit-for-bit identical** to plain v5.7.0.
 
 | Version | Time per step | Faster than v5.7.0 |
 |---|---|---|
-| MFC v5.7.0 (original) | 76.9 ms | 1× |
-| Ours, previous version: patches 0001–0024 ("P20") | 29.7 ms | 2.59× |
-| **Ours: v5.7.0 + patches 0001–0030 ("P21")** | **28.3 ms** | **2.72×** |
+| MFC v5.7.0 (original) | 77.7 ms | 1× |
+| Ours, previous version: patches 0001–0030 ("P21") | 28.5 ms | 2.73× |
+| **Ours: v5.7.0 + patches 0001–0031 ("P22")** | **28.4 ms** | **2.74×** |
 
-P21 is 4.75 % faster per step than P20. The whole run's wall time is about the same for both (median 5.63 s for P21 vs
-5.56 s for P20, in the run-to-run noise of ±0.2 s), because start-up and saving take most of it. An earlier job on
-another node (680943) gave 77.8 ms and 29.8 ms (2.61×) for v5.7.0 and P20.
+P22 is 0.32 % faster per step than P21, and its first step takes 35 ms instead of 57–59 ms. The wall time of a whole run
+is 5.48 s (median) for P22 and 5.63 s for P21, but the ranges overlap (5.24–5.89 vs 5.37–5.92 s), because start-up and
+saving take most of it. Earlier jobs on other nodes: 686551 (v5.7.0 76.9, P20 29.7, P21 28.3 ms: P20 2.59×, P21
+2.72×) and 680943 (v5.7.0 77.8, P20 29.8 ms: 2.61×).
 
 For comparison, the 10-31 report ("P4", patches 0001–0006) was 1.27× faster at 1 GPU (60.38 ms vs 76.74 ms, two
 chained A/Bs). On 4 and 8 GPUs the 10-31 numbers are 1.35× and 2.23×; later multi-GPU results are in [`report.md`](report.md) §11.
@@ -72,15 +73,15 @@ On 1 GPU these six save about 4.75 % per step (above). On 4 GPUs they save more,
 A/B jobs (685059, 685274, 685404), because there the other GPUs wait for the one with the most boundary work. The full
 suite (713 tests, ladder row 67) gives exactly the 23 known failures, with the same errors as P20.
 
-**Waiting for the full test suite** ([`patches/pending/`](patches/pending/)): 0031 sets the boundary code's few
-numbers on the GPU with one tiny kernel instead of 9 small copies from the CPU per call. That removes a 21 ms one-off
-cost in the first step (the GPU runtime had to set up a pinned copy buffer for the second queue) and makes each step
-0.3 % faster at 1 GPU (job 686808) and 1.3 % faster at 4 GPUs (686954), bitwise; all 34 CBC tests pass (686876).
+**Step 31 (P22, full test suite passed 2026-11-03):** 0031 sets the boundary code's few numbers on the GPU with one
+tiny kernel instead of 9 small copies from the CPU per call. That removes a 21 ms one-off cost in the first step (the
+GPU runtime had to set up a pinned copy buffer for the second queue) and makes each step 0.3 % faster at 1 GPU (job
+686808) and 1.3 % faster at 4 GPUs (686954), bitwise. Full suite: the 23 known failures, same errors (ladder row 70).
 
 **Run settings (disclosed, no code change):** at 1 GPU, Open MPI without UCX (`ob1`) and a run directory in node-local
 memory (`/dev/shm`) cut the wall time of a whole run, start-up and save included, to about 3.8 s (job 684750).
 
-**Since the 10-31 report**, the time per step at 1 GPU went from ~60 ms to ~28 ms (see [`report.md`](report.md) §11).
+**Since the 10-31 report**, the time per step at 1 GPU went from ~60 ms to ~28.4 ms (see [`report.md`](report.md) §11).
 
 ## Folder map
 
@@ -88,8 +89,7 @@ memory (`/dev/shm`) cut the wall time of a whole run, start-up and save included
 |---|---|
 | [`report.md`](report.md) | The full write-up (also built as `dist/report.pdf` by `tools/build_pdf.py`) |
 | [`slides/`](slides/) | Slides for the 11-11 talk ([Slidev](https://sli.dev)): `cd slides && npm install && npm run dev`; `npm run export` writes `dist/slides.pdf` |
-| [`patches/opt/`](patches/opt/) | Our 30 changes to MFC, one per file |
-| [`patches/pending/`](patches/pending/) | One newer change (0031) that is faster and gives the same answers, but has not had the full test suite yet |
+| [`patches/opt/`](patches/opt/) | Our 31 changes to MFC, one per file |
 | [`patches/exp/`](patches/exp/) | Experiments we tried, most of them rejected |
 | [`docs/`](docs/) | Explanations: each optimization, the ladder of attempts, how the test harness works, the code layout |
 | [`docs/background/`](docs/background/) | Research notes and papers we read |

@@ -70,22 +70,22 @@ layout: center
 class: dark text-center
 ---
 
-<div class="eyebrow">THE RESULT · 1 GPU · SAME NODE, SAME JOB (686551)</div>
+<div class="eyebrow">THE RESULT · 1 GPU · SAME NODE, SAME JOB (690631)</div>
 
-<div class="big mt-6">76.9 ms → <span class="accent">28.3 ms</span></div>
+<div class="big mt-6">77.7 ms → <span class="accent">28.4 ms</span></div>
 
-<div class="text-2xl mt-4" style="color:#f5f3ee">per time step: <strong>2.72× faster</strong>, every run bit-for-bit identical to v5.7.0</div>
+<div class="text-2xl mt-4" style="color:#f5f3ee">per time step: <strong>2.74× faster</strong>, every run bit-for-bit identical to v5.7.0</div>
 
 <div class="grid grid-cols-3 gap-6 mt-12 text-left text-[15px]">
 <div>10-31 report (P4):<br><strong>1.27×</strong></div>
-<div>P20 (patches 0001–0024):<br><strong>2.59×</strong></div>
-<div>Full test suite on P21:<br><strong>same 23 failures as v5.7.0</strong></div>
+<div>P20 (0001–0024), job 686551:<br><strong>2.59×</strong></div>
+<div>Full test suite on P22:<br><strong>same 23 failures as v5.7.0</strong></div>
 </div>
 
 <!--
 This is the headline. Original and optimized builds ran in the same job on the same node, taking turns, so the
-comparison is fair: 76.9 ms per step versus 28.3, 2.72 times faster. At the 10-31 report we were at 1.27 times; P20,
-the version before the last six boundary patches, is 2.59 times in the same job. The full suite on the final version
+comparison is fair: 77.7 ms per step versus 28.4, 2.74 times faster. At the 10-31 report we were at 1.27 times; P20,
+the version before the last seven boundary patches, was 2.59 times in an earlier job. The full suite on the final version
 fails exactly the 23 tests that already fail on the original, with the same errors.
 -->
 
@@ -140,7 +140,7 @@ P20, simpler array addressing; P21 is the boundary work. Every arm of every comp
 
 ### 1 · Stop waiting
 The CPU queued each GPU job and then waited for it. Now it queues everything and moves on.
-<div class="text-xs mt-2 font-mono">0001 0005 0013 0019 0025 0028 0029</div>
+<div class="text-xs mt-2 font-mono">0001 0005 0013 0019 0025 0028 0029 0031</div>
 </div>
 <div class="card">
 
@@ -162,10 +162,10 @@ One-file build so helpers inline, register limits, load the next values early, p
 </div>
 </div>
 
-<div class="foot">30 patches in patches/opt/, one idea each; every one explained in docs/optimizations.md</div>
+<div class="foot">31 patches in patches/opt/, one idea each; every one explained in docs/optimizations.md</div>
 
 <!--
-The 30 patches fall into four ideas. One, stop waiting: the CPU used to wait after each GPU job. Two, stop copying:
+The 31 patches fall into four ideas. One, stop waiting: the CPU used to wait after each GPU job. Two, stop copying:
 read arrays in place. Three, do in one pass what used to take several: the biggest one put WENO5 inside the HLLC
 kernel. Four, help the compiler and the memory system: inlining, register limits, loading the next values early,
 and simpler array addressing.
@@ -346,7 +346,7 @@ class: dark
 <div class="foot" style="color:#b9c3d6">Repo: [GitHub link] · report.md · docs/optimizations.md · AGENT_LOG.md</div>
 
 <!--
-To sum up: 13 days, about 270 commits, about 300 GPU jobs, 30 patches. Most of the speed came from moving less data. Every claim
+To sum up: 13 days, about 270 commits, about 300 GPU jobs, 31 patches. Most of the speed came from moving less data. Every claim
 is measured on one node and checked bit for bit, and failures are kept. And an AI agent is a fast engineer, but it
 needs rules, a budget and checks it can't talk its way around. Thanks, happy to take questions.
 -->
