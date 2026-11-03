@@ -2,7 +2,7 @@
 # Rebuild the final MFC from the pinned release plus our patches, then re-run the final same-node sets.
 #   harness/reproduce.sh build    (login node: clone/patch/compile, ~1 h at -j 8, no GPU)
 #   harness/reproduce.sh run      (submit the 1/4/8-GPU sets: ~1, ~16 and ~48 GPU-min)
-#   harness/reproduce.sh wall     (submit the 1/4-GPU wall-time sets with the disclosed run settings: ~6 and ~20 GPU-min)
+#   harness/reproduce.sh wall     (submit the 1/4-GPU wall-time sets with the disclosed run settings: ~6 and ~15 GPU-min)
 #   harness/reproduce.sh verify   (bitwise gate + summary of every run)
 # Baseline = pinned v5.7.0 in $ROOT/mfc; final = $ROOT/mfc-repro (v5.7.0 + every patch in patches/opt/, P22).
 # The wall-time settings (ladder rows 85-99) were measured on pending patch 0038, so P22 with them is a little slower.
@@ -27,8 +27,8 @@ case "${1:?build|run|verify}" in
         "SPEC=harness/specs/repro_${g}g.tsv" BUILD=caseopt REPS=5
     done ;;
   wall)
-    for g in 1 4; do
-      bash harness/submit.sh "repro/w${g}g" harness/cases/perf3d.py "$g" 15 SCRIPT=series \
+    for g in 1 4; do   # time limit 10 / 8 min (expected ~6 / ~15 GPU-min)
+      bash harness/submit.sh "repro/w${g}g" harness/cases/perf3d.py "$g" $(( g == 1 ? 10 : 8 )) SCRIPT=series \
         "SPEC=harness/specs/wall_${g}g.tsv" BUILD=caseopt REPS=5
     done ;;
   verify)
