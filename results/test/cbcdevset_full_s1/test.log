@@ -1,0 +1,137 @@
+mfc: Starting...
+mfc: OK > (venv) Entered the Python 3.9.21 virtual environment (>= 3.9).
+
+      .=++*:          -+*+=.        | u1131128@25a-hgpn011 [Linux]
+     :+   -*-        ==   =* .      | ----------------------------
+   :*+      ==      ++    .+-       | 
+  :*##-.....:*+   .#%+++=--+=:::.   | --jobs 2
+  -=-++-======#=--**+++==+*++=::-:. | --mpi --acc-gpu --no-debug --no-reldebug --no-gcov --no-unified --no-single --no-mixed --no-fastmath
+ .:++=----------====+*= ==..:%..... | 
+  .:-=++++===--==+=-+=   +.  :=     | 
+  +#=::::::::=%=. -+:    =+   *:    | ------------------------------------------------------------------
+ .*=-=*=..    :=+*+:      -...--    | $ ./mfc.sh (build, run, test, clean, new, validate, params) --help
+
+ Build | syscheck and pre_process
+
+
+ Build | syscheck and simulation
+
+
+
+ Test pre_process and simulation | Only 0FCCE9F1, 1B0A7157, 33813627, F1E9F8BC, E752CD0F, 2F58A83F, 0FF51EDE, 5DAF1F94, 2DE548B7, EE34D7DC, 3053B44F, 66693DCC, 903FA85A, 3643454B, 63F2D0C0, 749F3DD3, 11DAFD23, 105673CA, 3B3F8C68, BE0B2040, F3E2DAC6, 4927BF4B, CE9DBA3F, 356A5C50, 1E288DE4, 5576FEEA, 9EB947DB, 32A3A936, AF0BCEE4, E6DBCBD9, B2EFB9F7, F4D00494, 413DD555, D21F4F38, 76C663B7, 8D6E051E, D8136392, 5E2265C4, 9465D0F5, FE3E35C4, 729A4333, 6784C02E, 53E13D19, 0501B3DA, 37FA2CEF, 4201674B, DEA0A0D6, AE02324F, 55533234, EAA53889, 20AE0551, A6E65782, 4129A23A, E84967E7, 5F877BC9, 16C03D8E, B96AC58F, 8FDEE23A, BF46F657, D972BA0F, 4D7926CD, 98081DA3, 10DBA76B, 212401B4, EB6687AB, EA9C3FA3, A21CF713, 39816683, 9EF5305B, 0ACB1F16, E719C5F2, 31742FC7, D6415F48, A72F7006, B8BF00C9, 9E9DA539, 448EA9A4, F883F4EE, 743D6D71, 84A12B88, 6B227FF5, D68EDC50, 5EC347F2, 42848784, 374C9B16, 347964C3, 7374E266, 3BFEAC19, FBF808BE, and 3154EC76 (90 tests)
+  
+     Progress      Test Name                                        Time(s)   UUID
+  
+     (  1/ 90)    1D -> 2 MPI Ranks                                    31.96    0FCCE9F1
+     (  2/ 90)    1D -> Acoustic Source -> Sine -> Wavelength          17.32    33813627
+     (  3/ 90)    1D -> Acoustic Source -> Sine -> Frequency           17.32    1B0A7157
+     (  4/ 90)    1D -> Acoustic Source -> Sine -> Delay               16.35    F1E9F8BC
+     (  5/ 90)    1D -> Acoustic Source -> Sine -> Number of Pulses    16.60    E752CD0F
+     (  6/ 90)    1D -> Acoustic Source -> Square -> Wavelength        17.31    0FF51EDE
+     (  7/ 90)    1D -> Acoustic Source -> Square -> Frequency         17.61    2F58A83F
+     (  8/ 90)    1D -> Acoustic Source -> Square -> Number of Pu...   14.68    2DE548B7
+     (  9/ 90)    1D -> Acoustic Source -> Square -> Delay             15.88    5DAF1F94
+     ( 10/ 90)    1D -> Acoustic Source -> Gaussian -> Sigma Time      17.03    EE34D7DC
+     ( 11/ 90)    1D -> Acoustic Source -> Gaussian -> Sigma Dist      16.15    3053B44F
+     ( 12/ 90)    1D -> Bubbles -> 2 Fluid(s)                          15.60    903FA85A
+     ( 13/ 90)    1D -> Acoustic Source -> Gaussian -> Dipole          15.99    66693DCC
+     ( 14/ 90)    1D -> Bubbles -> Polytropic -> bubble_model=3        14.49    3643454B
+     ( 15/ 90)    1D -> Bubbles -> Polytropic -> bubble_model=2        15.12    63F2D0C0
+     ( 16/ 90)    1D -> Bubbles -> nb=1                                14.97    11DAFD23
+     ( 17/ 90)    1D -> Bubbles -> bubble_model=2                      16.87    749F3DD3
+     ( 18/ 90)    1D -> Bubbles -> adv_n=T -> adap_dt=T                15.75    3B3F8C68
+     ( 19/ 90)    1D -> Bubbles -> adv_n=T                             16.94    105673CA
+     ( 20/ 90)    1D -> Bubbles -> low_Mach=1                          17.76    F3E2DAC6
+     ( 21/ 90)    1D -> Bubbles -> artificial_Ma                       17.81    BE0B2040
+     ( 22/ 90)    1D -> Bubbles -> low_Mach=2                          16.41    4927BF4B
+     ( 23/ 90)    1D -> Bubbles -> QBMM                                17.71    CE9DBA3F
+     ( 24/ 90)    1D -> Bubbles -> QBMM -> bubble_model=3              15.67    1E288DE4
+     ( 25/ 90)    1D -> Bubbles -> QBMM -> Non-polytropic              17.75    356A5C50
+     ( 26/ 90)    1D -> Hypoelasticity -> 1 Fluid(s)                   13.31    9EB947DB
+     ( 27/ 90)    1D -> Bubbles -> QBMM -> bubble_model=3 -> Non-...   14.37    5576FEEA
+     ( 28/ 90)    1D -> Hypoelasticity -> 2 Fluid(s)                   13.89    AF0BCEE4
+     ( 29/ 90)    1D -> Hypoelasticity -> 1 Fluid(s) -> cont_damage    14.25    32A3A936
+     ( 30/ 90)    1D -> Phase Change model 5 -> 2 Fluid(s) -> mod...   13.93    B2EFB9F7
+     ( 31/ 90)    1D -> Phase Change model 5 -> 2 Fluid(s) -> mod...   13.99    E6DBCBD9
+     ( 32/ 90)    1D -> Phase Change model 5 -> 3 Fluid(s) -> mod...   13.80    413DD555
+     ( 33/ 90)    1D -> Phase Change model 5 -> 3 Fluid(s) -> mod...   13.87    F4D00494
+     Still running (>2min) D21F4F38  1D -> Phase Change model 6 -> 2 Fluid(s) -> model equation -> 3
+     Still running (>2min) 76C663B7  1D -> Phase Change model 6 -> 2 Fluid(s) -> model equation -> 2
+     ( 34/ 90)    1D -> Phase Change model 6 -> 2 Fluid(s) -> mod...  228.48    76C663B7
+     ( 35/ 90)    1D -> Phase Change model 6 -> 2 Fluid(s) -> mod...  228.53    D21F4F38
+     Still running (>2min) 8D6E051E  1D -> Phase Change model 6 -> 3 Fluid(s) -> model equation -> 3
+     Still running (>2min) D8136392  1D -> Phase Change model 6 -> 3 Fluid(s) -> model equation -> 2
+     ( 36/ 90)    1D -> Phase Change model 6 -> 3 Fluid(s) -> mod...  303.75    8D6E051E
+     ( 37/ 90)    1D -> Phase Change model 6 -> 3 Fluid(s) -> mod...  303.71    D8136392
+     ( 38/ 90)    1D -> Viscosity -> Bubbles -> Polytropic -> bub...   15.18    5E2265C4
+     ( 39/ 90)    1D -> Viscosity -> Bubbles -> Polytropic -> bub...   15.13    9465D0F5
+     ( 40/ 90)    1D -> Viscosity -> Bubbles -> bubble_model=2         14.96    FE3E35C4
+     ( 41/ 90)    1D -> Viscosity -> Bubbles -> nb=1                   14.91    729A4333
+     ( 42/ 90)    1D -> Viscosity -> Bubbles -> QBMM                   15.07    6784C02E
+     ( 43/ 90)    1D -> Viscosity -> Bubbles -> QBMM -> bubble_mo...   15.02    53E13D19
+     ( 44/ 90)    1D -> Viscosity -> Bubbles -> QBMM -> bubble_mo...   14.82    37FA2CEF
+     ( 45/ 90)    1D -> Viscosity -> Bubbles -> QBMM -> bubble_mo...   14.88    0501B3DA
+     ( 46/ 90)    1D -> Smoothing                                      14.01    4201674B
+     ( 47/ 90)    1D -> Bodyforces                                     13.97    DEA0A0D6
+     ( 48/ 90)    2D -> bc=-1                                          13.89    55533234
+     ( 49/ 90)    1D -> Bodyforces -> cfl_adap_dt=T                    13.95    AE02324F
+     ( 50/ 90)    2D -> bc=-4                                          14.18    20AE0551
+     ( 51/ 90)    2D -> bc=-2                                          14.23    EAA53889
+     ( 52/ 90)    2D -> bc=-5                                          14.27    A6E65782
+     ( 53/ 90)    2D -> bc=-6                                          14.22    4129A23A
+     ( 54/ 90)    2D -> bc=-7                                          14.22    E84967E7
+     ( 55/ 90)    2D -> bc=-8                                          14.18    5F877BC9
+     ( 56/ 90)    2D -> bc=-10                                         14.22    B96AC58F
+     ( 57/ 90)    2D -> bc=-9                                          14.27    16C03D8E
+     ( 58/ 90)    2D -> bc=-11                                         14.26    8FDEE23A
+     ( 59/ 90)    2D -> bc=-12                                         14.22    BF46F657
+     ( 60/ 90)    2D -> bc=-15                                         14.17    4D7926CD
+     ( 61/ 90)    2D -> bc=-3                                          14.22    D972BA0F
+     ( 62/ 90)    2D -> bc=-16                                         14.12    98081DA3
+     ( 63/ 90)    2D -> bc=-17                                         14.07    10DBA76B
+     ( 64/ 90)    2D -> grcbc y                                        14.30    EB6687AB
+     ( 65/ 90)    2D -> grcbc x                                        14.36    212401B4
+     ( 66/ 90)    2D -> weno_order=3                                   14.12    EA9C3FA3
+     ( 67/ 90)    2D -> weno_order=3 -> wenoz=T                        14.07    A21CF713
+     ( 68/ 90)    2D -> weno_order=3 -> mapped_weno=T                  14.02    39816683
+     ( 69/ 90)    2D -> weno_order=5                                   13.98    9EF5305B
+     ( 70/ 90)    2D -> weno_order=5 -> teno=T                         14.00    E719C5F2
+     ( 71/ 90)    2D -> weno_order=5 -> mp_weno=T                      14.05    0ACB1F16
+     ( 72/ 90)    2D -> weno_order=5 -> mapped_weno=T                  14.22    D6415F48
+     ( 73/ 90)    2D -> weno_order=5 -> wenoz=T                        14.29    31742FC7
+     ( 74/ 90)    2D -> weno_order=7 -> teno=T                         14.39    B8BF00C9
+     ( 75/ 90)    2D -> weno_order=7                                   14.45    A72F7006
+     ( 76/ 90)    2D -> weno_order=7 -> mapped_weno=T                  14.42    448EA9A4
+     ( 77/ 90)    2D -> weno_order=7 -> wenoz=T                        14.47    9E9DA539
+     ( 78/ 90)    2D -> muscl_order=2 -> muscl_lim=2                   14.60    F883F4EE
+     ( 79/ 90)    2D -> muscl_order=2 -> muscl_lim=3                   14.56    743D6D71
+     ( 80/ 90)    2D -> muscl_order=2 -> muscl_lim=5                   14.36    6B227FF5
+     ( 81/ 90)    2D -> muscl_order=2 -> muscl_lim=4                   14.42    84A12B88
+     ( 82/ 90)    2D -> muscl_order=2 -> muscl_eps=0 -> muscl_lim=1    14.44    D68EDC50
+     ( 83/ 90)    2D -> muscl_order=2 -> muscl_eps=0 -> muscl_lim=2    14.40    5EC347F2
+     ( 84/ 90)    2D -> muscl_order=2 -> muscl_eps=0 -> muscl_lim=3    14.40    42848784
+     ( 85/ 90)    2D -> muscl_order=2 -> muscl_eps=0 -> muscl_lim=4    14.36    374C9B16
+     ( 86/ 90)    2D -> 1 Fluid(s) -> riemann_solver=1 -> mixture...   14.21    7374E266
+     ( 87/ 90)    2D -> muscl_order=2 -> muscl_eps=0 -> muscl_lim=5    14.27    347964C3
+     ( 88/ 90)    2D -> 1 Fluid(s) -> riemann_solver=1 -> avg_sta...   14.11    3BFEAC19
+     ( 89/ 90)    2D -> 1 Fluid(s) -> riemann_solver=1 -> wave_sp...   14.07    FBF808BE
+     ( 90/ 90)    2D -> 1 Fluid(s) -> riemann_solver=1 -> avg_sta...   13.04    3154EC76
+
+  
+
+╭──────────────────────────────── Test Summary ────────────────────────────────╮
+│                                                                              │
+│  ✓ ALL TESTS PASSED                                                          │
+│                                                                              │
+│      90 passed                                                               │
+│       0 failed                                                               │
+│     670 skipped                                                              │
+│    ────────────                                                              │
+│     760 total                                                                │
+│                                                                              │
+│    Time: 20m 8.1s                                                            │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+
+mfc: (venv) Exiting the Python virtual environment.
