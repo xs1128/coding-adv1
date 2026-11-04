@@ -1,0 +1,81 @@
+# job 697602: rank 0 and rank 1, stage 30: NVTX ranges and host CUDA sync calls (>20 us) after the y/z exchange, relative to stage start (ms)
+rank0 stage 30, 1.728 ms
+     0.000 + 0.005  nvtx RHS-CONVERT
+     0.006 + 0.284  nvtx RHS-COMMUNICATION
+     0.031 + 0.004  nvtx RHS-COMM-PACKBUF
+     0.035 + 0.138  cuda cuCtxSynchronize
+     0.174 + 0.108  nvtx RHS-COMM-SENDRECV-RDMA
+     0.285 + 0.004  nvtx RHS-COMM-UNPACKBUF
+     0.290 + 0.000  nvtx RHS-RECONSTRUCTION
+     0.295 + 0.013  nvtx RHS-RIEMANN-SOLVER
+     0.308 + 0.000  nvtx RHS-ADVECTION-SRC
+     0.309 + 0.511  nvtx RHS-COMMUNICATION-YZ
+     0.324 + 0.005  nvtx RHS-COMM-PACKBUF
+     0.329 + 0.048  cuda cuStreamSynchronize
+     0.377 + 0.411  nvtx RHS-COMM-SENDRECV-RDMA
+     0.790 + 0.004  nvtx RHS-COMM-UNPACKBUF
+     0.820 + 0.000  nvtx RHS-RECONSTRUCTION
+     0.823 + 0.010  nvtx RHS-RIEMANN-SOLVER
+     0.834 + 0.000  nvtx RHS-ADVECTION-SRC
+     0.834 + 0.000  nvtx RHS-RECONSTRUCTION
+     0.877 + 0.014  nvtx RHS-RIEMANN-SOLVER
+     0.891 + 0.836  nvtx RHS-ADVECTION-SRC
+     0.894 + 0.833  cuda cuEventSynchronize
+rank1 stage 30, 1.733 ms
+     0.000 + 0.007  nvtx RHS-CONVERT
+     0.007 + 0.242  nvtx RHS-COMMUNICATION
+     0.035 + 0.004  nvtx RHS-COMM-PACKBUF
+     0.039 + 0.134  cuda cuCtxSynchronize
+     0.174 + 0.068  nvtx RHS-COMM-SENDRECV-RDMA
+     0.245 + 0.004  nvtx RHS-COMM-UNPACKBUF
+     0.250 + 0.000  nvtx RHS-RECONSTRUCTION
+     0.256 + 0.011  nvtx RHS-RIEMANN-SOLVER
+     0.268 + 0.000  nvtx RHS-ADVECTION-SRC
+     0.268 + 0.123  nvtx RHS-COMMUNICATION-YZ
+     0.270 + 0.005  nvtx RHS-COMM-PACKBUF
+     0.276 + 0.031  cuda cuStreamSynchronize
+     0.307 + 0.038  nvtx RHS-COMM-SENDRECV-RDMA
+     0.348 + 0.006  nvtx RHS-COMM-UNPACKBUF
+     0.392 + 0.000  nvtx RHS-RECONSTRUCTION
+     0.446 + 0.013  nvtx RHS-RIEMANN-SOLVER
+     0.460 + 0.641  nvtx RHS-ADVECTION-SRC
+     0.464 + 0.637  cuda cuEventSynchronize
+     1.101 + 0.000  nvtx RHS-RECONSTRUCTION
+     1.154 + 0.012  nvtx RHS-RIEMANN-SOLVER
+     1.166 + 0.567  nvtx RHS-ADVECTION-SRC
+     1.169 + 0.563  cuda cuEventSynchronize
+
+# rank 1, stage 30: every CUDA API call from the y/z exchange end to the first cuEventSynchronize (relative ms), with kernel names launched
+    0.346 + 0.002 cuStreamSynchronize          
+    0.349 + 0.004 cuLaunchKernel               m_mpi_common_s_mpi_sendrecv_variables_buffers_956_gpu
+    0.355 + 0.003 cuLaunchKernel               m_boundary_common_s_populate_bc_direction_222_gpu__1
+    0.371 + 0.003 cuLaunchKernel               m_boundary_common_s_populate_bc_direction_222_gpu__2
+    0.381 + 0.004 cuLaunchKernel               m_boundary_common_s_populate_bc_direction_222_gpu__2
+    0.392 + 0.002 cuEventRecord                
+    0.395 + 0.000 cuStreamWaitEvent            
+    0.396 + 0.002 cuEventRecord                
+    0.398 + 0.000 cuStreamWaitEvent            
+    0.399 + 0.002 cuEventRecord                
+    0.401 + 0.000 cuStreamWaitEvent            
+    0.402 + 0.003 cuLaunchKernel               m_cbc_s_cbc_set_device_state_1155_gpu
+    0.406 + 0.004 cuLaunchKernel               m_cbc_s_initialize_cbc_1264_gpu
+    0.410 + 0.003 cuLaunchKernel               m_cbc_s_initialize_cbc_1276_gpu
+    0.415 + 0.003 cuLaunchKernel               m_variables_conversion_s_convert_primitive_to_flux_variables_1072_gpu
+    0.419 + 0.004 cuLaunchKernel               m_cbc_s_cbc_690_gpu_1
+    0.424 + 0.003 cuLaunchKernel               m_cbc_s_cbc_706_gpu_1
+    0.427 + 0.004 cuLaunchKernel               m_cbc_s_cbc_725_gpu_1
+    0.431 + 0.002 cuEventRecord                
+    0.434 + 0.003 cuLaunchKernel               m_cbc_s_finalize_cbc_1488_gpu
+    0.438 + 0.003 cuLaunchKernel               m_cbc_s_finalize_cbc_1500_gpu
+    0.442 + 0.003 cuLaunchKernel               m_cbc_s_finalize_cbc_1523_gpu
+    0.449 + 0.004 cuLaunchKernel               m_riemann_state_s_populate_riemann_states_variables_buffers_381_gpu
+    0.455 + 0.003 cuLaunchKernel               m_riemann_solver_hllc_s_hllc_riemann_solver_952_gpu_1
+    0.461 + 0.003 cuEventRecord                
+    0.464 + 0.000 cuStreamWaitEvent            
+    0.464 + 0.637 cuEventSynchronize           
+
+# all ranks, stage 30: cuEventSynchronize / cuStreamSynchronize / cuCtxSynchronize calls longer than 20 us (relative ms) and the NVTX range they fall in
+rank0: cuCtxSynchronize 0.035+0.138 in RHS-COMMUNICATION (after 0 Riemann solves); cuStreamSynchronize 0.329+0.048 in RHS-COMMUNICATION-YZ (after 1 Riemann solves); cuEventSynchronize 0.894+0.833 in RHS-ADVECTION-SRC (after 3 Riemann solves)
+rank1: cuCtxSynchronize 0.039+0.134 in RHS-COMMUNICATION (after 0 Riemann solves); cuStreamSynchronize 0.276+0.031 in RHS-COMMUNICATION-YZ (after 1 Riemann solves); cuEventSynchronize 0.464+0.637 in RHS-ADVECTION-SRC (after 2 Riemann solves); cuEventSynchronize 1.169+0.563 in RHS-ADVECTION-SRC (after 3 Riemann solves)
+rank2: cuCtxSynchronize 0.013+0.140 in RHS-COMMUNICATION (after 0 Riemann solves); cuEventSynchronize 0.294+0.038 in RHS-ADVECTION-SRC (after 1 Riemann solves); cuStreamSynchronize 0.353+0.115 in RHS-COMMUNICATION-YZ (after 1 Riemann solves); cuEventSynchronize 1.003+0.735 in RHS-ADVECTION-SRC (after 3 Riemann solves)
+rank3: cuCtxSynchronize 0.010+0.141 in RHS-COMMUNICATION (after 0 Riemann solves); cuEventSynchronize 0.271+0.074 in RHS-ADVECTION-SRC (after 1 Riemann solves); cuStreamSynchronize 0.350+0.092 in RHS-COMMUNICATION-YZ (after 1 Riemann solves); cuEventSynchronize 0.580+0.538 in RHS-ADVECTION-SRC (after 2 Riemann solves); cuEventSynchronize 1.176+0.563 in RHS-ADVECTION-SRC (after 3 Riemann solves)
