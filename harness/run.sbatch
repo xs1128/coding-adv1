@@ -60,7 +60,9 @@ echo "nolibpath=${NOLIBPATH:-0}" >> "$out/env.txt"
 # LAUNCH=singleton (1 rank only; setting, disclosed): start the simulation without mpirun, as an MPI singleton that
 # starts no helper daemon (OMPI_MCA_ess_singleton_isolated=1). A plain singleton hung in MPI_Init (696387), so every
 # rep runs under a timeout.
-launch=(mpirun -np "$NGPU" $MPIRUN_ARGS)
+# Every rep runs under a timeout (RUN_TIMEOUT, default 300 s; the slowest normal run takes ~12 s): untested code that
+# hangs (698176) then costs minutes, not the rest of the job.
+launch=(timeout "${RUN_TIMEOUT:-300}" mpirun -np "$NGPU" $MPIRUN_ARGS)
 if [[ ${LAUNCH:-mpirun} == singleton ]]; then
   [[ $NGPU == 1 ]] || { echo "LAUNCH=singleton needs NGPU=1" >&2; exit 2; }
   # mpirun gives the processes it starts Open MPI's library folders in LD_LIBRARY_PATH even when it is unset; without
