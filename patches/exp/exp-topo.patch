@@ -1,0 +1,44 @@
+diff --git a/src/common/m_mpi_common.fpp b/src/common/m_mpi_common.fpp
+index 803a119..87ed9fc 100644
+--- a/src/common/m_mpi_common.fpp
++++ b/src/common/m_mpi_common.fpp
+@@ -1512,6 +1512,13 @@ contains
+                                      & // 'weno/muscl/igr_order. Exiting.')
+                 end if
+ 
++#ifdef MFC_SIMULATION
++                ! Experimental (exp-topo): MFC_PROC_TOPO='px py pz' in the environment replaces the searched layout when the
++                ! three counts multiply to num_procs. The grid and restart data come from the global files at start_idx, so the
++                ! values computed do not depend on the layout.
++                call s_override_proc_topology()
++#endif
++
+                 ! Creating new communicator using the Cartesian topology
+                 call MPI_CART_CREATE(MPI_COMM_WORLD, 3, (/num_procs_x, num_procs_y, num_procs_z/), (/.true., .true., .true./), &
+                                      & .false., MPI_COMM_CART, ierr)
+@@ -1782,6 +1789,25 @@ contains
+ 
+     end subroutine s_apply_decomposition_policies
+ 
++#ifdef MFC_SIMULATION
++    impure subroutine s_override_proc_topology()
++
++        integer, dimension(3) :: topo
++        integer               :: stat, ios
++        character(len=64)     :: env
++
++        call get_environment_variable('MFC_PROC_TOPO', env, status=stat)
++        if (stat /= 0) return
++        topo = 0
++        read (env, *, iostat=ios) topo
++        if (ios /= 0 .or. any(topo < 1) .or. product(topo) /= num_procs) return
++        num_procs_x = topo(1)
++        num_procs_y = topo(2)
++        num_procs_z = topo(3)
++
++    end subroutine s_override_proc_topology
++#endif
++
+     !> The goal of this procedure is to populate the buffers of the grid variables by communicating with the neighboring processors.
+     !! Note that only the buffers of the cell-width distributions are handled in such a way. This is because the buffers of
+     !! cell-boundary locations may be calculated directly from those of the cell-width distributions.
