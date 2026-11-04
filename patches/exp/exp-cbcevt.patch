@@ -1,0 +1,119 @@
+diff --git a/src/simulation/m_cbc.fpp b/src/simulation/m_cbc.fpp
+index e19176f..8a83af3 100644
+--- a/src/simulation/m_cbc.fpp
++++ b/src/simulation/m_cbc.fpp
+@@ -16,7 +16,7 @@ module m_cbc
+         & BC_CHAR_SUP_OUTFLOW
+ #if defined(MFC_OpenACC) && defined(MFC_NVHPC)
+     use openacc, only: acc_set_default_async, acc_get_default_async
+-    use iso_c_binding, only: c_ptr, c_funptr, c_int, c_char, c_null_char, c_associated, c_f_procpointer
++    use iso_c_binding, only: c_ptr, c_funptr, c_int, c_long, c_char, c_null_char, c_associated, c_f_procpointer
+ #endif
+     use m_thermochem, only: get_mixture_energy_mass, get_mixture_specific_heat_cv_mass, get_mixture_specific_heat_cp_mass, &
+         & gas_constant, get_mixture_molecular_weight, get_species_enthalpies_rt, molecular_weights, get_species_specific_heats_r, &
+@@ -93,6 +93,13 @@ module m_cbc
+     !> cbc_queue runs on a high-priority CUDA stream (s_cbc_priority_stream): the CBC kernels are a chain of small kernels, and on
+     !! an ordinary stream each one after the first waits until the Riemann solve's blocks have all been placed.
+     logical :: cbc_stream_tried = .false.
++    !> The copy-back waits for cbc_queue with a CUDA event that the default queue's stream waits on (s_cbc_gpu_wait). An OpenACC
++    !! "wait(cbc_queue) async" here also blocked the host (cuEventSynchronize, 0.5-0.6 ms per stage on ranks with a y-end CBC,
++    !! nsys 697602), so the host could not queue the next sweep while the GPU finished this one.
++    logical :: cbc_evt_tried = .false., cbc_evt_ok = .false.
++    type(c_ptr) :: cbc_evt
++    procedure(cbc_cu_event_record), pointer :: cbc_evt_record => null()
++    procedure(cbc_cu_stream_wait_event), pointer :: cbc_evt_wait => null()
+     interface
+         function cbc_dlopen(file, mode) bind(C, name='dlopen') result(h)
+ 
+@@ -118,6 +125,13 @@ module m_cbc
+             integer(c_int)        :: r
+ 
+         end function cbc_acc_set_cuda_stream
++        function cbc_acc_get_cuda_stream(async) bind(C, name='acc_get_cuda_stream') result(stream)
++
++            import :: c_long, c_ptr
++            integer(c_long), value :: async  ! C long in openacc.h
++            type(c_ptr)           :: stream
++
++        end function cbc_acc_get_cuda_stream
+     end interface
+     abstract interface
+         function cbc_cu_prio_range(least, greatest) bind(C) result(r)
+@@ -135,6 +149,29 @@ module m_cbc
+             integer(c_int)           :: r
+ 
+         end function cbc_cu_stream_create
++        function cbc_cu_event_create(event, flags) bind(C) result(r)
++
++            import :: c_int, c_ptr
++            type(c_ptr), intent(out) :: event
++            integer(c_int), value    :: flags
++            integer(c_int)           :: r
++
++        end function cbc_cu_event_create
++        function cbc_cu_event_record(event, stream) bind(C) result(r)
++
++            import :: c_int, c_ptr
++            type(c_ptr), value :: event, stream
++            integer(c_int)     :: r
++
++        end function cbc_cu_event_record
++        function cbc_cu_stream_wait_event(stream, event, flags) bind(C) result(r)
++
++            import :: c_int, c_ptr
++            type(c_ptr), value    :: stream, event
++            integer(c_int), value :: flags
++            integer(c_int)        :: r
++
++        end function cbc_cu_stream_wait_event
+     end interface
+ #endif
+ 
+@@ -608,7 +645,7 @@ contains
+             ! Phase 1 queued this boundary's kernels on cbc_queue; the copy-back must follow both them and the Riemann solve
+             ! (queued since on the default queue), and nothing has touched this module's state in between.
+             cbc_pending(cbc_dir) = 0
+-            $:GPU_WAIT(extraAccArgs='(cbc_queue) async')
++            call s_cbc_gpu_wait()
+             if (cbc_copied(cbc_dir)) then
+                 cbc_copied(cbc_dir) = .false.
+             else
+@@ -1088,6 +1125,38 @@ contains
+         ierr = cbc_acc_set_cuda_stream(int(cbc_queue, c_int), stream)
+ 
+     end subroutine s_cbc_priority_stream
++
++    !> Make the default queue wait for everything queued so far on cbc_queue, on the GPU only (see cbc_evt).
++    impure subroutine s_cbc_gpu_wait()
++
++        type(c_ptr)    :: h
++        type(c_funptr) :: f_create, f_record, f_wait
++        procedure(cbc_cu_event_create), pointer :: create
++        integer(c_int) :: ierr
++
++        if (.not. cbc_evt_tried) then
++            cbc_evt_tried = .true.
++            h = cbc_dlopen('libcuda.so.1' // c_null_char, 2_c_int)  ! RTLD_NOW
++            if (c_associated(h)) then
++                f_create = cbc_dlsym(h, 'cuEventCreate' // c_null_char)
++                f_record = cbc_dlsym(h, 'cuEventRecord' // c_null_char)
++                f_wait = cbc_dlsym(h, 'cuStreamWaitEvent' // c_null_char)
++                if (c_associated(f_create) .and. c_associated(f_record) .and. c_associated(f_wait)) then
++                    call c_f_procpointer(f_create, create)
++                    call c_f_procpointer(f_record, cbc_evt_record)
++                    call c_f_procpointer(f_wait, cbc_evt_wait)
++                    cbc_evt_ok = create(cbc_evt, 2_c_int) == 0  ! CU_EVENT_DISABLE_TIMING
++                end if
++            end if
++        end if
++        if (cbc_evt_ok) then
++            ierr = cbc_evt_record(cbc_evt, cbc_acc_get_cuda_stream(int(cbc_queue, c_long)))
++            if (ierr == 0) ierr = cbc_evt_wait(cbc_acc_get_cuda_stream(int(acc_get_default_async(), c_long)), cbc_evt, 0_c_int)
++            if (ierr == 0) return
++        end if
++        $:GPU_WAIT(extraAccArgs='(cbc_queue) async')
++
++    end subroutine s_cbc_gpu_wait
+ #endif
+ 
+     !> Whether direction cbc_dir_in's CBC can run its kernels alongside the Riemann solve (s_cbc phase 1 before it, the copy-back
