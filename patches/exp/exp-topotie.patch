@@ -1,0 +1,19 @@
+Not built or tested (stopped 2026-11-04 when the work ended). Upstream form of exp-topo (ladder row 109):
+on a tie in the 3-D layout search keep the first layout (splits x least), so 4 ranks get 1x2x2.
+Changes multi-rank test layouts: needs the full ./mfc.sh test before adoption. Applies on exp-readtype (0001-0038).
+
+diff --git a/src/common/m_mpi_common.fpp b/src/common/m_mpi_common.fpp
+index 803a119..2add8ba 100644
+--- a/src/common/m_mpi_common.fpp
++++ b/src/common/m_mpi_common.fpp
+@@ -1488,7 +1488,9 @@ contains
+                                         tmp_num_procs_y = j
+                                         tmp_num_procs_z = num_procs/(i*j)
+ 
+-                                        if (fct_min >= abs((m + 1)/tmp_num_procs_x - (n + 1)/tmp_num_procs_y) + abs((n + 1) &
++                                        ! Strictly better only: on a tie the first layout found stays, which splits x least. x is
++                                        ! the contiguous direction, and a rank that owns all of x needs no MPI in the x sweep.
++                                        if (fct_min > abs((m + 1)/tmp_num_procs_x - (n + 1)/tmp_num_procs_y) + abs((n + 1) &
+                                             & /tmp_num_procs_y - (p + 1)/tmp_num_procs_z) .and. (p + 1) &
+                                             & /tmp_num_procs_z >= num_stcls_min*recon_order) then
+                                             num_procs_x = i
