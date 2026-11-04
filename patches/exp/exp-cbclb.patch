@@ -1,5 +1,5 @@
 diff --git a/src/common/m_mpi_common.fpp b/src/common/m_mpi_common.fpp
-index 803a119..6241eaa 100644
+index 803a119..029a081 100644
 --- a/src/common/m_mpi_common.fpp
 +++ b/src/common/m_mpi_common.fpp
 @@ -1372,6 +1372,7 @@ contains
@@ -30,28 +30,33 @@ index 803a119..6241eaa 100644
          call s_apply_decomposition_policies((/num_procs_x, num_procs_y, num_procs_z/), rem_cells_by_dim, (/m, n, p/), (/m_glb, &
                                              & n_glb, p_glb/), write_silo_ghost_offsets, &
                                              & adjust_local_domains .and. (.not. parallel_io), output_offsets, local_domains)
-@@ -1782,6 +1789,53 @@ contains
+@@ -1782,6 +1789,59 @@ contains
  
      end subroutine s_apply_decomposition_policies
  
 +#ifdef MFC_SIMULATION
 +    !> Experimental (exp-cbclb): move cells from the last rank along an axis whose high end is a characteristic boundary
 +    !! (CBC) to the other ranks on that axis. The CBC ranks do extra boundary work in every stage and the others wait for
-+    !! them in the halo exchange. MFC_CBC_SHIFT=<cells> in the environment sets how many cells move (default 0: unchanged).
-+    !! The grid and the restart data come from the global files at start_idx, so the values computed do not change.
++    !! them in the halo exchange. MFC_CBC_SHIFT='sx sy sz' in the environment sets how many cells move along x, y, z
++    !! (default 0: unchanged). The grid and the restart data come from the global files at start_idx, so the values
++    !! computed do not change. cells_bounds is updated afterwards: the halo buffers are sized from it (698176 crashed
++    !! with a stale one).
 +    impure subroutine s_shift_cells_off_cbc_ends(glb_cells, bc_end, nprocs)
 +
 +        integer, dimension(3), intent(in) :: glb_cells, bc_end, nprocs
-+        integer                           :: shift, d, i, np, cnt, st, stat
-+        character(len=32)                 :: env
++        integer                           :: shift, d, i, np, cnt, st, stat, ios
++        integer, dimension(3)             :: shifts
++        character(len=64)                 :: env
 +
 +        call get_environment_variable('MFC_CBC_SHIFT', env, status=stat)
-+        shift = 0
-+        if (stat == 0) read (env, *) shift
-+        if (shift <= 0) return
++        shifts = 0
++        if (stat == 0) read (env, *, iostat=ios) shifts
++        if (all(shifts <= 0)) return
 +
 +        do d = 1, num_dims
++            shift = shifts(d)
 +            np = nprocs(d)
++            if (shift <= 0) cycle
 +            if (np < 2 .or. bc_end(d) > BC_CHAR_SLIP_WALL .or. bc_end(d) < BC_CHAR_SUP_OUTFLOW) cycle
 +            st = 0
 +            cnt = 0
@@ -77,6 +82,7 @@ index 803a119..6241eaa 100644
 +            end select
 +            start_idx(d) = st
 +        end do
++        call s_update_cell_bounds(cells_bounds, m, n, p)
 +
 +    end subroutine s_shift_cells_off_cbc_ends
 +#endif
