@@ -1,0 +1,86 @@
+diff --git a/src/common/m_mpi_common.fpp b/src/common/m_mpi_common.fpp
+index 803a119..6241eaa 100644
+--- a/src/common/m_mpi_common.fpp
++++ b/src/common/m_mpi_common.fpp
+@@ -1372,6 +1372,7 @@ contains
+         real(wp) :: fct_min        !< Processor factorization (fct) minimization parameter
+         integer  :: MPI_COMM_CART  !< Cartesian processor topology communicator
+         integer  :: rem_cells      !< Remaining cells after distribution among processors
++        integer  :: glb_cells_in(3), bc_end_in(3)  !< Global cell counts and high-end BCs before decomposition
+         integer  :: rem_cells_by_dim(3)
+         integer  :: recon_order    !< WENO or MUSCL reconstruction order
+         integer  :: i, j, k        !< Generic loop iterators
+@@ -1381,6 +1382,8 @@ contains
+         integer, dimension(1:num_dims) :: neighbor_coords
+ 
+         rem_cells_by_dim = 0
++        glb_cells_in = (/m + 1, n + 1, p + 1/)
++        bc_end_in = (/bc_x%end, bc_y%end, bc_z%end/)
+ 
+         ! Zeroing out communication needs for moving EL bubbles/particles
+         nidx(1)%beg = 0; nidx(1)%end = 0
+@@ -1699,6 +1702,10 @@ contains
+             end if
+         end if
+ 
++#ifdef MFC_SIMULATION
++        if (parallel_io) call s_shift_cells_off_cbc_ends(glb_cells_in, bc_end_in, (/num_procs_x, num_procs_y, num_procs_z/))
++#endif
++
+         call s_apply_decomposition_policies((/num_procs_x, num_procs_y, num_procs_z/), rem_cells_by_dim, (/m, n, p/), (/m_glb, &
+                                             & n_glb, p_glb/), write_silo_ghost_offsets, &
+                                             & adjust_local_domains .and. (.not. parallel_io), output_offsets, local_domains)
+@@ -1782,6 +1789,53 @@ contains
+ 
+     end subroutine s_apply_decomposition_policies
+ 
++#ifdef MFC_SIMULATION
++    !> Experimental (exp-cbclb): move cells from the last rank along an axis whose high end is a characteristic boundary
++    !! (CBC) to the other ranks on that axis. The CBC ranks do extra boundary work in every stage and the others wait for
++    !! them in the halo exchange. MFC_CBC_SHIFT=<cells> in the environment sets how many cells move (default 0: unchanged).
++    !! The grid and the restart data come from the global files at start_idx, so the values computed do not change.
++    impure subroutine s_shift_cells_off_cbc_ends(glb_cells, bc_end, nprocs)
++
++        integer, dimension(3), intent(in) :: glb_cells, bc_end, nprocs
++        integer                           :: shift, d, i, np, cnt, st, stat
++        character(len=32)                 :: env
++
++        call get_environment_variable('MFC_CBC_SHIFT', env, status=stat)
++        shift = 0
++        if (stat == 0) read (env, *) shift
++        if (shift <= 0) return
++
++        do d = 1, num_dims
++            np = nprocs(d)
++            if (np < 2 .or. bc_end(d) > BC_CHAR_SLIP_WALL .or. bc_end(d) < BC_CHAR_SUP_OUTFLOW) cycle
++            st = 0
++            cnt = 0
++            do i = 0, proc_coords(d)
++                if (i > 0) st = st + cnt
++                cnt = glb_cells(d)/np
++                if (i < mod(glb_cells(d), np)) cnt = cnt + 1
++                if (i == np - 1) then
++                    cnt = cnt - shift
++                else
++                    cnt = cnt + shift/(np - 1)
++                    if (i < mod(shift, np - 1)) cnt = cnt + 1
++                end if
++            end do
++            if (cnt < 1) call s_mpi_abort('MFC_CBC_SHIFT leaves a rank without cells.')
++            select case (d)
++            case (1)
++                m = cnt - 1
++            case (2)
++                n = cnt - 1
++            case (3)
++                p = cnt - 1
++            end select
++            start_idx(d) = st
++        end do
++
++    end subroutine s_shift_cells_off_cbc_ends
++#endif
++
+     !> The goal of this procedure is to populate the buffers of the grid variables by communicating with the neighboring processors.
+     !! Note that only the buffers of the cell-width distributions are handled in such a way. This is because the buffers of
+     !! cell-boundary locations may be calculated directly from those of the cell-width distributions.

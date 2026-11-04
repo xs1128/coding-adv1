@@ -1,0 +1,17 @@
+# job 697602 (4 GPUs, 2x2x1 layout: rank = 2*x + y; CBC on the high x, y, z faces): GPU kernel time per step by kernel, ranks 0-3, kernels whose time differs most between rank 1 and rank 0
+total GPU kernel time per step: rank0 7.739 ms  rank1 8.138 ms  rank2 7.936 ms  rank3 8.537 ms
+kernel                                                            r0      r1      r2      r3  (ms per step)
+m_cbc_s_cbc_725_gpu_1                                          0.000   0.134   0.000   0.135
+m_riemann_solver_hllc_s_hllc_riemann_solver_952_gpu_1          1.807   1.922   1.788   1.909
+m_variables_conversion_s_convert_primitive_to_flux_variables   0.026   0.072   0.059   0.094
+m_cbc_s_finalize_cbc_1488_gpu                                  0.000   0.043   0.000   0.058
+m_cbc_s_initialize_cbc_1264_gpu                                0.000   0.036   0.000   0.034
+m_cbc_s_cbc_690_gpu_1                                          0.000   0.031   0.000   0.030
+m_boundary_common_s_populate_bc_direction_222_gpu__1           0.036   0.058   0.054   0.055
+m_cbc_s_cbc_706_gpu_1                                          0.000   0.022   0.000   0.021
+m_cbc_s_finalize_cbc_1500_gpu                                  0.000   0.020   0.000   0.043
+m_cbc_s_finalize_cbc_1523_gpu                                  0.000   0.016   0.000   0.051
+m_cbc_s_finalize_cbc_1551_gpu                                  0.024   0.037   0.025   0.022
+m_cbc_s_initialize_cbc_1276_gpu                                0.000   0.012   0.000   0.011
+m_cbc_s_finalize_cbc_1574_gpu                                  0.020   0.029   0.016   0.020
+m_cbc_s_cbc_set_device_state_1155_gpu                          0.005   0.010   0.011   0.017

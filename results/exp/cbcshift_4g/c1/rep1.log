@@ -1,0 +1,6 @@
+ Simulating a case-optimized 200x200x200 case on 4 rank(s) with OpenACC offloading.
+ [  0%] step 1 of 31 (t_step 0) t/step  0.00E+00s (avg  0.00E+00s) ETA 0:00:00
+[1793750442.195326] [25a-hgpn011:1646735:0]     cuda_ipc_ep.c:167  UCX  ERROR cuMemcpyDtoDAsync_v2(dst, src, iov[0].length, *stream) failed: invalid argument
+[1793750442.196184] [25a-hgpn011:1646734:0]     cuda_ipc_ep.c:167  UCX  ERROR cuMemcpyDtoDAsync_v2(dst, src, iov[0].length, *stream) failed: invalid argument
+[1793750442.200744] [25a-hgpn011:1646737:0]     cuda_ipc_ep.c:167  UCX  ERROR cuMemcpyDtoDAsync_v2(dst, src, iov[0].length, *stream) failed: invalid argument
+[1793750442.201950] [25a-hgpn011:1646736:0]     cuda_ipc_ep.c:167  UCX  ERROR cuMemcpyDtoDAsync_v2(dst, src, iov[0].length, *stream) failed: invalid argument

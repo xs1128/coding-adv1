@@ -208,6 +208,10 @@ the figure script disagreed. Rule: derived numbers come from raw files, in one s
   of the two profiles (their reports stay in `runs/prof/nsysout_*_lean`). No GPU cost.
 - **2026-11-04, `/work` at 11 GB free.** Deleted 4 more verified run folders (ldpwrap_4g, accbufsmall_1g: bitwise vs their
   A arms; repro/w1g, repro/w4g: `reproduce.sh verify` PASS; ladder rows 100, 101, 104). No GPU cost.
+- **2026-11-04: an experimental patch hung a 4-GPU screen (698176).** exp-cbclb with `MFC_CBC_SHIFT=8` made UCX's GPU-to-GPU
+  copies fail (`invalid argument`) and the ranks then waited until the 7-min limit, so arm D never ran: ~28 GPU-min for
+  two usable arms. The run script has no per-rep timeout for mpirun launches (only the singleton has one). Rule: put a
+  per-rep `timeout` on runs of untested code, as for new launch modes.
 - **2026-11-04: `harness/reproduce.sh` built the wrong final version.** Its `git am` glob `patches/opt/00[0-2][0-9]-*.patch`
   stopped at 0029, so 0030–0031 of P22 were left out; the same kind of fixed range had already gone stale once (5d822ac).
   Found while adding the wall-time step; the glob is now `patches/opt/*.patch`. The script had never been run (no `repro/`
