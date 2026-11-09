@@ -1,0 +1,16 @@
+{
+ "label": "repro/w4g_v2/final_rdma",
+ "ref": "repro/w4g_v2/base_rdma",
+ "checks": {
+  "state": {
+   "status": "PASS",
+   "bitwise": true,
+   "max_rel": 0.0,
+   "l2_rel": 0.0,
+   "nonfinite": 0,
+   "step": 30,
+   "reason": null
+  }
+ },
+ "status": "PASS"
+}
