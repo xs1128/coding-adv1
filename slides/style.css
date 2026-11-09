@@ -1,69 +1,108 @@
+/* Clean look: Times New Roman for all text, Inconsolata for code, no bold, white background. */
+@font-face {
+  font-family: 'Inconsolata';
+  src: url('/fonts/Inconsolata-Regular.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 :root {
-  --ink: #141b2d;
-  --soft: #3d4556;
-  --paper: #f5f3ee;
-  --blue: #2f6fdb;
-  --orange: #d9622b;
+  --slidev-theme-primary: #2a7ad6;
+  --slidev-code-font-family: 'Inconsolata', monospace;
 }
+
 .slidev-layout {
-  background: var(--paper);
-  color: var(--soft);
+  font-family: 'Times New Roman', Times, serif;
+  color: #222;
+  background: #fff;
+  padding: 2.2rem 3.2rem;
+  font-size: 1.4rem;
+  line-height: 1.4;
 }
+
+.slidev-layout h1,
+.slidev-layout h2,
+.slidev-layout h3,
+.slidev-layout strong,
+.slidev-layout th {
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: normal;
+}
+
 .slidev-layout h1 {
-  color: var(--ink);
-  font-weight: 600;
-  font-size: 2.1em;
-  margin-bottom: 0.6em;
+  font-size: 2.1rem;
+  line-height: 1.2;
+  margin-bottom: 0.4rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid #ccc;
 }
-.slidev-layout h3 {
-  color: var(--ink);
-  font-weight: 600;
+
+.slidev-layout h1 + p {
+  opacity: 1;
 }
-.slidev-layout strong {
-  color: var(--ink);
-}
-.slidev-layout.cover,
-.slidev-layout.dark {
-  background: var(--ink);
-  color: #b9c3d6;
-}
+
 .slidev-layout.cover h1,
-.slidev-layout.dark h1,
-.slidev-layout.dark strong {
-  color: var(--paper);
+.slidev-layout.center h1 {
+  border-bottom: none;
 }
-.eyebrow {
-  font-family: 'JetBrains Mono', monospace;
-  letter-spacing: 0.08em;
-  color: #f0a070;
-  font-size: 0.8em;
+
+.slidev-layout ul {
+  margin-top: 0.6rem;
 }
-.card {
-  background: #fbfaf7;
-  border: 1px solid #e2dfd6;
-  border-radius: 10px;
-  padding: 14px 18px;
+
+.slidev-layout li {
+  margin: 0.6rem 0;
 }
-.big {
-  font-size: 3.2em;
-  line-height: 1.05;
-  font-weight: 600;
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
+
+.slidev-layout code,
+.slidev-layout pre {
+  font-family: 'Inconsolata', monospace;
 }
-.dark .big {
-  color: var(--paper);
+
+.slidev-layout :not(pre) > code {
+  font-size: 0.95em;
+  background: #f3f3f3;
+  color: #222;
+  padding: 0.05em 0.25em;
+  border-radius: 2px;
 }
-.accent {
-  color: var(--orange);
-}
-.foot {
-  position: absolute;
-  left: 3.5rem;
-  bottom: 1.2rem;
-  font-size: 0.65em;
-  color: #6a7179;
-}
+
 .slidev-layout table {
-  font-size: 0.82em;
+  margin: 0.8rem auto;
+  font-size: 1.15rem;
+  border-collapse: collapse;
+}
+
+.slidev-layout th {
+  border-bottom: 1px solid #888;
+}
+
+.slidev-layout td,
+.slidev-layout th {
+  padding: 0.25rem 0.7rem;
+  border-color: #ddd;
+}
+
+.slidev-layout figure {
+  margin: 0.6rem auto 0;
+  text-align: center;
+}
+
+.slidev-layout figure img {
+  margin: 0 auto;
+}
+
+.slidev-layout figcaption {
+  font-size: 0.85rem;
+  color: #555;
+  margin-top: 0.25rem;
+}
+
+.note {
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.slidev-page-num {
+  font-family: 'Times New Roman', Times, serif;
 }
