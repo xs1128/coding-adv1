@@ -31,6 +31,13 @@ def step(label):
     return float(row["step_med_ms"])
 
 
+def wall(label):
+    """Median wall (s) over the timed reps from results/<label>/summary.tsv."""
+    v = sorted(float(r["wall_s"]) for r in csv.DictReader(open(f"{RES}/{label}/summary.tsv"), delimiter="\t"))
+    n = len(v)
+    return v[n // 2] if n % 2 else (v[n // 2 - 1] + v[n // 2]) / 2
+
+
 def ncu_groups(label):
     """Kernel time (ms, ncu window) grouped by role, from results/<label>/summary.txt."""
     g = {"WENO5": 0.0, "HLLC": 0.0, "WENO pack": 0.0, "copy-like and other": 0.0}
@@ -54,10 +61,15 @@ def finish(ax, path):
     print("wrote", path)
 
 
-# 1. Ladder at 1 GPU
-ladder = [("v5.7.0", "base/official_1g", "600407"), ("+ P1 CBC async", "p1/cbc_async_1g", "601152"),
-          ("+ K4b Riemann unity", "k4/unity_1g", "602474"), ("+ K2 WENO reg. cap", "k2/cap128_1g", "602559"),
-          ("+ P3 async kernels", "p3/ab_1g/b1", "604561"), ("+ P4 interior reconstruction", "p4/ab_1g/b1", "621788")]
+# 1. Ladder at 1 GPU. Each rung is its own same-node A/B and every one is bitwise identical to v5.7.0, but the
+#    v5.7.0 arm is re-measured per job, so the baseline moves 76.7-77.7 ms between nodes; these are not one job.
+ladder = [("v5.7.0", "base/official_1g", "600407"),
+          ("P4 - 0001-0006", "p4/ab_1g/b1", "621788"),
+          ("P16 - 0001-0019", "final/v570_vs_p16_1g/b1", "669752"),
+          ("P18 - 0001-0021", "final/v570_vs_p18_1g/b1", "670158"),
+          ("P20 - 0001-0024", "final/v570_p20_p21_1g/b1", "686551"),
+          ("P21 - 0001-0030", "final/v570_p20_p21_1g/c1", "686551"),
+          ("P22 - 0001-0031", "final/v570_p21_p22_1g/c1", "690631")]
 vals = [step(p) for _, p, _ in ladder]
 fig, ax = plt.subplots(figsize=(6.4, 2.8))
 y = range(len(ladder))[::-1]
@@ -65,9 +77,9 @@ ax.barh(list(y), vals, height=0.55, color=[INK2] + [BLUE] * (len(vals) - 1))
 for yi, v, (name, _, job) in zip(y, vals, ladder):
     ax.text(v + 0.6, yi, f"{v:.1f} ms  ({job})", va="center", color=INK, fontsize=9)
 ax.set_yticks(list(y), [n for n, _, _ in ladder])
-ax.set_xlim(0, max(vals) * 1.32)
-ax.set_xlabel("median step time, 1 H200 (ms)")
-ax.set_title("Step time per rung, 1 GPU (each rung bitwise identical)", loc="left", fontsize=10)
+ax.set_xlim(0, max(vals) * 1.34)
+ax.set_xlabel("median step time, 1 H200 (ms)\nv5.7.0 baseline re-measured per job: 76.7-77.7 ms across nodes")
+ax.set_title("Step time per rung, 1 GPU - every rung bitwise identical to v5.7.0", loc="left", fontsize=10)
 finish(ax, f"{OUT}/ladder_1g.png")
 
 # 2. Kernel time by role, before and after (ncu, same window and settings)
@@ -88,26 +100,35 @@ ax.set_title(f"Kernel time by role: {sum(before.values()):.1f} → {sum(after.va
 ax.legend(frameon=False, fontsize=8, loc="lower right")
 finish(ax, f"{OUT}/kernels_1g.png")
 
-# 3. Step time at 1/4/8 GPUs: v5.7.0 vs P3 on one node, P3 vs final (P4) on another; speedup = product of the ratios
-sets = [("1 GPU", "final/s1g/base", "final/s1g/final", "p4/ab_1g/a1", "p4/ab_1g/b1"),
-        ("4 GPUs\n(all rdma_mpi)", "final/s4g/base_rdma", "final/s4g/final_rdma", "p4/ab_4g_rdma/a1", "p4/ab_4g_rdma/b1"),
-        ("8 GPUs\n(v5.7.0 default,\nthen rdma_mpi)", "final/s8g/base_host", "final/s8g/final_rdma", "p4/ab_8g_rdma/a1",
-         "p4/ab_8g_rdma/b1")]
-fig, ax = plt.subplots(figsize=(6.4, 3.6))
+# 3. Step time and whole-run wall time, v5.7.0 vs P22, one same-node A/B per set (harness/reproduce.sh wall).
+#    Both arms of the 4-GPU set run rdma_mpi, so unlike the 8-GPU row of the 10-31 report this is a like-for-like
+#    comparison. No clean 8-GPU P22 A/B exists, so 8 GPUs is left out of the figure.
+sets = [("1 GPU", "repro/w1g/base", "repro/w1g/final", "697808 / 697810"),
+        ("4 GPUs\n(rdma_mpi)", "repro/w4g/base_rdma", "repro/w4g/final_rdma", "697809 / 697811")]
+fig, (axs, axw) = plt.subplots(1, 2, figsize=(8.2, 2.9))
 y = range(len(sets))[::-1]
-h3 = 0.26
-for v, (name, base, p3, p3b, fin) in zip(y, sets):
-    sb, s3, sf = step(base), step(p3), step(fin)
-    first = v == len(sets) - 1
-    ax.barh(v + h3, sb, height=h3, color=INK2, label="v5.7.0" if first else None)
-    ax.barh(v, s3, height=h3, color=ORANGE, label="P3" if first else None)
-    ax.barh(v - h3, sf, height=h3, color=BLUE, label="final (P4)" if first else None)
-    ax.text(sb + 0.8, v + h3, f"{sb:.1f} ms", va="center", fontsize=8, color=INK2)
-    ax.text(s3 + 0.8, v, f"{s3:.1f} ms", va="center", fontsize=8, color=INK2)
-    ax.text(sf + 0.8, v - h3, f"{sf:.1f} ms  ({sb / s3 * step(p3b) / sf:.2f}×)", va="center", fontsize=8, color=INK)
-ax.set_yticks(list(y), [s[0] for s in sets])
-ax.set_xlim(0, 100)
-ax.set_xlabel("median step time over all ranks (ms)")
-ax.set_title("Same-node comparisons, 201³ strong scaling", loc="left", fontsize=10)
-ax.legend(frameon=False, fontsize=8, loc="lower right")
-finish(ax, f"{OUT}/scaling.png")
+h = 0.34
+for v, (name, base, fin, job) in zip(y, sets):
+    for ax, metric, fmt, pad in ((axs, step, "{:.1f} ms", 1.2), (axw, wall, "{:.2f} s", 0.28)):
+        b, f = metric(base), metric(fin)
+        first = v == len(sets) - 1
+        ax.barh(v + h / 2, b, height=h, color=INK2, label="v5.7.0" if first else None)
+        ax.barh(v - h / 2, f, height=h, color=BLUE, label="P22 (0001-0031)" if first else None)
+        ax.text(b + pad, v + h / 2, fmt.format(b), va="center", fontsize=8, color=INK2)
+        ax.text(f + pad, v - h / 2, fmt.format(f) + f"  ({b / f:.2f}x)", va="center", fontsize=8, color=INK)
+for ax, xlabel, title, xmax in ((axs, "median step time, slowest rank (ms)", "Per step", 100),
+                                (axw, "whole run, start-up and save included (s)", "Whole run", 14)):
+    ax.set_yticks(list(y), [s[0] for s in sets])
+    ax.set_xlim(0, xmax)
+    ax.set_xlabel(xlabel)
+    ax.set_title(title, loc="left", fontsize=10)
+    ax.grid(axis="x", color=GRID, linewidth=0.8)
+    ax.set_axisbelow(True)
+axs.legend(frameon=False, fontsize=8, loc="lower right")
+fig.suptitle("Same-node A/B, 201\u00b3 cells, FP64, 30 steps - every run bitwise identical to v5.7.0",
+             x=0.005, ha="left", fontsize=9.5, color=INK2)
+fig.text(0.995, 0.015, "jobs " + ", ".join(s[3] for s in sets), ha="right", fontsize=7.5, color=INK2)
+plt.tight_layout(rect=(0, 0, 1, 0.93))
+plt.savefig(f"{OUT}/scaling.png", dpi=200)
+plt.close()
+print("wrote", f"{OUT}/scaling.png")
