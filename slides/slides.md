@@ -31,7 +31,7 @@ MFC v5.7.0, SC26 Student Cluster Competition application, nano4 (8× H200)
 </div>
 
 <!--
-Hi, I am [name]. For the coding part I chose MFC, a fluid dynamics code from the SC26 Student Cluster Competition, and I ran it on the H200 GPUs of nano4. My goal was simple: make it faster without changing a single bit of its answer.
+Hi, I am xs. For the coding part I chose MFC, a fluid dynamics code from the SC26 Student Cluster Competition, and I ran it on the H200 GPUs of nano4. My goal was simple: make it faster without changing a single bit of its answer.
 -->
 
 ---
